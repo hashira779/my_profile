@@ -6,6 +6,8 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { injectGlobalStyles } from './utils/webStyles';
+import { usePrefersReducedMotion } from './utils/motion';
+import { pageSheenAnim, dividerScanAnim } from './utils/webAnimKeyframes';
 import { ScrollAnimProvider } from './context/ScrollAnimContext';
 import CursorGlow from './components/CursorGlow';
 import Navbar from './components/Navbar';
@@ -22,14 +24,40 @@ import FooterSection from './components/FooterSection';
 
 // Section definitions for dot navigation
 const SECTIONS = [
-  { key: 'hero',       label: 'Home',       color: '#818CF8' },
-  { key: 'about',      label: 'About',      color: '#38BDF8' },
-  { key: 'projects',   label: 'Projects',   color: '#A78BFA' },
-  { key: 'skills',     label: 'Skills',     color: '#34D399' },
-  { key: 'experience', label: 'Experience', color: '#FB7185' },
-  { key: 'education',  label: 'Education',  color: '#FBBF24' },
-  { key: 'contact',    label: 'Contact',    color: '#F472B6' },
+  { key: 'hero',       label: 'Home',       color: '#2563EB' },
+  { key: 'about',      label: 'About',      color: '#0EA5E9' },
+  { key: 'projects',   label: 'Projects',   color: '#2563EB' },
+  { key: 'skills',     label: 'Skills',     color: '#059669' },
+  { key: 'experience', label: 'Experience', color: '#7C3AED' },
+  { key: 'education',  label: 'Education',  color: '#D97706' },
+  { key: 'contact',    label: 'Contact',    color: '#0EA5E9' },
 ];
+
+// Scroll-reactive page backdrop
+function ScrollBackdrop({ scrollY }: { scrollY: Animated.Value }) {
+  const reduceMotion = usePrefersReducedMotion();
+  const gridY = scrollY.interpolate({
+    inputRange: [0, 1600],
+    outputRange: [0, -80],
+    extrapolate: 'clamp',
+  });
+  const gridOpacity = scrollY.interpolate({
+    inputRange: [0, 700, 1600],
+    outputRange: [0.34, 0.24, 0.16],
+    extrapolate: 'clamp',
+  });
+  const webSheen: any = Platform.OS === 'web' && !reduceMotion ? pageSheenAnim() : {};
+
+  return (
+    <View style={[backStyles.wrap, { pointerEvents: 'none' } as any]}>
+      <Animated.View style={[backStyles.grid, reduceMotion ? { opacity: 0.28 } : { opacity: gridOpacity, transform: [{ translateY: gridY }] }]} />
+      <View style={backStyles.glowTop} />
+      <View style={backStyles.glowBottom} />
+      <View style={[backStyles.sheen, webSheen]} />
+      <View style={backStyles.vignette} />
+    </View>
+  );
+}
 
 // Floating right-side dot navigator (web only, hidden on small screens)
 function DotNav({
@@ -66,15 +94,18 @@ function DotNav({
 
 // Gradient transition divider between sections
 function SectionDivider({ flip = false }: { flip?: boolean }) {
+  const reduceMotion = usePrefersReducedMotion();
+  const sparkStyle: any = Platform.OS === 'web' && !reduceMotion ? dividerScanAnim(flip) : {};
   return (
-    <View style={divStyles.wrap} pointerEvents="none">
+    <View style={[divStyles.wrap, { pointerEvents: 'none' } as any]}>
       <LinearGradient
         colors={flip
-          ? ['transparent', 'rgba(99,102,241,0.06)', 'rgba(56,189,248,0.04)', 'transparent']
-          : ['transparent', 'rgba(56,189,248,0.04)', 'rgba(99,102,241,0.06)', 'transparent']}
+          ? ['transparent', 'rgba(37,99,235,0.055)', 'rgba(14,165,233,0.035)', 'transparent']
+          : ['transparent', 'rgba(14,165,233,0.035)', 'rgba(37,99,235,0.055)', 'transparent']}
         style={divStyles.grad}
         start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
       />
+      {Platform.OS === 'web' && !reduceMotion && <View style={[divStyles.spark, sparkStyle]} />}
     </View>
   );
 }
@@ -85,7 +116,11 @@ export default function App() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const sectionOffsets = useRef<Record<string, number>>({});
   const [contentHeight, setContentHeight] = useState(0);
-  const [activeSection, setActiveSection] = useState('hero');  useEffect(() => { injectGlobalStyles(); }, []);
+  const [activeSection, setActiveSection] = useState('hero');
+
+  useEffect(() => {
+    injectGlobalStyles();
+  }, []);
 
   const handleScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -106,7 +141,8 @@ export default function App() {
     }
   );
 
-  const scrollToSection = useCallback((section: string) => {    const y = sectionOffsets.current[section];
+  const scrollToSection = useCallback((section: string) => {
+    const y = sectionOffsets.current[section];
     if (y !== undefined) {
       scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 72), animated: true });
     }
@@ -120,15 +156,13 @@ export default function App() {
     <ScrollAnimProvider windowHeight={windowHeight} scrollY={scrollY}>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="light" />
+        <ScrollBackdrop scrollY={scrollY} />
 
         {/* Web-only: cursor glow effect */}
         <CursorGlow />
 
         <Navbar scrollY={scrollY} onNavPress={scrollToSection} />
         <ScrollProgress scrollY={scrollY} contentHeight={contentHeight} windowHeight={windowHeight} />
-
-        {/* Floating dot navigator */}
-        <DotNav active={activeSection} onPress={scrollToSection} sections={SECTIONS} />
 
         <ScrollView
           ref={scrollViewRef}
@@ -195,10 +229,11 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#000' },
+  safeArea: { flex: 1, backgroundColor: '#05070D' },
   scroll: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: 'transparent',
+    zIndex: 1,
     ...(Platform.OS === 'web' ? { marginTop: 64 } as any : {}),
   },
   content: { paddingBottom: 0 },
@@ -210,6 +245,71 @@ const styles = StyleSheet.create({
   // Content sections with generous Apple-style vertical breathing room
   sectionBlock: {
     paddingVertical: Platform.OS === 'web' ? 40 : 0,
+  },
+});
+
+const backStyles = StyleSheet.create({
+  wrap: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+    backgroundColor: '#05070D',
+    zIndex: 0,
+  },
+  grid: {
+    position: 'absolute',
+    top: -120,
+    left: 0,
+    right: 0,
+    height: '140%',
+    ...(Platform.OS === 'web'
+      ? ({
+          backgroundImage: `
+            linear-gradient(rgba(37,99,235,0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(14,165,233,0.035) 1px, transparent 1px)`,
+          backgroundSize: '64px 64px',
+          maskImage: 'linear-gradient(to bottom, transparent 0%, black 16%, black 76%, transparent 100%)',
+        } as any)
+      : {}),
+  },
+  glowTop: {
+    position: 'absolute',
+    top: -220,
+    right: -160,
+    width: 640,
+    height: 640,
+    borderRadius: 320,
+    backgroundColor: 'rgba(37,99,235,0.1)',
+    ...(Platform.OS === 'web' ? ({ filter: 'blur(80px)' } as any) : {}),
+  },
+  glowBottom: {
+    position: 'absolute',
+    bottom: -260,
+    left: -180,
+    width: 620,
+    height: 620,
+    borderRadius: 310,
+    backgroundColor: 'rgba(14,165,233,0.07)',
+    ...(Platform.OS === 'web' ? ({ filter: 'blur(90px)' } as any) : {}),
+  },
+  sheen: {
+    position: 'absolute',
+    top: 0, bottom: 0,
+    left: '-45%',
+    width: '38%',
+    ...(Platform.OS === 'web'
+      ? ({
+          backgroundImage: 'linear-gradient(100deg, transparent 0%, rgba(255,255,255,0.025) 48%, transparent 100%)',
+        } as any)
+      : {}),
+  },
+  vignette: {
+    ...StyleSheet.absoluteFillObject,
+    ...(Platform.OS === 'web'
+      ? ({
+          backgroundImage:
+            'radial-gradient(ellipse at center, transparent 0%, transparent 48%, rgba(0,0,0,0.72) 100%)',
+        } as any)
+      : { backgroundColor: 'transparent' }),
   },
 });
 
@@ -231,6 +331,17 @@ const dotStyles = StyleSheet.create({
 
 // Divider styles
 const divStyles = StyleSheet.create({
-  wrap: { height: 1, overflow: 'visible' },
+  wrap: { height: 1, overflow: 'hidden', position: 'relative' },
   grad: { height: 1, width: '100%' },
+  spark: {
+    position: 'absolute',
+    top: 0, left: 0,
+    width: '18%', height: 1,
+    ...(Platform.OS === 'web'
+      ? ({
+          backgroundImage: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.95) 50%, transparent 100%)',
+          boxShadow: '0 0 12px rgba(37,99,235,0.55)',
+        } as any)
+      : {}),
+  },
 });

@@ -10,7 +10,7 @@ interface Props {
 }
 export default function TypeWriter({
   texts, typingSpeed = 72, deleteSpeed = 38,
-  pauseDuration = 1800, style, cursorColor = '#818CF8',
+  pauseDuration = 1800, style, cursorColor = '#2563EB',
 }: Props) {
   const [display, setDisplay] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);

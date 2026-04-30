@@ -7,7 +7,7 @@ import AnimatedSection from './AnimatedSection';
 import { sectionPadH, sectionPadV, titleSize, titleLineH, titleLetterSpacing, numSize, subSize } from '../utils/responsive';
 import { MOTION, usePrefersReducedMotion } from '../utils/motion';
 
-const CHIP_COLORS = ['#818CF8', '#38BDF8', '#A78BFA', '#34D399', '#FB7185', '#FBBF24'];
+const CHIP_COLORS = ['#2563EB', '#0EA5E9', '#059669', '#64748B'];
 
 function TechChip({ name, index, reduceMotion }: { name: string; index: number; reduceMotion: boolean }) {
   const [hovered, setHovered] = useState(false);
@@ -33,7 +33,7 @@ function TechChip({ name, index, reduceMotion }: { name: string; index: number; 
     : hoverAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.08] });
   const webHoverStyle: any = Platform.OS === 'web'
     ? {
-        transform: [{ scale: hovered ? 1.04 : 1 }],
+        transform: [{ translateY: hovered ? -4 : 0 }, { scale: hovered ? 1.04 : 1 }],
         borderColor: hovered ? `${chipColor}66` : COLORS.border,
         ...(hovered ? { boxShadow: `0 10px 28px ${chipColor}1f` } : {}),
       }
@@ -49,7 +49,7 @@ function TechChip({ name, index, reduceMotion }: { name: string; index: number; 
         ]}
       >
         <LinearGradient
-          colors={['rgba(20,28,68,0.9)', 'rgba(12,17,45,0.95)']}
+          colors={['rgba(15,23,42,0.92)', 'rgba(2,6,23,0.96)']}
           style={StyleSheet.absoluteFillObject}
         />
         <View style={[styles.techDot, { backgroundColor: chipColor }]} />
@@ -244,14 +244,14 @@ export default function SkillsSection() {
 const styles = StyleSheet.create({
   wrapper: { gap: 36, maxWidth: 1200, alignSelf: 'center', width: '100%' },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
-  sectionNum: { color: 'rgba(52,211,153,0.22)', fontWeight: '900', letterSpacing: -3, marginRight: 4 },
+  sectionNum: { color: 'rgba(5,150,105,0.18)', fontWeight: '900', letterSpacing: -3, marginRight: 4 },
   labelLine: { width: 32, height: 2, borderRadius: 1 },
   labelText: { color: COLORS.indigo, fontSize: 12, fontWeight: '700', letterSpacing: 3 },
   sectionTitle: { color: COLORS.textPrimary, fontWeight: '900' },
   sectionSub: { color: COLORS.textMuted, marginTop: 8 },
   subTitle: { color: COLORS.textPrimary, fontWeight: '700', fontSize: 20 },
   card: {
-    backgroundColor: 'rgba(12,18,48,0.88)',
+    backgroundColor: 'rgba(15,23,42,0.84)',
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: RADIUS.xl,
@@ -270,11 +270,11 @@ const styles = StyleSheet.create({
   skillPct: { fontSize: 12, fontWeight: '800' },
   track: {
     height: 8,
-    backgroundColor: 'rgba(99,102,241,0.1)',
+    backgroundColor: 'rgba(37,99,235,0.1)',
     borderRadius: RADIUS.full,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(99,102,241,0.08)',
+    borderColor: 'rgba(37,99,235,0.08)',
   },
   fill: { height: 8, borderRadius: RADIUS.full, overflow: 'hidden', position: 'relative' },
   shimmer: {

@@ -6,10 +6,11 @@ import { CONTACT } from '../constants/data';
 import AnimatedSection from './AnimatedSection';
 import { sectionPadH, sectionPadV, numSize } from '../utils/responsive';
 import { usePrefersReducedMotion } from '../utils/motion';
+import { KF_FLOAT, KF_PULSE_RING, KF_BORDER_GLOW } from '../utils/webAnimKeyframes';
 
 function ContactOrb({ style }: { style: any }) {
   if (Platform.OS !== 'web') return null;
-  return <View style={style} pointerEvents="none" />;
+  return <View style={[style, { pointerEvents: 'none' } as any]} />;
 }
 
 export default function ContactSection() {
@@ -55,17 +56,14 @@ export default function ContactSection() {
     };
   }, [availablePulse, borderAnim, reduceMotion]);
 
-  const cardBorder = borderAnim.interpolate({ inputRange: [0, 1], outputRange: ['rgba(99,102,241,0.2)', 'rgba(99,102,241,0.6)'] });
+  const cardBorder = borderAnim.interpolate({ inputRange: [0, 1], outputRange: ['rgba(37,99,235,0.2)', 'rgba(14,165,233,0.48)'] });
   const orb1Style: any = Platform.OS === 'web' ? {
     position: 'absolute',
-    top: -60,
-    left: -60,
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)',
+    top: -60, left: -60,
+    width: 280, height: 280, borderRadius: 140,
+    backgroundImage: 'radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%)',
     ...(reduceMotion ? {} : {
-      animationName: 'ct-float',
+      animationKeyframes: KF_FLOAT,
       animationDuration: '8s',
       animationTimingFunction: 'ease-in-out',
       animationIterationCount: 'infinite',
@@ -73,14 +71,11 @@ export default function ContactSection() {
   } : {};
   const orb2Style: any = Platform.OS === 'web' ? {
     position: 'absolute',
-    bottom: -40,
-    right: -40,
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    background: 'radial-gradient(circle, rgba(56,189,248,0.12) 0%, transparent 70%)',
+    bottom: -40, right: -40,
+    width: 220, height: 220, borderRadius: 110,
+    backgroundImage: 'radial-gradient(circle, rgba(14,165,233,0.1) 0%, transparent 70%)',
     ...(reduceMotion ? {} : {
-      animationName: 'ct-float',
+      animationKeyframes: KF_FLOAT,
       animationDuration: '6s',
       animationDelay: '2s',
       animationTimingFunction: 'ease-in-out',
@@ -89,7 +84,7 @@ export default function ContactSection() {
   } : {};
   const dotRingStyle: any = Platform.OS === 'web' && !reduceMotion
     ? {
-        animationName: 'ct-pulse-ring',
+        animationKeyframes: KF_PULSE_RING,
         animationDuration: '2s',
         animationTimingFunction: 'ease-out',
         animationIterationCount: 'infinite',
@@ -108,7 +103,7 @@ export default function ContactSection() {
         <ContactOrb style={orb1Style} />
         <ContactOrb style={orb2Style} />
         <LinearGradient
-          colors={['rgba(99,102,241,0.12)', 'rgba(56,189,248,0.06)', 'transparent']}
+          colors={['rgba(37,99,235,0.1)', 'rgba(14,165,233,0.055)', 'transparent']}
           style={StyleSheet.absoluteFillObject}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -118,8 +113,8 @@ export default function ContactSection() {
             style={[
               StyleSheet.absoluteFillObject,
               reduceMotion ? styles.borderGlowStill : styles.borderGlowWeb,
+              { pointerEvents: 'none' } as any,
             ]}
-            pointerEvents="none"
           />
         )}
         <AnimatedSection direction="fade">
@@ -188,25 +183,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...(Platform.OS === 'web' ? ({
       backdropFilter: 'blur(16px)',
-      animationName: 'ct-border-glow',
+      animationKeyframes: KF_BORDER_GLOW,
       animationDuration: '3s',
       animationTimingFunction: 'ease-in-out',
       animationIterationCount: 'infinite',
     } as any) : { backgroundColor: COLORS.card }),
   },
-  cardStill: Platform.OS === 'web' ? ({ animationName: 'none' } as any) : {},
+  cardStill: Platform.OS === 'web' ? ({ animationPlayState: 'paused' } as any) : {},
   borderGlowWeb: {
     borderRadius: RADIUS.xl,
     borderWidth: 1,
     borderColor: 'transparent',
     ...(Platform.OS === 'web'
-      ? ({ animationName: 'ct-border-glow', animationDuration: '3s', animationTimingFunction: 'ease-in-out', animationIterationCount: 'infinite' } as any)
+      ? ({ animationKeyframes: KF_BORDER_GLOW, animationDuration: '3s', animationTimingFunction: 'ease-in-out', animationIterationCount: 'infinite' } as any)
       : {}),
   },
-  borderGlowStill: { borderColor: 'rgba(99,102,241,0.24)' },
-  sectionNum: { color: 'rgba(244,114,182,0.2)', fontWeight: '900', letterSpacing: -4, textAlign: 'center', marginBottom: 8 },
+  borderGlowStill: { borderColor: 'rgba(37,99,235,0.24)' },
+  sectionNum: { color: 'rgba(37,99,235,0.18)', fontWeight: '900', letterSpacing: -4, textAlign: 'center', marginBottom: 8 },
   badgeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  dotRing: { position: 'absolute', width: 14, height: 14, borderRadius: 7, backgroundColor: 'rgba(52,211,153,0.3)' },
+  dotRing: { position: 'absolute', width: 14, height: 14, borderRadius: 7, backgroundColor: 'rgba(5,150,105,0.28)' },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.emerald },
   badge: { color: COLORS.emerald, fontSize: 12, fontWeight: '700', letterSpacing: 2 },
   ctaTitle: { fontWeight: '900', color: COLORS.textPrimary, textAlign: 'center' },
@@ -217,7 +212,7 @@ const styles = StyleSheet.create({
   btnPrimaryText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   btnSecondary: {
     borderRadius: RADIUS.full, borderWidth: 1,
-    borderColor: COLORS.border, backgroundColor: 'rgba(99,102,241,0.07)',
+    borderColor: COLORS.border, backgroundColor: 'rgba(37,99,235,0.07)',
   },
   btnSecondaryHover: { borderColor: COLORS.indigo },
   btnSecondaryText: { color: COLORS.textPrimary, fontWeight: '700', fontSize: 15 },

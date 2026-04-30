@@ -7,14 +7,16 @@ export function injectGlobalStyles() {
   s.textContent = `
     html { scroll-behavior: smooth; }
     * { box-sizing: border-box; }
-    ::selection { background: rgba(99,102,241,0.35); color: #f8fafc; }
+    ::selection { background: rgba(37,99,235,0.32); color: #f8fafc; }
     ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: #000; }
-    ::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #818cf8, #38bdf8); border-radius: 3px; }
+    ::-webkit-scrollbar-track { background: #05070D; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #2563eb, #0ea5e9); border-radius: 3px; }
 
     /* Apple-style scroll container */
     #scroll-root {
       scroll-behavior: smooth;
+      perspective: 1200px;
+      transform-style: preserve-3d;
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -100,16 +102,32 @@ export function injectGlobalStyles() {
       to   { opacity: 1; letter-spacing: normal; }
     }
     @keyframes ct-glow-pulse {
-      0%, 100% { box-shadow: 0 0 8px 2px rgba(129,140,248,0.3); }
-      50%       { box-shadow: 0 0 22px 6px rgba(129,140,248,0.7); }
+      0%, 100% { box-shadow: 0 0 8px 2px rgba(37,99,235,0.26); }
+      50%       { box-shadow: 0 0 22px 6px rgba(14,165,233,0.48); }
     }
     @keyframes ct-border-glow {
-      0%, 100% { border-color: rgba(99,102,241,0.2); }
-      50%       { border-color: rgba(99,102,241,0.7); }
+      0%, 100% { border-color: rgba(37,99,235,0.2); }
+      50%       { border-color: rgba(14,165,233,0.55); }
     }
     @keyframes ct-scroll-cue {
       0%,100% { transform: translateY(0px); opacity: 0.5; }
       50%      { transform: translateY(10px); opacity: 1; }
+    }
+    @keyframes ct-page-sheen {
+      0%, 100% { transform: translate3d(0%, 0, 0); opacity: 0.36; }
+      50%      { transform: translate3d(390%, 0, 0); opacity: 0.82; }
+    }
+    @keyframes ct-progress-shine {
+      0%   { transform: translateX(-120%); opacity: 0; }
+      15%  { opacity: 0.75; }
+      75%  { opacity: 0.75; }
+      100% { transform: translateX(220%); opacity: 0; }
+    }
+    @keyframes ct-divider-scan {
+      0%   { transform: translateX(-30%); opacity: 0; }
+      20%  { opacity: 1; }
+      80%  { opacity: 1; }
+      100% { transform: translateX(520%); opacity: 0; }
     }
     @keyframes ct-line-expand {
       from { width: 0; }

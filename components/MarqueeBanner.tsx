@@ -3,6 +3,7 @@ import { Platform, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../constants/theme';
 import { usePrefersReducedMotion } from '../utils/motion';
+import { marqueeAnim, marqueeRevAnim } from '../utils/webAnimKeyframes';
 
 const ITEMS = [
   'System Analysis', 'TypeScript', 'React Native', 'Python', 'MySQL',
@@ -15,7 +16,7 @@ const ITEMS = [
   'Project Management', 'IoT Integration', 'PHP', 'Agile', 'Expo',
 ];
 
-const DOT_COLORS = ['#818CF8', '#38BDF8', '#A78BFA', '#34D399', '#FB7185', '#FBBF24'];
+const DOT_COLORS = ['#2563EB', '#0EA5E9', '#059669', '#64748B'];
 
 export default function MarqueeBanner() {
   const reduceMotion = usePrefersReducedMotion();
@@ -25,13 +26,7 @@ export default function MarqueeBanner() {
         display: 'flex',
         flexDirection: 'row',
         width: 'max-content',
-        ...(reduceMotion ? {} : {
-          animationName: 'ct-marquee',
-          animationDuration: '40s',
-          animationTimingFunction: 'linear',
-          animationIterationCount: 'infinite',
-          willChange: 'transform',
-        }),
+        ...(reduceMotion ? {} : marqueeAnim('40s')),
       }
     : { flexDirection: 'row' };
 
@@ -40,13 +35,7 @@ export default function MarqueeBanner() {
         display: 'flex',
         flexDirection: 'row',
         width: 'max-content',
-        ...(reduceMotion ? {} : {
-          animationName: 'ct-marquee-rev',
-          animationDuration: '36s',
-          animationTimingFunction: 'linear',
-          animationIterationCount: 'infinite',
-          willChange: 'transform',
-        }),
+        ...(reduceMotion ? {} : marqueeRevAnim('36s')),
       }
     : { flexDirection: 'row' };
 
@@ -54,13 +43,13 @@ export default function MarqueeBanner() {
     <View style={styles.wrapper}>
       {Platform.OS === 'web' && (
         <>
-          <View style={[StyleSheet.absoluteFillObject, styles.fadeL]} pointerEvents="none" />
-          <View style={[StyleSheet.absoluteFillObject, styles.fadeR]} pointerEvents="none" />
+          <View style={[StyleSheet.absoluteFillObject, styles.fadeL, { pointerEvents: 'none' } as any]} />
+          <View style={[StyleSheet.absoluteFillObject, styles.fadeR, { pointerEvents: 'none' } as any]} />
         </>
       )}
 
       <LinearGradient
-        colors={['transparent', 'rgba(99,102,241,0.25)', 'transparent']}
+        colors={['transparent', 'rgba(37,99,235,0.18)', 'transparent']}
         style={styles.topLine}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
@@ -89,7 +78,7 @@ export default function MarqueeBanner() {
       </View>
 
       <LinearGradient
-        colors={['transparent', 'rgba(99,102,241,0.25)', 'transparent']}
+        colors={['transparent', 'rgba(37,99,235,0.18)', 'transparent']}
         style={styles.botLine}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
@@ -105,13 +94,13 @@ const styles = StyleSheet.create({
   botLine: { height: 1, marginTop: 8 },
   fadeL: {
     ...(Platform.OS === 'web'
-      ? ({ background: 'linear-gradient(90deg, #020818 0%, transparent 12%)' } as any)
+      ? ({ backgroundImage: 'linear-gradient(90deg, #05070D 0%, transparent 12%)' } as any)
       : {}),
     zIndex: 2,
   },
   fadeR: {
     ...(Platform.OS === 'web'
-      ? ({ background: 'linear-gradient(270deg, #020818 0%, transparent 12%)' } as any)
+      ? ({ backgroundImage: 'linear-gradient(270deg, #05070D 0%, transparent 12%)' } as any)
       : {}),
     zIndex: 2,
   },

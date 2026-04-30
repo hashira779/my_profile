@@ -2,7 +2,7 @@
 import { Linking, Platform, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, GRADIENTS, RADIUS } from '../constants/theme';
-import { CONTACT } from '../constants/data';
+import { CONTACT, PROFILE_STATS, SERVICES } from '../constants/data';
 import AnimatedSection from './AnimatedSection';
 import { sectionPadH, sectionPadV, titleSize, titleLineH, titleLetterSpacing, numSize, subSize, bodySize, cardPad } from '../utils/responsive';
 
@@ -36,6 +36,17 @@ export default function AboutSection() {
         <Text style={[styles.sectionTitle, { fontSize: ts, lineHeight: tlh, letterSpacing: tls }]}>About Me</Text>
         <Text style={[styles.sectionSub, { fontSize: ss }]}>The story behind the systems I build.</Text>
       </AnimatedSection>
+      <AnimatedSection delay={80} direction="zoom">
+        <View style={styles.metricsGrid}>
+          {PROFILE_STATS.map((stat, i) => (
+            <View key={stat.label} style={[styles.metricCard, isWide && { width: '23.5%' }]}>
+              <Text style={[styles.metricValue, { color: SERVICES[i % SERVICES.length].color }]}>{stat.value}</Text>
+              <Text style={styles.metricLabel}>{stat.label}</Text>
+              <Text style={styles.metricDetail}>{stat.detail}</Text>
+            </View>
+          ))}
+        </View>
+      </AnimatedSection>
       <View style={[styles.grid, isWide && { flexDirection: 'row' }]}>
         <AnimatedSection style={[styles.card, isWide && { flex: 3 }, { padding: cp }]} delay={100} direction="left">
           <Text style={[styles.cardTitle, { fontSize: bs + 3 }]}>Background</Text>
@@ -45,7 +56,7 @@ export default function AboutSection() {
             internal web tools that improve team efficiency.
           </Text>
           <Text style={[styles.bodyText, { fontSize: bs, marginTop: 14 }]}>
-            My approach is pragmatic — I focus on what actually ships and works in production, choosing
+            My approach is pragmatic: I focus on what actually ships and works in production, choosing
             the right tools over the trendiest ones.
           </Text>
           <View style={styles.tagRow}>
@@ -84,6 +95,38 @@ export default function AboutSection() {
           ))}
         </AnimatedSection>
       </View>
+      <AnimatedSection delay={240} direction="up">
+        <View style={styles.servicesHeader}>
+          <Text style={styles.subTitle}>What I Can Help With</Text>
+          <View style={styles.servicesLine} />
+        </View>
+        <View style={[styles.servicesGrid, isWide && { flexDirection: 'row', flexWrap: 'wrap' }]}>
+          {SERVICES.map((service, i) => (
+            <AnimatedSection
+              key={service.title}
+              delay={280 + i * 70}
+              direction={i % 2 === 0 ? 'left' : 'right'}
+              style={[styles.serviceCard, isWide && { width: '48.8%' }]}
+            >
+              <View style={[styles.serviceIcon, { backgroundColor: `${service.color}18`, borderColor: `${service.color}44` }]}>
+                <Text style={[styles.serviceIconText, { color: service.color }]}>{`0${i + 1}`}</Text>
+              </View>
+              <View style={styles.serviceBody}>
+                <Text style={styles.serviceTitle}>{service.title}</Text>
+                <Text style={styles.serviceDesc}>{service.description}</Text>
+                <View style={styles.servicePoints}>
+                  {service.points.map((point) => (
+                    <View key={point} style={styles.servicePoint}>
+                      <View style={[styles.pointDot, { backgroundColor: service.color }]} />
+                      <Text style={styles.pointText}>{point}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            </AnimatedSection>
+          ))}
+        </View>
+      </AnimatedSection>
     </View>
   );
 }
@@ -91,11 +134,29 @@ export default function AboutSection() {
 const styles = StyleSheet.create({
   wrapper: { gap: 36, maxWidth: 1200, alignSelf: 'center', width: '100%' },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
-  sectionNum: { color: 'rgba(129,140,248,0.22)', fontWeight: '900', letterSpacing: -3, marginRight: 4 },
+  sectionNum: { color: 'rgba(37,99,235,0.18)', fontWeight: '900', letterSpacing: -3, marginRight: 4 },
   labelLine: { width: 32, height: 2, borderRadius: 1 },
   labelText: { color: COLORS.indigo, fontSize: 12, fontWeight: '700', letterSpacing: 3 },
   sectionTitle: { color: COLORS.textPrimary, fontWeight: '900' },
   sectionSub: { color: COLORS.textSecondary, marginTop: 10, lineHeight: 26 },
+  metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  metricCard: {
+    width: '48%',
+    minWidth: 150,
+    flexGrow: 1,
+    padding: 16,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: 'rgba(15,23,42,0.72)',
+    gap: 6,
+    ...(Platform.OS === 'web'
+      ? ({ backdropFilter: 'blur(12px)', boxShadow: '0 10px 28px rgba(0,0,0,0.18)' } as any)
+      : {}),
+  },
+  metricValue: { fontSize: 30, lineHeight: 34, fontWeight: '900' },
+  metricLabel: { color: COLORS.textPrimary, fontSize: 13, fontWeight: '800' },
+  metricDetail: { color: COLORS.textMuted, fontSize: 11, lineHeight: 17 },
   grid: { gap: 20, flexDirection: 'column' },
   card: {
     backgroundColor: COLORS.card,
@@ -110,7 +171,7 @@ const styles = StyleSheet.create({
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },
   tag: {
     paddingVertical: 6, paddingHorizontal: 14, borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(99,102,241,0.12)', borderWidth: 1, borderColor: 'rgba(99,102,241,0.25)',
+    backgroundColor: 'rgba(37,99,235,0.1)', borderWidth: 1, borderColor: 'rgba(37,99,235,0.24)',
   },
   tagText: { color: COLORS.indigo, fontSize: 13, fontWeight: '600' },
   contactItem: { flexDirection: 'row', gap: 10, alignItems: 'flex-start', marginBottom: 6 },
@@ -120,6 +181,39 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: COLORS.border, marginVertical: 10 },
   langRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   langDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: COLORS.indigo },
+  servicesHeader: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 16 },
+  subTitle: { color: COLORS.textPrimary, fontWeight: '800', fontSize: 20 },
+  servicesLine: { flex: 1, height: 1, backgroundColor: COLORS.border },
+  servicesGrid: { gap: 14, flexDirection: 'column' },
+  serviceCard: {
+    flexDirection: 'row',
+    gap: 14,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: RADIUS.xl,
+    backgroundColor: COLORS.card,
+    ...(Platform.OS === 'web'
+      ? ({
+          backdropFilter: 'blur(12px)',
+          transition: 'transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease',
+        } as any)
+      : {}),
+  },
+  serviceIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  serviceIconText: { fontSize: 13, fontWeight: '900' },
+  serviceBody: { flex: 1, gap: 8 },
+  serviceTitle: { color: COLORS.textPrimary, fontSize: 16, fontWeight: '800' },
+  serviceDesc: { color: COLORS.textSecondary, fontSize: 13, lineHeight: 21 },
+  servicePoints: { gap: 6, marginTop: 2 },
+  servicePoint: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  pointDot: { width: 5, height: 5, borderRadius: 3 },
+  pointText: { color: COLORS.textMuted, fontSize: 12, fontWeight: '600' },
 });
-
-

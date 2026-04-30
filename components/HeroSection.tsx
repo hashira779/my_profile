@@ -7,87 +7,24 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, RADIUS } from '../constants/theme';
 import { PROFILE, CONTACT } from '../constants/data';
 import ProfileAvatar from './ProfileAvatar';
-import TypeWriter from './TypeWriter';
 import { MOTION, usePrefersReducedMotion } from '../utils/motion';
-const TYPEWRITER_TEXTS = [
-  'System Analyst',
-  'Web Developer',
-  'Database Architect',
-  'IT Problem Solver',
-  'Automation Engineer',
-];
+import {
+  KF_PULSE_RING, KF_FLOAT, KF_SCROLL_CUE, HERO_KF,
+  gradientFlowAnim,
+} from '../utils/webAnimKeyframes';
 const APPLE = Easing.bezier(0.22, 1, 0.36, 1);
 
 // Animated stat counter
 function CountUp({ target, color }: { target: string; color: string }) {
-  const isNumeric = /^\d+/.test(target);
-  const numPart = isNumeric ? parseInt(target, 10) : 0;
-  const suffix = isNumeric ? target.replace(String(numPart), '') : target;
-  const [display, setDisplay] = useState(isNumeric ? '0' : target);
-  const startRef = useRef(false);
-  const viewRef = useRef(null);
-
-  useEffect(() => {
-    if (!isNumeric) return;
-    if (Platform.OS !== 'web') return;
-    const el = viewRef.current as unknown as Element | null;
-    if (!el) return;
-    const obs = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && !startRef.current) {
-        startRef.current = true;
-        let start = 0;
-        const step = Math.ceil(numPart / 40);
-        const timer = setInterval(() => {
-          start = Math.min(start + step, numPart);
-          setDisplay(String(start));
-          if (start >= numPart) clearInterval(timer);
-        }, 28);
-      }
-    }, { threshold: 0.5 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [isNumeric, numPart]);
-
-  const counterStyle: any = Platform.OS === 'web'
-    ? { animationName: 'ct-counter-up', animationDuration: '0.5s', animationFillMode: 'both' }
-    : {};
-
   return (
-    <View ref={viewRef}>
-      <Text style={[styles.statVal, { color }, counterStyle]}>
-        {isNumeric ? display + suffix : target}
+    <View>
+      <Text style={[styles.statVal, { color }]}>
+        {target}
       </Text>
     </View>
   );
 }
 
-// Floating particle (web-only)
-function FloatingParticle({ x, y, color, delay, size }: { x: string; y: string; color: string; delay: number; size: number }) {
-  if (Platform.OS !== 'web') return null;
-  const style: any = {
-    position: 'absolute', left: x, top: y,
-    width: size, height: size, borderRadius: size / 2,
-    backgroundColor: color, pointerEvents: 'none',
-    animationName: 'ct-particle-rise',
-    animationDuration: `${2.8 + Math.random() * 2}s`,
-    animationDelay: `${delay}s`,
-    animationTimingFunction: 'ease-out',
-    animationIterationCount: 'infinite',
-    animationFillMode: 'both',
-  };
-  return <View style={style} />;
-}
-
-const PARTICLES = [
-  { x: '8%',  y: '70%', color: '#818CF8', delay: 0,   size: 4 },
-  { x: '15%', y: '50%', color: '#38BDF8', delay: 0.8, size: 3 },
-  { x: '5%',  y: '40%', color: '#A78BFA', delay: 1.6, size: 5 },
-  { x: '20%', y: '80%', color: '#34D399', delay: 0.4, size: 3 },
-  { x: '12%', y: '60%', color: '#F472B6', delay: 2.1, size: 2 },
-  { x: '88%', y: '65%', color: '#818CF8', delay: 0.3, size: 4 },
-  { x: '92%', y: '45%', color: '#38BDF8', delay: 1.2, size: 3 },
-  { x: '85%', y: '75%', color: '#FBBF24', delay: 1.9, size: 3 },
-];
 export default function HeroSection() {
   const { width } = useWindowDimensions();
   const isWide = width >= 900;
@@ -156,26 +93,21 @@ export default function HeroSection() {
   // Flowing gradient name (web-only CSS animation)
   const nameFlowStyle: any = Platform.OS === 'web'
     ? {
-        background: 'linear-gradient(90deg, #818CF8, #38BDF8, #A78BFA, #F472B6, #818CF8)',
+        backgroundImage: 'linear-gradient(90deg, #F8FAFC, #0EA5E9, #2563EB, #F8FAFC)',
         backgroundSize: '300% auto',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
         backgroundClip: 'text',
-        ...(reduceMotion ? {} : {
-          animationName: 'ct-gradient-flow',
-          animationDuration: '7s',
-          animationTimingFunction: 'linear',
-          animationIterationCount: 'infinite',
-        }),
+        ...(reduceMotion ? {} : gradientFlowAnim()),
       }
     : { color: COLORS.indigo };
   // Pulse ring (web CSS)
   const pulseRingStyle: any = Platform.OS === 'web'
     ? {
         position: 'absolute', width: 12, height: 12, borderRadius: 6,
-        backgroundColor: 'rgba(52,211,153,0.4)',
+        backgroundColor: 'rgba(5,150,105,0.34)',
         ...(reduceMotion ? {} : {
-          animationName: 'ct-pulse-ring',
+          animationKeyframes: KF_PULSE_RING,
           animationDuration: '2.2s',
           animationTimingFunction: 'ease-out',
           animationIterationCount: 'infinite',
@@ -191,16 +123,16 @@ export default function HeroSection() {
   // Orb web-float styles
   const orbFloat = (dur: string, del: string): any =>
     Platform.OS === 'web' && !reduceMotion
-      ? { animationName: 'ct-float', animationDuration: dur, animationDelay: del, animationTimingFunction: 'ease-in-out', animationIterationCount: 'infinite', animationFillMode: 'both' }
+      ? { animationKeyframes: KF_FLOAT, animationDuration: dur, animationDelay: del, animationTimingFunction: 'ease-in-out', animationIterationCount: 'infinite', animationFillMode: 'both' }
       : {};
   // ── CSS animation helper (web hero entrance — runs on compositor thread) ──
   const heroAnim = (name: string, delayMs: number): any =>
     Platform.OS === 'web' && !reduceMotion
       ? {
-          animationName: name,
-          animationDuration: `${MOTION.duration.hero}ms`,
-          animationTimingFunction: MOTION.easing.standard,
+          animationKeyframes: HERO_KF[name] ?? HERO_KF['ct-hero-up'],
+          animationDuration: '0.72s',
           animationDelay: `${delayMs}ms`,
+          animationTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
           animationFillMode: 'both',
         }
       : {};
@@ -208,7 +140,7 @@ export default function HeroSection() {
   const textContent = (
     <View style={styles.textBlock}>
       {/* Status badge */}
-      <View style={[styles.statusBadge, heroAnim('ct-hero-up', 0), Platform.OS !== 'web' && { opacity: badgeFade }]}>
+      <View style={[styles.statusBadge, heroAnim('ct-hero-up', 0), Platform.OS !== 'web' ? { opacity: badgeFade } : {}]}>
         <View style={styles.pulseContainer}>
           <View style={[styles.pulseRing, pulseRingStyle]} />
           <View style={styles.pulseDot} />
@@ -232,7 +164,7 @@ export default function HeroSection() {
         <Animated.View style={Platform.OS !== 'web' ? { opacity: twFade, transform: [{ translateY: twSlide }] } : {}}>
           <View style={styles.twRow}>
             <Text style={[styles.twPrefix, { fontSize: twSize }]}>I am a </Text>
-            <TypeWriter texts={TYPEWRITER_TEXTS} style={[styles.twText, { fontSize: twSize }]} cursorColor={COLORS.indigo} />
+            <Text style={[styles.twText, { fontSize: twSize }]}>System Analyst & Web Developer</Text>
           </View>
         </Animated.View>
       </View>
@@ -248,8 +180,8 @@ export default function HeroSection() {
           style={({ pressed, hovered }: any) => [styles.btnPrimary, (pressed || hovered) && styles.btnPrimaryHov]}
           onPress={() => Linking.openURL(`mailto:${CONTACT.email}`)}
         >
-          <LinearGradient colors={['#4F46E5', '#818CF8', '#38BDF8']} style={styles.btnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-            <Text style={styles.btnPrimaryTxt}>Hire Me →</Text>
+          <LinearGradient colors={['#1D4ED8', '#2563EB', '#0EA5E9']} style={styles.btnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+            <Text style={styles.btnPrimaryTxt}>Hire Me</Text>
           </LinearGradient>
         </Pressable>
         <Pressable
@@ -280,21 +212,17 @@ export default function HeroSection() {
   );
   return (
     <View style={styles.wrapper}>
-      {/* Floating particles (web) */}
-      {!reduceMotion && PARTICLES.map((p, i) => (
-        <FloatingParticle key={i} {...p} />
-      ))}
       {/* Mesh grid */}
-      <View style={[StyleSheet.absoluteFillObject, styles.meshBg]} pointerEvents="none" />
+      <View style={[StyleSheet.absoluteFillObject, styles.meshBg, { pointerEvents: 'none' } as any]} />
       {/* Orbs with float animation */}
       <Animated.View style={[styles.orb1, { transform: [{ translateY: orb1Anim }] }, orbFloat('7s', '0s')]}>
-        <LinearGradient colors={['rgba(99,102,241,0.55)', 'transparent']} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient colors={['rgba(37,99,235,0.32)', 'transparent']} style={StyleSheet.absoluteFillObject} />
       </Animated.View>
       <Animated.View style={[styles.orb2, { transform: [{ translateY: orb2Anim }] }, orbFloat('9s', '1.2s')]}>
-        <LinearGradient colors={['rgba(56,189,248,0.4)', 'transparent']} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient colors={['rgba(14,165,233,0.24)', 'transparent']} style={StyleSheet.absoluteFillObject} />
       </Animated.View>
       <Animated.View style={[styles.orb3, { transform: [{ translateY: orb3Anim }] }, orbFloat('6s', '2.5s')]}>
-        <LinearGradient colors={['rgba(167,139,250,0.3)', 'transparent']} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient colors={['rgba(5,150,105,0.14)', 'transparent']} style={StyleSheet.absoluteFillObject} />
       </Animated.View>
       {isWide ? (
         <View style={styles.splitRow}>
@@ -304,7 +232,7 @@ export default function HeroSection() {
             : heroAnim('ct-hero-right', 150)]}>
             <ProfileAvatar size={240} />
             <View style={styles.infoCard}>
-              <LinearGradient colors={['rgba(18,25,62,0.96)', 'rgba(10,14,40,0.98)']} style={StyleSheet.absoluteFillObject} />
+              <LinearGradient colors={['rgba(15,23,42,0.96)', 'rgba(2,6,23,0.98)']} style={StyleSheet.absoluteFillObject} />
               {[
                 { icon: 'L', label: CONTACT.location, color: COLORS.indigo },
                 { icon: 'E', label: CONTACT.email, color: COLORS.sky },
@@ -332,11 +260,11 @@ export default function HeroSection() {
       )}
 
       {/* Scroll-down indicator */}
-      <View style={styles.scrollCue} pointerEvents="none">
+      <View style={[styles.scrollCue, { pointerEvents: 'none' } as any]}>
         <Text style={styles.scrollCueText}>Scroll</Text>
         <Text style={[styles.scrollCueArrow, Platform.OS === 'web' ? ({
           ...(reduceMotion ? {} : {
-            animationName: 'ct-scroll-cue',
+            animationKeyframes: KF_SCROLL_CUE,
             animationDuration: '1.8s',
             animationTimingFunction: 'ease-in-out',
             animationIterationCount: 'infinite',
@@ -350,7 +278,7 @@ export default function HeroSection() {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1, overflow: 'hidden',
-    paddingTop: 80,
+    paddingTop: 64,
     paddingBottom: 120,
     paddingHorizontal: 24,
     alignItems: 'center',
@@ -359,30 +287,30 @@ const styles = StyleSheet.create({
   meshBg: {
     ...(Platform.OS === 'web' ? ({
       backgroundImage: `
-        radial-gradient(ellipse at 15% 25%, rgba(99,102,241,0.14) 0%, transparent 50%),
-        radial-gradient(ellipse at 85% 75%, rgba(56,189,248,0.1) 0%, transparent 50%),
-        linear-gradient(rgba(129,140,248,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(129,140,248,0.04) 1px, transparent 1px)`,
+        radial-gradient(ellipse at 15% 25%, rgba(37,99,235,0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 75%, rgba(14,165,233,0.08) 0%, transparent 50%),
+        linear-gradient(rgba(37,99,235,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14,165,233,0.025) 1px, transparent 1px)`,
       backgroundSize: '100% 100%, 100% 100%, 52px 52px, 52px 52px',
     } as any) : {}),
   },
   orb1: { position: 'absolute', top: -120, right: -80, width: 540, height: 540, borderRadius: 999, overflow: 'hidden' },
   orb2: { position: 'absolute', bottom: -80, left: -80, width: 460, height: 460, borderRadius: 999, overflow: 'hidden' },
   orb3: { position: 'absolute', top: '40%', left: '35%', width: 300, height: 300, borderRadius: 999, overflow: 'hidden' },
-  splitRow: { flexDirection: 'row', alignItems: 'center', width: '100%', maxWidth: 1200, gap: 48, zIndex: 1 },
+  splitRow: { flexDirection: 'row', alignItems: 'center', width: '100%', maxWidth: 1200, gap: 48, zIndex: 5 },
   leftCol: { flex: 3 },
   rightCol: { flex: 2, alignItems: 'center', gap: 20 },
-  singleCol: { alignItems: 'center', gap: 24, width: '100%', maxWidth: 600, zIndex: 1 },
-  textBlock: { gap: 20 },
+  singleCol: { alignItems: 'center', gap: 24, width: '100%', maxWidth: 600, zIndex: 5 },
+  textBlock: { gap: 20, zIndex: 5 },
   statusBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 10, alignSelf: 'flex-start',
     paddingVertical: 7, paddingHorizontal: 16, borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(52,211,153,0.08)', borderWidth: 1, borderColor: 'rgba(52,211,153,0.28)',
+    backgroundColor: 'rgba(5,150,105,0.08)', borderWidth: 1, borderColor: 'rgba(5,150,105,0.26)',
   },
   pulseContainer: { width: 12, height: 12, alignItems: 'center', justifyContent: 'center' },
-  pulseRing: { position: 'absolute', width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: 'rgba(52,211,153,0.4)' },
-  pulseDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#34D399' },
-  statusText: { color: '#34D399', fontSize: 11, fontWeight: '700', letterSpacing: 2 },
+  pulseRing: { position: 'absolute', width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: 'rgba(5,150,105,0.36)' },
+  pulseDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#059669' },
+  statusText: { color: '#059669', fontSize: 11, fontWeight: '700', letterSpacing: 2 },
   name: {
     fontWeight: '900',
     color: COLORS.textPrimary,
@@ -393,20 +321,20 @@ const styles = StyleSheet.create({
   twText: { color: COLORS.sky, fontWeight: '700' },
   desc: { color: COLORS.textSecondary, maxWidth: 560 },
   btnRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  btnPrimary: { borderRadius: RADIUS.full, overflow: 'hidden', ...(Platform.OS === 'web' ? ({ boxShadow: '0 0 28px rgba(99,102,241,0.55)' } as any) : {}) },
+  btnPrimary: { borderRadius: RADIUS.full, overflow: 'hidden', ...(Platform.OS === 'web' ? ({ boxShadow: '0 16px 34px rgba(37,99,235,0.28)' } as any) : {}) },
   btnPrimaryHov: { opacity: 0.88 },
   btnGrad: { paddingVertical: 14, paddingHorizontal: 32, alignItems: 'center' },
   btnPrimaryTxt: { color: '#fff', fontWeight: '800', fontSize: 14, letterSpacing: 0.5 },
-  btnSec: { paddingVertical: 14, paddingHorizontal: 28, borderRadius: RADIUS.full, borderWidth: 1, borderColor: COLORS.border, backgroundColor: 'rgba(99,102,241,0.07)' },
-  btnSecHov: { borderColor: COLORS.indigo, backgroundColor: 'rgba(99,102,241,0.18)' },
+  btnSec: { paddingVertical: 14, paddingHorizontal: 28, borderRadius: RADIUS.full, borderWidth: 1, borderColor: COLORS.border, backgroundColor: 'rgba(37,99,235,0.07)' },
+  btnSecHov: { borderColor: COLORS.indigo, backgroundColor: 'rgba(37,99,235,0.14)' },
   btnSecTxt: { color: COLORS.textPrimary, fontWeight: '700', fontSize: 14 },
   btnGhost: { paddingVertical: 14, paddingHorizontal: 28, borderRadius: RADIUS.full, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   btnGhostHov: { borderColor: COLORS.sky },
   btnGhostTxt: { color: COLORS.textSecondary, fontWeight: '700', fontSize: 14 },
-  statsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 28, paddingTop: 22, borderTopWidth: 1, borderTopColor: 'rgba(99,102,241,0.1)' },
-  statItem: { gap: 3 },
-  statVal: { fontSize: 28, fontWeight: '900', letterSpacing: -1 },
-  statLbl: { color: COLORS.textMuted, fontSize: 11, fontWeight: '600', letterSpacing: 0.5 },
+  statsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 28, paddingTop: 22, borderTopWidth: 1, borderTopColor: 'rgba(148,163,184,0.12)' },
+  statItem: { gap: 4, minWidth: 82 },
+  statVal: { fontSize: 27, lineHeight: 31, fontWeight: '900', letterSpacing: 0 },
+  statLbl: { color: COLORS.textMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.4 },
   infoCard: {
     borderWidth: 1, borderColor: COLORS.border, borderRadius: RADIUS.lg,
     padding: 16, gap: 12, overflow: 'hidden', width: 290,
@@ -435,6 +363,6 @@ const styles = StyleSheet.create({
   scrollCueLine: {
     width: 1,
     height: Platform.OS === 'web' ? 40 : 24,
-    backgroundColor: 'rgba(129,140,248,0.3)',
+    backgroundColor: 'rgba(37,99,235,0.28)',
   },
 });

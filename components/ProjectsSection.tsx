@@ -9,12 +9,13 @@ import { PROJECTS, PROFILE } from '../constants/data';
 import AnimatedSection from './AnimatedSection';
 import { sectionPadH, sectionPadV, titleSize, titleLineH, titleLetterSpacing, numSize, subSize } from '../utils/responsive';
 import { MOTION, usePrefersReducedMotion } from '../utils/motion';
+import { glintAnim } from '../utils/webAnimKeyframes';
 
 const STATUS_COLOR: Record<string, string> = {
-  Production: '#34D399',
-  Live: '#818CF8',
-  'Internal Tool': '#FBBF24',
-  'In Progress': '#38BDF8',
+  Production: '#059669',
+  Live: '#2563EB',
+  'Internal Tool': '#D97706',
+  'In Progress': '#0EA5E9',
 };
 
 function ProjectCard({
@@ -49,7 +50,7 @@ function ProjectCard({
   const statusColor = STATUS_COLOR[project.status] ?? COLORS.indigo;
   const webHoverStyle: any = Platform.OS === 'web'
     ? {
-        transform: [{ scale: hovered ? 1.018 : 1 }],
+        transform: [{ translateY: hovered ? -8 : 0 }, { scale: hovered ? 1.018 : 1 }],
         ...(hovered
           ? { boxShadow: `0 10px 48px ${project.color}28, 0 0 0 1px ${project.color}40` }
           : {}),
@@ -84,10 +85,15 @@ function ProjectCard({
             />
           </View>
           <LinearGradient
-            colors={['rgba(14,20,54,0.92)', 'rgba(8,12,35,0.96)']}
+            colors={['rgba(15,23,42,0.94)', 'rgba(2,6,23,0.97)']}
             style={StyleSheet.absoluteFillObject}
           />
           <View style={[styles.cornerGlow, { backgroundColor: project.color }]} />
+          {Platform.OS === 'web' && !reduceMotion && (
+            <View
+              style={[styles.cardGlint, hovered && styles.cardGlintActive, { pointerEvents: 'none' } as any]}
+            />
+          )}
 
           <View style={styles.cardBody}>
             <View style={styles.cardTop}>
@@ -106,7 +112,17 @@ function ProjectCard({
             </View>
 
             <Text style={[styles.projTitle, hovered && { color: project.color }]}>{project.title}</Text>
-            <Text style={styles.projDesc} numberOfLines={4}>{project.description}</Text>
+            <Text style={styles.projDesc} numberOfLines={5}>{project.description}</Text>
+
+            <View style={styles.impactBlock}>
+              <Text style={[styles.impactTitle, { color: project.color }]}>Impact</Text>
+              {project.impact.map((item) => (
+                <View key={item} style={styles.impactRow}>
+                  <View style={[styles.impactDot, { backgroundColor: project.color }]} />
+                  <Text style={styles.impactText}>{item}</Text>
+                </View>
+              ))}
+            </View>
 
             <View style={styles.tagRow}>
               {project.tags.map((tag) => (
@@ -140,7 +156,7 @@ function ProjectCard({
                   onPress={() => Linking.openURL(project.live)}
                 >
                   <LinearGradient colors={project.gradient} style={StyleSheet.absoluteFillObject} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} />
-                  <Text style={styles.linkIcon}>{'↗'}</Text>
+                  <Text style={styles.linkIcon}>{'>'}</Text>
                   <Text style={styles.liveLinkText}>Live Demo</Text>
                 </Pressable>
               ) : null}
@@ -202,7 +218,7 @@ export default function ProjectsSection() {
 const styles = StyleSheet.create({
   wrapper: { gap: 40, maxWidth: 1200, alignSelf: 'center', width: '100%' },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
-  sectionNum: { color: 'rgba(167,139,250,0.22)', fontWeight: '900', letterSpacing: -3, marginRight: 4 },
+  sectionNum: { color: 'rgba(37,99,235,0.18)', fontWeight: '900', letterSpacing: -3, marginRight: 4 },
   labelLine: { width: 32, height: 2, borderRadius: 1 },
   labelText: { color: COLORS.indigo, fontSize: 12, fontWeight: '700', letterSpacing: 3 },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 8 },
@@ -217,9 +233,9 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.full,
     borderWidth: 1,
     borderColor: COLORS.border,
-    backgroundColor: 'rgba(99,102,241,0.06)',
+    backgroundColor: 'rgba(37,99,235,0.07)',
   },
-  githubBtnHov: { borderColor: COLORS.indigo, backgroundColor: 'rgba(99,102,241,0.14)' },
+  githubBtnHov: { borderColor: COLORS.indigo, backgroundColor: 'rgba(37,99,235,0.12)' },
   githubBtnIcon: { color: COLORS.indigo, fontWeight: '800', fontSize: 13 },
   githubBtnText: { color: COLORS.textSecondary, fontSize: 13, fontWeight: '600' },
   githubArrow: { color: COLORS.indigo, fontSize: 13, fontWeight: '700' },
@@ -239,6 +255,22 @@ const styles = StyleSheet.create({
           transition: `transform ${MOTION.duration.hover}ms ease, box-shadow 220ms ease`,
         } as any)
       : {}),
+  },
+  cardGlint: {
+    position: 'absolute',
+    top: 0, bottom: 0, left: 0,
+    width: '34%',
+    opacity: 0,
+    zIndex: 2,
+    ...(Platform.OS === 'web'
+      ? ({
+          backgroundImage: 'linear-gradient(100deg, transparent 0%, rgba(255,255,255,0.22) 50%, transparent 100%)',
+          transform: 'translateX(-220%) skewX(-18deg)',
+        } as any)
+      : {}),
+  },
+  cardGlintActive: {
+    ...(Platform.OS === 'web' ? (glintAnim() as any) : {}),
   },
   accentBarWrap: { height: 3 },
   accentBar: { flex: 1 },
@@ -270,6 +302,15 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'web' ? ({ transition: 'color 0.2s ease' } as any) : {}),
   },
   projDesc: { color: COLORS.textSecondary, fontSize: 14, lineHeight: 22 },
+  impactBlock: {
+    gap: 7,
+    paddingTop: 4,
+    paddingBottom: 2,
+  },
+  impactTitle: { fontSize: 11, fontWeight: '900', letterSpacing: 1.4, textTransform: 'uppercase' },
+  impactRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  impactDot: { width: 5, height: 5, borderRadius: 3, marginTop: 7 },
+  impactText: { color: COLORS.textSecondary, fontSize: 12, lineHeight: 19, flex: 1 },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
   tag: { paddingVertical: 4, paddingHorizontal: 10, borderRadius: RADIUS.full, borderWidth: 1, backgroundColor: 'rgba(255,255,255,0.03)' },
   tagText: { fontSize: 11, fontWeight: '700' },

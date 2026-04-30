@@ -38,7 +38,7 @@ function ExpCard({
     : hoverAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.015] });
   const webHoverStyle: any = Platform.OS === 'web'
     ? {
-        transform: [{ scale: hovered ? 1.01 : 1 }],
+        transform: [{ translateY: hovered ? -5 : 0 }, { scale: hovered ? 1.01 : 1 }],
         borderColor: hovered ? `${exp.color}55` : COLORS.border,
         ...(hovered ? { boxShadow: `0 12px 36px ${exp.color}18` } : {}),
       }
@@ -91,6 +91,27 @@ function ExpCard({
               </View>
             ))}
           </View>
+          <View style={styles.detailGrid}>
+            <View style={styles.detailCol}>
+              <Text style={styles.detailTitle}>Core Responsibilities</Text>
+              {exp.responsibilities.map((item) => (
+                <View key={item} style={styles.responsibilityRow}>
+                  <Text style={[styles.checkMark, { color: exp.color }]}>+</Text>
+                  <Text style={styles.responsibilityText}>{item}</Text>
+                </View>
+              ))}
+            </View>
+            <View style={styles.detailCol}>
+              <Text style={styles.detailTitle}>Tools & Systems</Text>
+              <View style={styles.techWrap}>
+                {exp.tech.map((item) => (
+                  <View key={item} style={[styles.techPill, { borderColor: `${exp.color}40`, backgroundColor: `${exp.color}12` }]}>
+                    <Text style={[styles.techText, { color: exp.color }]}>{item}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </View>
         </Animated.View>
       </Pressable>
     </View>
@@ -133,7 +154,7 @@ export default function ExperienceSection() {
 const styles = StyleSheet.create({
   wrapper: { gap: 36, maxWidth: 1200, alignSelf: 'center', width: '100%' },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
-  sectionNum: { color: 'rgba(251,113,133,0.22)', fontWeight: '900', letterSpacing: -3, marginRight: 4 },
+  sectionNum: { color: 'rgba(124,58,237,0.18)', fontWeight: '900', letterSpacing: -3, marginRight: 4 },
   labelLine: { width: 32, height: 2, borderRadius: 1 },
   labelText: { color: COLORS.indigo, fontSize: 12, fontWeight: '700', letterSpacing: 3 },
   sectionTitle: { color: COLORS.textPrimary, fontWeight: '900' },
@@ -182,4 +203,20 @@ const styles = StyleSheet.create({
   highlightRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
   bullet: { width: 6, height: 6, borderRadius: 3, marginTop: 8 },
   highlight: { color: COLORS.textSecondary, fontSize: 14, lineHeight: 22, flex: 1 },
+  detailGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 18,
+    paddingTop: 4,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  detailCol: { flex: 1, minWidth: 240, gap: 10 },
+  detailTitle: { color: COLORS.textPrimary, fontSize: 13, fontWeight: '900', letterSpacing: 1, textTransform: 'uppercase' },
+  responsibilityRow: { flexDirection: 'row', gap: 9, alignItems: 'flex-start' },
+  checkMark: { fontSize: 13, fontWeight: '900', marginTop: 2 },
+  responsibilityText: { color: COLORS.textSecondary, fontSize: 13, lineHeight: 20, flex: 1 },
+  techWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  techPill: { paddingVertical: 5, paddingHorizontal: 10, borderRadius: RADIUS.full, borderWidth: 1 },
+  techText: { fontSize: 11, fontWeight: '800' },
 });

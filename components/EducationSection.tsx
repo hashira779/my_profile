@@ -2,7 +2,7 @@
 import { Platform, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, GRADIENTS, RADIUS } from '../constants/theme';
-import { EDUCATION, TOOLS } from '../constants/data';
+import { EDUCATION, LEARNING_FOCUS, TOOLS } from '../constants/data';
 import AnimatedSection from './AnimatedSection';
 import { sectionPadH, sectionPadV, titleSize, titleLetterSpacing, numSize, subSize, bodySize, cardPad } from '../utils/responsive';
 
@@ -68,6 +68,23 @@ export default function EducationSection() {
           </View>
         </AnimatedSection>
       </View>
+      <AnimatedSection style={[styles.card, { padding: cp }]} delay={260} direction="up">
+        <View style={styles.focusHeader}>
+          <Text style={[styles.cardTitle, { fontSize: bs + 2 }]}>Current Learning Focus</Text>
+          <Text style={styles.focusSub}>Areas I am improving to build stronger production tools.</Text>
+        </View>
+        <View style={[styles.focusGrid, isWide && { flexDirection: 'row', flexWrap: 'wrap' }]}>
+          {LEARNING_FOCUS.map((item) => (
+            <View key={item.name} style={[styles.focusItem, isWide && { width: '48.5%' }]}>
+              <View style={[styles.focusDot, { backgroundColor: item.color }]} />
+              <View style={{ flex: 1, gap: 4 }}>
+                <Text style={styles.focusName}>{item.name}</Text>
+                <Text style={styles.focusDetail}>{item.detail}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      </AnimatedSection>
     </View>
   );
 }
@@ -75,7 +92,7 @@ export default function EducationSection() {
 const styles = StyleSheet.create({
   wrapper: { gap: 36, maxWidth: 1200, alignSelf: 'center', width: '100%' },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
-  sectionNum: { color: 'rgba(251,191,36,0.22)', fontWeight: '900', letterSpacing: -3, marginRight: 4 },
+  sectionNum: { color: 'rgba(217,119,6,0.18)', fontWeight: '900', letterSpacing: -3, marginRight: 4 },
   labelLine: { width: 32, height: 2, borderRadius: 1 },
   labelText: { color: COLORS.indigo, fontSize: 12, fontWeight: '700', letterSpacing: 3 },
   sectionTitle: { color: COLORS.textPrimary, fontWeight: '900' },
@@ -101,4 +118,19 @@ const styles = StyleSheet.create({
   toolName: { color: COLORS.textSecondary, fontWeight: '500' },
   levelBadge: { paddingVertical: 3, paddingHorizontal: 10, borderRadius: RADIUS.full, borderWidth: 1 },
   levelText: { fontSize: 11, fontWeight: '700' },
+  focusHeader: { gap: 6 },
+  focusSub: { color: COLORS.textMuted, fontSize: 13, lineHeight: 20 },
+  focusGrid: { gap: 12, flexDirection: 'column' },
+  focusItem: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 14,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: 'rgba(255,255,255,0.025)',
+  },
+  focusDot: { width: 10, height: 10, borderRadius: 5, marginTop: 5 },
+  focusName: { color: COLORS.textPrimary, fontSize: 14, fontWeight: '800' },
+  focusDetail: { color: COLORS.textSecondary, fontSize: 12, lineHeight: 18 },
 });

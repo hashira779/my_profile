@@ -104,12 +104,12 @@ export default function Navbar({ scrollY, onNavPress }: Props) {
       {/* Mobile dropdown menu */}
       {!isWide && menuOpen && (
         <Animated.View style={[styles.mobileMenu, { opacity: menuAnim, transform: [{ translateY: menuY }] }]}>
-          <LinearGradient colors={['rgba(8,12,35,0.98)', 'rgba(4,8,25,0.99)']} style={StyleSheet.absoluteFillObject} />
+          <LinearGradient colors={['rgba(15,23,42,0.98)', 'rgba(2,6,23,0.99)']} style={StyleSheet.absoluteFillObject} />
           {NAV_LINKS.map((link, i) => (
             <Pressable
               key={link.section}
               onPress={() => handleNavPress(link.section)}
-              style={({ pressed }: any) => [styles.mobileLink, pressed && { backgroundColor: 'rgba(99,102,241,0.1)' }]}
+              style={({ pressed }: any) => [styles.mobileLink, pressed && { backgroundColor: 'rgba(37,99,235,0.1)' }]}
             >
               <Text style={styles.mobileLinkNum}>0{i + 1}</Text>
               <Text style={styles.mobileLinkTxt}>{link.label}</Text>
@@ -132,7 +132,7 @@ export default function Navbar({ scrollY, onNavPress }: Props) {
 
 const styles = StyleSheet.create({
   wrapper: { height: 64, justifyContent: 'center', borderBottomWidth: 1, borderBottomColor: COLORS.navBorder },
-  bg: { backgroundColor: 'rgba(2,8,24,0.88)' },
+  bg: { backgroundColor: COLORS.navBg },
   inner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, gap: 16 },
   logoWrap: { borderRadius: RADIUS.md, overflow: 'hidden' },
   logoGrad: { width: 38, height: 38, borderRadius: RADIUS.md, alignItems: 'center', justifyContent: 'center' },

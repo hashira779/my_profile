@@ -24,7 +24,7 @@ export default function CursorGlow() {
     const orb = document.createElement('div');
     orb.style.cssText = `
       position: fixed; top: 0; left: 0; width: 360px; height: 360px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(99,102,241,0.11) 0%, rgba(56,189,248,0.06) 42%, transparent 72%);
+      background: radial-gradient(circle, rgba(37,99,235,0.09) 0%, rgba(14,165,233,0.055) 42%, transparent 72%);
       pointer-events: none; z-index: 9990; mix-blend-mode: screen; opacity: 0.9;
       will-change: transform;
     `;
@@ -32,8 +32,8 @@ export default function CursorGlow() {
     const dot = document.createElement('div');
     dot.style.cssText = `
       position: fixed; top: 0; left: 0; width: 7px; height: 7px; border-radius: 50%;
-      background: #818CF8; pointer-events: none; z-index: 9999;
-      box-shadow: 0 0 12px rgba(129,140,248,0.9), 0 0 24px rgba(129,140,248,0.45);
+      background: #2563EB; pointer-events: none; z-index: 9999;
+      box-shadow: 0 0 12px rgba(37,99,235,0.75), 0 0 24px rgba(14,165,233,0.28);
       transition: width 0.16s ease, height 0.16s ease, background-color 0.16s ease, opacity 0.24s ease;
       will-change: transform;
     `;
@@ -41,7 +41,7 @@ export default function CursorGlow() {
     const ring = document.createElement('div');
     ring.style.cssText = `
       position: fixed; top: 0; left: 0; width: 30px; height: 30px; border-radius: 50%;
-      border: 1px solid rgba(129,140,248,0.45); pointer-events: none; z-index: 9998;
+      border: 1px solid rgba(37,99,235,0.42); pointer-events: none; z-index: 9998;
       transition: width 0.2s ease, height 0.2s ease, border-color 0.16s ease;
       will-change: transform;
     `;
@@ -70,10 +70,10 @@ export default function CursorGlow() {
     const setInteractiveState = (active: boolean) => {
       dot.style.width = active ? '12px' : '7px';
       dot.style.height = active ? '12px' : '7px';
-      dot.style.backgroundColor = active ? '#38BDF8' : '#818CF8';
+      dot.style.backgroundColor = active ? '#0EA5E9' : '#2563EB';
       ring.style.width = active ? '46px' : '30px';
       ring.style.height = active ? '46px' : '30px';
-      ring.style.borderColor = active ? 'rgba(56,189,248,0.7)' : 'rgba(129,140,248,0.45)';
+      ring.style.borderColor = active ? 'rgba(14,165,233,0.65)' : 'rgba(37,99,235,0.42)';
     };
 
     const onMove = (e: MouseEvent) => {
@@ -100,7 +100,7 @@ export default function CursorGlow() {
       const ripple = document.createElement('div');
       ripple.style.cssText = `
         position: fixed; left: 0; top: 0; width: 12px; height: 12px; border-radius: 50%;
-        background: rgba(129,140,248,0.45); pointer-events: none; z-index: 9997;
+        background: rgba(37,99,235,0.35); pointer-events: none; z-index: 9997;
         animation: ct-ripple 0.55s ease-out forwards;
       `;
       setPosition(ripple, e.clientX, e.clientY);
