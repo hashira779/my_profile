@@ -2,15 +2,11 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Image, Platform, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { usePrefersReducedMotion } from '../utils/motion';
-import {
-  KF_AVATAR_FLOAT, KF_SPIN_SLOW, KF_SPIN_COUNTER, KF_AVATAR_PULSE,
-} from '../utils/webAnimKeyframes';
+import { webAnim } from '../utils/webAnimKeyframes';
 
 const profilePhoto = require('../assets/profile/IMG_4682.JPG');
 
-interface Props {
-  size?: number;
-}
+interface Props { size?: number; }
 
 export default function ProfileAvatar({ size = 220 }: Props) {
   const reduceMotion = usePrefersReducedMotion();
@@ -22,89 +18,38 @@ export default function ProfileAvatar({ size = 220 }: Props) {
 
   useEffect(() => {
     if (Platform.OS === 'web' || reduceMotion) {
-      pulse1.setValue(1);
-      pulse2.setValue(1);
-      rotateVal.setValue(0);
-      rotateRevVal.setValue(0);
-      floatY.setValue(0);
+      pulse1.setValue(1); pulse2.setValue(1);
+      rotateVal.setValue(0); rotateRevVal.setValue(0); floatY.setValue(0);
       return;
     }
-
-    const ringSpin    = Animated.loop(
-      Animated.timing(rotateVal,    { toValue: 1, duration: 5000, useNativeDriver: true })
-    );
-    const ringRevSpin = Animated.loop(
-      Animated.timing(rotateRevVal, { toValue: 1, duration: 8000, useNativeDriver: true })
-    );
-    const outerPulse  = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse1, { toValue: 1.12, duration: 2400, useNativeDriver: true }),
-        Animated.timing(pulse1, { toValue: 1,    duration: 2400, useNativeDriver: true }),
-      ])
-    );
-    const innerPulse  = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse2, { toValue: 1.04, duration: 3200, useNativeDriver: true }),
-        Animated.timing(pulse2, { toValue: 0.96, duration: 3200, useNativeDriver: true }),
-      ])
-    );
-    const floatLoop   = Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatY, { toValue: -12, duration: 3500, useNativeDriver: true }),
-        Animated.timing(floatY, { toValue:  12, duration: 3500, useNativeDriver: true }),
-      ])
-    );
-
-    ringSpin.start();
-    ringRevSpin.start();
-    outerPulse.start();
-    innerPulse.start();
-    floatLoop.start();
-
-    return () => {
-      ringSpin.stop();
-      ringRevSpin.stop();
-      outerPulse.stop();
-      innerPulse.stop();
-      floatLoop.stop();
-    };
+    const ringSpin    = Animated.loop(Animated.timing(rotateVal,    { toValue: 1, duration: 5000, useNativeDriver: true }));
+    const ringRevSpin = Animated.loop(Animated.timing(rotateRevVal, { toValue: 1, duration: 8000, useNativeDriver: true }));
+    const outerPulse  = Animated.loop(Animated.sequence([
+      Animated.timing(pulse1, { toValue: 1.12, duration: 2400, useNativeDriver: true }),
+      Animated.timing(pulse1, { toValue: 1,    duration: 2400, useNativeDriver: true }),
+    ]));
+    const innerPulse  = Animated.loop(Animated.sequence([
+      Animated.timing(pulse2, { toValue: 1.04, duration: 3200, useNativeDriver: true }),
+      Animated.timing(pulse2, { toValue: 0.96, duration: 3200, useNativeDriver: true }),
+    ]));
+    const floatLoop   = Animated.loop(Animated.sequence([
+      Animated.timing(floatY, { toValue: -12, duration: 3500, useNativeDriver: true }),
+      Animated.timing(floatY, { toValue:  12, duration: 3500, useNativeDriver: true }),
+    ]));
+    ringSpin.start(); ringRevSpin.start(); outerPulse.start(); innerPulse.start(); floatLoop.start();
+    return () => { ringSpin.stop(); ringRevSpin.stop(); outerPulse.stop(); innerPulse.stop(); floatLoop.stop(); };
   }, [floatY, pulse1, pulse2, reduceMotion, rotateVal, rotateRevVal]);
 
-  const rotate    = rotateVal.interpolate({    inputRange: [0, 1], outputRange: ['0deg',   '360deg'] });
-  const rotateRev = rotateRevVal.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '-360deg'] });
+  const rotate    = rotateVal.interpolate({    inputRange: [0,1], outputRange: ['0deg','360deg'] });
+  const rotateRev = rotateRevVal.interpolate({ inputRange: [0,1], outputRange: ['0deg','-360deg'] });
 
   const ringSize      = size + 16;
   const outerRingSize = size + 38;
   const glowSize      = size + 80;
 
-  // Web CSS animation styles
-  const webFloatStyle: any = Platform.OS === 'web' && !reduceMotion
-    ? {
-        animationKeyframes: KF_AVATAR_FLOAT,
-        animationDuration: '7s',
-        animationTimingFunction: 'ease-in-out',
-        animationIterationCount: 'infinite',
-        animationFillMode: 'both',
-      }
-    : {};
-
-  const webRingStyle: any = Platform.OS === 'web' && !reduceMotion
-    ? {
-        animationKeyframes: KF_SPIN_SLOW,
-        animationDuration: '16s',
-        animationTimingFunction: 'linear',
-        animationIterationCount: 'infinite',
-      }
-    : {};
-
-  const webOuterRingStyle: any = Platform.OS === 'web' && !reduceMotion
-    ? {
-        animationKeyframes: KF_SPIN_COUNTER,
-        animationDuration: '26s',
-        animationTimingFunction: 'linear',
-        animationIterationCount: 'infinite',
-      }
-    : {};
+  const webFloatStyle     = Platform.OS === 'web' && !reduceMotion ? webAnim.avatarFloat()  : {};
+  const webRingStyle      = Platform.OS === 'web' && !reduceMotion ? webAnim.spinSlow()     : {};
+  const webOuterRingStyle = Platform.OS === 'web' && !reduceMotion ? webAnim.spinRev()      : {};
 
   return (
     <Animated.View
@@ -124,23 +69,13 @@ export default function ProfileAvatar({ size = 220 }: Props) {
       />
 
       {/* CSS expanding pulse rings (web only) */}
-      {Platform.OS === 'web' && !reduceMotion && ([0, 1100, 2200] as number[]).map((delay, i) => (
+      {Platform.OS === 'web' && !reduceMotion && (['0s','1.1s','2.2s'] as string[]).map((delay, i) => (
         <View
           key={i}
           style={[
             styles.pulseRing,
-            {
-              width:  ringSize + 18,
-              height: ringSize + 18,
-              borderRadius: (ringSize + 18) / 2,
-            },
-            {
-              animationKeyframes: KF_AVATAR_PULSE,
-              animationDelay: `${delay}ms`,
-              animationDuration: '3.2s',
-              animationTimingFunction: 'ease-out',
-              animationIterationCount: 'infinite',
-            } as any,
+            { width: ringSize+18, height: ringSize+18, borderRadius: (ringSize+18)/2 },
+            webAnim.avatarPulse(delay) as any,
           ]}
         />
       ))}
@@ -156,10 +91,9 @@ export default function ProfileAvatar({ size = 220 }: Props) {
         ]}
       >
         <LinearGradient
-          colors={['#7C3AED', 'transparent', '#0EA5E9', 'transparent', '#7C3AED']}
+          colors={['#7C3AED','transparent','#0EA5E9','transparent','#7C3AED']}
           style={StyleSheet.absoluteFillObject}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+          start={{ x:0,y:0 }} end={{ x:1,y:1 }}
         />
       </Animated.View>
 
@@ -174,25 +108,23 @@ export default function ProfileAvatar({ size = 220 }: Props) {
         ]}
       >
         <LinearGradient
-          colors={['#2563EB', '#0EA5E9', '#059669', '#2563EB']}
+          colors={['#2563EB','#0EA5E9','#059669','#2563EB']}
           style={StyleSheet.absoluteFillObject}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+          start={{ x:0,y:0 }} end={{ x:1,y:1 }}
         />
       </Animated.View>
 
       {/* Avatar photo */}
-      <View style={[styles.avatarBg, { width: size, height: size, borderRadius: size / 2 }]}>
+      <View style={[styles.avatarBg, { width: size, height: size, borderRadius: size/2 }]}>
         <Image
           source={profilePhoto}
-          style={[styles.photo, { width: size, height: size, borderRadius: size / 2 }]}
+          style={[styles.photo, { width: size, height: size, borderRadius: size/2 }]}
           resizeMode="cover"
         />
-        {/* vignette overlay – pointerEvents moved to style (RN 0.72+) */}
         <View
           style={[
             styles.vignette,
-            { width: size, height: size, borderRadius: size / 2, pointerEvents: 'none' } as any,
+            { width: size, height: size, borderRadius: size/2, pointerEvents: 'none' } as any,
           ]}
         />
       </View>
@@ -201,37 +133,22 @@ export default function ProfileAvatar({ size = 220 }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: 'center', justifyContent: 'center' },
+  container:     { alignItems: 'center', justifyContent: 'center' },
   glow: {
     position: 'absolute',
     backgroundColor: '#2563EB',
     opacity: 0.16,
     ...(Platform.OS === 'web' ? ({ filter: 'blur(52px)' } as any) : {}),
   },
-  // Expanding pulse rings (web CSS animation)
-  pulseRing: {
-    position: 'absolute',
-    borderWidth: 1.5,
-    borderColor: 'rgba(37,99,235,0.5)',
-  },
+  pulseRing:     { position: 'absolute', borderWidth: 1.5, borderColor: 'rgba(37,99,235,0.5)' },
   outerRingWrap: { position: 'absolute', overflow: 'hidden', opacity: 0.55 },
   ringWrap:      { position: 'absolute', overflow: 'hidden' },
-  avatarBg: {
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 2,
-  },
-  photo: { position: 'absolute', top: 0, left: 0 },
+  avatarBg:      { overflow: 'hidden', alignItems: 'center', justifyContent: 'center', zIndex: 2 },
+  photo:         { position: 'absolute', top: 0, left: 0 },
   vignette: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
+    position: 'absolute', top: 0, left: 0,
     ...(Platform.OS === 'web'
-      ? ({
-          backgroundImage:
-            'radial-gradient(circle at 50% 50%, transparent 55%, rgba(2,6,23,0.58) 100%)',
-        } as any)
+      ? ({ backgroundImage: 'radial-gradient(circle at 50% 50%, transparent 55%, rgba(2,6,23,0.58) 100%)' } as any)
       : { backgroundColor: 'transparent' }),
   },
 });

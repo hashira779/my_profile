@@ -7,11 +7,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, RADIUS } from '../constants/theme';
 import { PROFILE, CONTACT } from '../constants/data';
 import ProfileAvatar from './ProfileAvatar';
+import TypeWriter from './TypeWriter';
 import { MOTION, usePrefersReducedMotion } from '../utils/motion';
-import {
-  KF_PULSE_RING, KF_FLOAT, KF_SCROLL_CUE, HERO_KF,
-  gradientFlowAnim,
-} from '../utils/webAnimKeyframes';
+import { webAnim, heroAnimStyle } from '../utils/webAnimKeyframes';
 const APPLE = Easing.bezier(0.22, 1, 0.36, 1);
 
 // Animated stat counter
@@ -98,7 +96,7 @@ export default function HeroSection() {
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
         backgroundClip: 'text',
-        ...(reduceMotion ? {} : gradientFlowAnim()),
+        ...(reduceMotion ? {} : webAnim.gradientFlow()),
       }
     : { color: COLORS.indigo };
   // Pulse ring (web CSS)
@@ -106,12 +104,7 @@ export default function HeroSection() {
     ? {
         position: 'absolute', width: 12, height: 12, borderRadius: 6,
         backgroundColor: 'rgba(5,150,105,0.34)',
-        ...(reduceMotion ? {} : {
-          animationKeyframes: KF_PULSE_RING,
-          animationDuration: '2.2s',
-          animationTimingFunction: 'ease-out',
-          animationIterationCount: 'infinite',
-        }),
+        ...(reduceMotion ? {} : webAnim.pulseRing('2.2s')),
       }
     : {};
   const stats = [
@@ -122,20 +115,10 @@ export default function HeroSection() {
   ];
   // Orb web-float styles
   const orbFloat = (dur: string, del: string): any =>
-    Platform.OS === 'web' && !reduceMotion
-      ? { animationKeyframes: KF_FLOAT, animationDuration: dur, animationDelay: del, animationTimingFunction: 'ease-in-out', animationIterationCount: 'infinite', animationFillMode: 'both' }
-      : {};
-  // ── CSS animation helper (web hero entrance — runs on compositor thread) ──
+    Platform.OS === 'web' && !reduceMotion ? webAnim.float(dur, del) : {};
+  // ── CSS animation helper (web hero entrance) ──
   const heroAnim = (name: string, delayMs: number): any =>
-    Platform.OS === 'web' && !reduceMotion
-      ? {
-          animationKeyframes: HERO_KF[name] ?? HERO_KF['ct-hero-up'],
-          animationDuration: '0.72s',
-          animationDelay: `${delayMs}ms`,
-          animationTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
-          animationFillMode: 'both',
-        }
-      : {};
+    Platform.OS === 'web' && !reduceMotion ? heroAnimStyle(name, delayMs) : {};
 
   const textContent = (
     <View style={styles.textBlock}>
@@ -164,7 +147,15 @@ export default function HeroSection() {
         <Animated.View style={Platform.OS !== 'web' ? { opacity: twFade, transform: [{ translateY: twSlide }] } : {}}>
           <View style={styles.twRow}>
             <Text style={[styles.twPrefix, { fontSize: twSize }]}>I am a </Text>
-            <Text style={[styles.twText, { fontSize: twSize }]}>System Analyst & Web Developer</Text>
+            <TypeWriter
+              texts={PROFILE.roles}
+              typingSpeed={68}
+              deleteSpeed={36}
+              pauseDuration={2000}
+              style={[styles.twText, { fontSize: twSize }]}
+              cursorColor={COLORS.indigo}
+              cursorHeight={twSize + 4}
+            />
           </View>
         </Animated.View>
       </View>
@@ -236,6 +227,7 @@ export default function HeroSection() {
               {[
                 { icon: 'L', label: CONTACT.location, color: COLORS.indigo },
                 { icon: 'E', label: CONTACT.email, color: COLORS.sky },
+                { icon: 'T', label: '@chhoy_too', color: '#29B6F6' },
                 { icon: 'P', label: CONTACT.phone, color: COLORS.violet },
               ].map(({ icon, label, color }) => (
                 <View key={icon} style={styles.infoRow}>
@@ -262,14 +254,7 @@ export default function HeroSection() {
       {/* Scroll-down indicator */}
       <View style={[styles.scrollCue, { pointerEvents: 'none' } as any]}>
         <Text style={styles.scrollCueText}>Scroll</Text>
-        <Text style={[styles.scrollCueArrow, Platform.OS === 'web' ? ({
-          ...(reduceMotion ? {} : {
-            animationKeyframes: KF_SCROLL_CUE,
-            animationDuration: '1.8s',
-            animationTimingFunction: 'ease-in-out',
-            animationIterationCount: 'infinite',
-          }),
-        } as any) : {}]}>↓</Text>
+        <Text style={[styles.scrollCueArrow, Platform.OS === 'web' && !reduceMotion ? (webAnim.scrollCue() as any) : {}]}>↓</Text>
         <View style={styles.scrollCueLine} />
       </View>
     </View>

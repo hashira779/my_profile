@@ -51,13 +51,10 @@ export default function AboutSection() {
         <AnimatedSection style={[styles.card, isWide && { flex: 3 }, { padding: cp }]} delay={100} direction="left">
           <Text style={[styles.cardTitle, { fontSize: bs + 3 }]}>Background</Text>
           <Text style={[styles.bodyText, { fontSize: bs }]}>
-            As a System Analyst at PTT (Cambodia) LTD, I bridge technical infrastructure and business
-            operations. I specialize in designing POS ecosystems, automating workflows, and building
-            internal web tools that improve team efficiency.
+            As a System Analyst at PTT (Cambodia) LTD, I connect technical infrastructure with business operations. I specialize in POS ecosystems, workflow automation, reporting systems, and internal web tools that improve team efficiency.
           </Text>
           <Text style={[styles.bodyText, { fontSize: bs, marginTop: 14 }]}>
-            My approach is pragmatic: I focus on what actually ships and works in production, choosing
-            the right tools over the trendiest ones.
+            My approach is practical: I focus on solutions that work reliably in production, choosing the right tools over the trendiest ones.
           </Text>
           <View style={styles.tagRow}>
             {['System Analysis', 'Web Dev', 'Database', 'Automation', 'IT Support'].map((tag) => (
@@ -72,6 +69,7 @@ export default function AboutSection() {
           {[
             { icon: 'Email', value: CONTACT.email, url: `mailto:${CONTACT.email}` },
             { icon: 'Phone', value: CONTACT.phone, url: `tel:${CONTACT.phone}` },
+            { icon: 'Telegram', value: '@chhoy_too', url: CONTACT.telegram },
             { icon: 'Location', value: CONTACT.location },
           ].map((item) => (
             <View key={item.icon} style={styles.contactItem}>

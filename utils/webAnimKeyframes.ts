@@ -1,189 +1,140 @@
+import { StyleSheet } from 'react-native';
+
 /**
- * Keyframe definitions for react-native-web `animationKeyframes`.
+ * Web animation helpers for react-native-web.
  *
- * IMPORTANT: react-native-web processes keyframe stop values through the same
- * React Native style preprocessor as regular styles. That means:
- *  ✓  transform: [{ rotate: '360deg' }]  ← RN array format  (WORKS)
- *  ✗  transform: 'rotate(360deg)'        ← CSS string        (IGNORED / broken)
- *
- * For animations that require CSS-only values (percentage translateX, backgroundPosition,
- * boxShadow, skewX…) we export helper functions that use `animationName` which references
- * the @keyframes already injected by injectGlobalStyles(). These show a harmless
- * dev-only console warning but work correctly in all environments.
+ * IMPORTANT: RNW 0.21 only supports `animationKeyframes` when the style is
+ * compiled through `StyleSheet.create(...)`. Inline style objects silently drop
+ * the property in the inline compiler path, which makes every animation appear
+ * frozen. These helpers therefore memoize compiled styles and return the
+ * generated style objects.
  */
 
-// ── Ring spins ────────────────────────────────────────────────────────────
-export const KF_SPIN_SLOW: any = {
-  from: { transform: [{ rotate: '0deg' }] },
-  to:   { transform: [{ rotate: '360deg' }] },
-};
+const cache = new Map<string, any>();
 
-export const KF_SPIN_COUNTER: any = {
-  from: { transform: [{ rotate: '0deg' }] },
-  to:   { transform: [{ rotate: '-360deg' }] },
-};
+/** Build a base web animation style object. */
+function wa(
+  name: string,
+  duration: string,
+  timing = 'ease',
+  delay = '0s',
+  iteration = 'infinite',
+  fill = 'both',
+  direction?: string,
+): any {
+  const key = [name, duration, timing, delay, iteration, fill, direction ?? ''].join('|');
+  const hit = cache.get(key);
+  if (hit) return hit;
 
-// ── Avatar float / pulse ─────────────────────────────────────────────────
-export const KF_AVATAR_FLOAT: any = {
-  '0%':   { transform: [{ translateY: 0 }] },
-  '30%':  { transform: [{ translateY: -6 }] },
-  '60%':  { transform: [{ translateY: -14 }] },
-  '80%':  { transform: [{ translateY: -10 }] },
-  '100%': { transform: [{ translateY: 0 }] },
-};
+  const compiled = StyleSheet.create({
+    anim: {
+      animationKeyframes: name,
+      animationDuration: duration,
+      animationTimingFunction: timing,
+      animationDelay: delay,
+      animationIterationCount: iteration,
+      animationFillMode: fill,
+      ...(direction ? { animationDirection: direction } : {}),
+    } as any,
+  }).anim;
 
-export const KF_AVATAR_PULSE: any = {
-  '0%':   { transform: [{ scale: 1 }],   opacity: 0.55 },
-  '80%':  { transform: [{ scale: 1.7 }], opacity: 0 },
-  '100%': { transform: [{ scale: 1.7 }], opacity: 0 },
-};
-
-// ── Orb float ────────────────────────────────────────────────────────────
-export const KF_FLOAT: any = {
-  '0%':   { transform: [{ translateY: 0 },   { translateX: 0 },   { scale: 1 }],   opacity: 0.3 },
-  '33%':  { transform: [{ translateY: -22 }, { translateX: 12 },  { scale: 1.1 }], opacity: 0.7 },
-  '66%':  { transform: [{ translateY: -8 },  { translateX: -14 }, { scale: 0.9 }], opacity: 0.4 },
-  '100%': { transform: [{ translateY: 0 },   { translateX: 0 },   { scale: 1 }],   opacity: 0.3 },
-};
-
-// ── Pulse ring ────────────────────────────────────────────────────────────
-export const KF_PULSE_RING: any = {
-  '0%':   { transform: [{ scale: 0.85 }], opacity: 0.9 },
-  '70%':  { transform: [{ scale: 2.2 }],  opacity: 0 },
-  '100%': { transform: [{ scale: 0.85 }], opacity: 0 },
-};
-
-// ── Scroll cue ────────────────────────────────────────────────────────────
-export const KF_SCROLL_CUE: any = {
-  '0%':   { transform: [{ translateY: 0 }],  opacity: 0.5 },
-  '50%':  { transform: [{ translateY: 10 }], opacity: 1 },
-  '100%': { transform: [{ translateY: 0 }],  opacity: 0.5 },
-};
-
-// ── Border glow (borderColor is a valid RN property) ─────────────────────
-export const KF_BORDER_GLOW: any = {
-  '0%':   { borderColor: 'rgba(37,99,235,0.2)' },
-  '50%':  { borderColor: 'rgba(14,165,233,0.55)' },
-  '100%': { borderColor: 'rgba(37,99,235,0.2)' },
-};
-
-// ── Hero entrance (opacity + pixel-translation) ───────────────────────────
-export const KF_HERO_UP: any = {
-  from: { opacity: 0, transform: [{ translateY: 20 }] },
-  to:   { opacity: 1, transform: [{ translateY: 0 }] },
-};
-
-export const KF_HERO_LEFT: any = {
-  from: { opacity: 0, transform: [{ translateX: -24 }] },
-  to:   { opacity: 1, transform: [{ translateX: 0 }] },
-};
-
-export const KF_HERO_RIGHT: any = {
-  from: { opacity: 0, transform: [{ translateX: 32 }] },
-  to:   { opacity: 1, transform: [{ translateX: 0 }] },
-};
-
-export const KF_HERO_SCALE: any = {
-  from: { opacity: 0, transform: [{ scale: 0.94 }] },
-  to:   { opacity: 1, transform: [{ scale: 1 }] },
-};
-
-/** Map CSS keyframe name → keyframe object (used in HeroSection heroAnim) */
-export const HERO_KF: Record<string, any> = {
-  'ct-hero-up':    KF_HERO_UP,
-  'ct-hero-left':  KF_HERO_LEFT,
-  'ct-hero-right': KF_HERO_RIGHT,
-  'ct-hero-scale': KF_HERO_SCALE,
-};
-
-// ─────────────────────────────────────────────────────────────────────────
-// CSS-only / percentage-based animations
-// These reference the @keyframes already injected by injectGlobalStyles().
-// `animationName` shows a harmless dev-only RNW validation warning but
-// will work correctly in all environments.
-// ─────────────────────────────────────────────────────────────────────────
-
-/** Marquee — uses translateX(-50%) */
-export function marqueeAnim(duration = '40s', delay = '0s'): any {
-  return {
-    animationName: 'ct-marquee',
-    animationDuration: duration,
-    animationDelay: delay,
-    animationTimingFunction: 'linear',
-    animationIterationCount: 'infinite',
-    willChange: 'transform',
-  };
+  cache.set(key, compiled);
+  return compiled;
 }
 
-/** Reverse marquee — uses translateX(0 → -50%) */
-export function marqueeRevAnim(duration = '36s', delay = '0s'): any {
-  return {
-    animationName: 'ct-marquee-rev',
-    animationDuration: duration,
-    animationDelay: delay,
-    animationTimingFunction: 'linear',
-    animationIterationCount: 'infinite',
-    willChange: 'transform',
-  };
-}
+// ── Avatar ────────────────────────────────────────────────────────────────
+export const webAnim = {
+  /** Main container float */
+  avatarFloat: () =>
+    wa('ct-avatar-float', '7s', 'ease-in-out'),
 
-/** Gradient text flow — animates background-position */
-export function gradientFlowAnim(): any {
-  return {
-    animationName: 'ct-gradient-flow',
-    animationDuration: '7s',
-    animationTimingFunction: 'linear',
-    animationIterationCount: 'infinite',
-  };
-}
+  /** Inner gradient ring (clockwise) */
+  spinSlow: () =>
+    wa('ct-spin-slow', '16s', 'linear', '0s', 'infinite', 'none'),
 
-/** Box-shadow glow pulse — uses CSS boxShadow */
-export function glowPulseAnim(): any {
-  return {
-    animationName: 'ct-glow-pulse',
-    animationDuration: '2.4s',
-    animationTimingFunction: 'ease-in-out',
-    animationIterationCount: 'infinite',
-  };
-}
+  /** Outer gradient ring (counter-clockwise) */
+  spinRev: () =>
+    wa('ct-spin-rev', '26s', 'linear', '0s', 'infinite', 'none'),
 
-/** Progress-bar shine — uses translateX percentage */
-export function progressShineAnim(): any {
-  return {
-    animationName: 'ct-progress-shine',
-    animationDuration: '2.8s',
-    animationTimingFunction: 'ease-in-out',
-    animationIterationCount: 'infinite',
-  };
-}
+  /** Expanding avatar pulse ring (staggered via delay) */
+  avatarPulse: (delay = '0s') =>
+    wa('ct-avatar-pulse', '3.2s', 'ease-out', delay),
 
-/** Card glint — uses skewX + translateX percentage */
-export function glintAnim(): any {
-  return {
-    animationName: 'ct-glint',
-    animationDuration: '900ms',
-    animationTimingFunction: 'ease-out',
-    animationFillMode: 'both',
-  };
-}
+  // ── Hero section ───────────────────────────────────────────────────────
+  /** Hero entrance — slide up */
+  heroUp: (delayMs: number) =>
+    wa('ct-hero-up', '0.72s', 'cubic-bezier(0.22,1,0.36,1)', `${delayMs}ms`, '1'),
 
-/** Page sheen — uses translate3d with percentage */
-export function pageSheenAnim(): any {
-  return {
-    animationName: 'ct-page-sheen',
-    animationDuration: '14s',
-    animationTimingFunction: 'ease-in-out',
-    animationIterationCount: 'infinite',
-  };
-}
+  /** Hero entrance — slide from left */
+  heroLeft: (delayMs: number) =>
+    wa('ct-hero-left', '0.72s', 'cubic-bezier(0.22,1,0.36,1)', `${delayMs}ms`, '1'),
 
-/** Divider scan line — uses translateX percentage */
-export function dividerScanAnim(flip = false): any {
-  return {
-    animationName: 'ct-divider-scan',
-    animationDuration: '3.8s',
-    animationTimingFunction: 'ease-in-out',
-    animationIterationCount: 'infinite',
-    animationDirection: flip ? 'reverse' : 'normal',
-  };
+  /** Hero entrance — slide from right */
+  heroRight: (delayMs: number) =>
+    wa('ct-hero-right', '0.72s', 'cubic-bezier(0.22,1,0.36,1)', `${delayMs}ms`, '1'),
+
+  /** Hero entrance — scale up */
+  heroScale: (delayMs: number) =>
+    wa('ct-hero-scale', '0.72s', 'cubic-bezier(0.22,1,0.36,1)', `${delayMs}ms`, '1'),
+
+  /** Floating decorative orbs */
+  float: (duration: string, delay: string) =>
+    wa('ct-float', duration, 'ease-in-out', delay),
+
+  /** Status-dot pulse ring */
+  pulseRing: (duration = '2.2s') =>
+    wa('ct-pulse-ring', duration, 'ease-out'),
+
+  /** Scroll cue arrow bounce */
+  scrollCue: () =>
+    wa('ct-scroll-cue', '1.8s', 'ease-in-out'),
+
+  // ── Marquee ────────────────────────────────────────────────────────────
+  marquee: (duration = '40s') =>
+    wa('ct-marquee', duration, 'linear', '0s', 'infinite', 'none'),
+
+  marqueeRev: (duration = '36s') =>
+    wa('ct-marquee-rev', duration, 'linear', '0s', 'infinite', 'none'),
+
+  // ── Background / layout ────────────────────────────────────────────────
+  gradientFlow: () =>
+    wa('ct-gradient-flow', '7s', 'linear'),
+
+  pageSheen: () =>
+    wa('ct-page-sheen', '14s', 'ease-in-out'),
+
+  dividerScan: (flip = false) =>
+    wa('ct-divider-scan', '3.8s', 'ease-in-out', '0s', 'infinite', 'both',
+      flip ? 'reverse' : 'normal'),
+
+  // ── UI chrome ──────────────────────────────────────────────────────────
+  glowPulse: () =>
+    wa('ct-glow-pulse', '2.4s', 'ease-in-out'),
+
+  progressShine: () =>
+    wa('ct-progress-shine', '2.8s', 'ease-in-out'),
+
+  glint: () =>
+    wa('ct-glint', '900ms', 'ease-out', '0s', '1'),
+
+  borderGlow: () =>
+    wa('ct-border-glow', '3s', 'ease-in-out'),
+};
+
+/** Map animation name string → heroAnim builder (used by heroAnim helper). */
+const HERO_MAP: Record<string, (d: number) => any> = {
+  'ct-hero-up':    webAnim.heroUp,
+  'ct-hero-left':  webAnim.heroLeft,
+  'ct-hero-right': webAnim.heroRight,
+  'ct-hero-scale': webAnim.heroScale,
+};
+
+/**
+ * Returns a CSS animation style for hero entrance elements on web.
+ * @param name   CSS keyframe name ('ct-hero-up' | 'ct-hero-left' | etc.)
+ * @param delayMs  Animation start delay in milliseconds
+ */
+export function heroAnimStyle(name: string, delayMs: number): any {
+  const builder = HERO_MAP[name] ?? webAnim.heroUp;
+  return builder(delayMs);
 }

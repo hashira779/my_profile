@@ -3,7 +3,7 @@ import { Platform, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../constants/theme';
 import { usePrefersReducedMotion } from '../utils/motion';
-import { marqueeAnim, marqueeRevAnim } from '../utils/webAnimKeyframes';
+import { webAnim } from '../utils/webAnimKeyframes';
 
 const ITEMS = [
   'System Analysis', 'TypeScript', 'React Native', 'Python', 'MySQL',
@@ -18,25 +18,22 @@ const ITEMS = [
 
 const DOT_COLORS = ['#2563EB', '#0EA5E9', '#059669', '#64748B'];
 
+// Must live outside the component so StyleSheet.create compiles it once.
+// animationKeyframes only works when the style is a registered StyleSheet
+// reference — spreading it into a plain inline object silently drops it in RNW.
+const trackBase = StyleSheet.create({
+  s: { display: 'flex' as any, flexDirection: 'row', width: 'max-content' as any },
+}).s;
+
 export default function MarqueeBanner() {
   const reduceMotion = usePrefersReducedMotion();
 
   const trackStyle: any = Platform.OS === 'web'
-    ? {
-        display: 'flex',
-        flexDirection: 'row',
-        width: 'max-content',
-        ...(reduceMotion ? {} : marqueeAnim('40s')),
-      }
+    ? [trackBase, reduceMotion ? null : webAnim.marquee('40s')]
     : { flexDirection: 'row' };
 
   const trackRevStyle: any = Platform.OS === 'web'
-    ? {
-        display: 'flex',
-        flexDirection: 'row',
-        width: 'max-content',
-        ...(reduceMotion ? {} : marqueeRevAnim('36s')),
-      }
+    ? [trackBase, reduceMotion ? null : webAnim.marqueeRev('36s')]
     : { flexDirection: 'row' };
 
   return (

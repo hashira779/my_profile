@@ -9,7 +9,7 @@ import { PROJECTS, PROFILE } from '../constants/data';
 import AnimatedSection from './AnimatedSection';
 import { sectionPadH, sectionPadV, titleSize, titleLineH, titleLetterSpacing, numSize, subSize } from '../utils/responsive';
 import { MOTION, usePrefersReducedMotion } from '../utils/motion';
-import { glintAnim } from '../utils/webAnimKeyframes';
+import { webAnim } from '../utils/webAnimKeyframes';
 
 const STATUS_COLOR: Record<string, string> = {
   Production: '#059669',
@@ -132,8 +132,21 @@ function ProjectCard({
               ))}
             </View>
 
+            {/* Private repo note */}
+            {(project as any).private && (project as any).note ? (
+              <View style={styles.privateNote}>
+                <Text style={styles.privateLock}>🔒</Text>
+                <Text style={styles.privateNoteText}>{(project as any).note}</Text>
+              </View>
+            ) : null}
+
             <View style={styles.linkRow}>
-              {project.github ? (
+              {(project as any).private ? (
+                <View style={[styles.linkBtn, styles.privateBadge]}>
+                  <Text style={styles.linkIcon}>🔒</Text>
+                  <Text style={styles.privateText}>Private Repository</Text>
+                </View>
+              ) : project.github ? (
                 <Pressable
                   style={({ pressed, hovered: isHovered }: any) => [
                     styles.linkBtn,
@@ -270,7 +283,7 @@ const styles = StyleSheet.create({
       : {}),
   },
   cardGlintActive: {
-    ...(Platform.OS === 'web' ? (glintAnim() as any) : {}),
+    ...(Platform.OS === 'web' ? ({ ...webAnim.glint() } as any) : {}),
   },
   accentBarWrap: { height: 3 },
   accentBar: { flex: 1 },
@@ -333,4 +346,23 @@ const styles = StyleSheet.create({
     borderWidth: 0,
   },
   liveLinkText: { color: '#fff', fontSize: 13, fontWeight: '700' },
+  // Private styles
+  privateNote: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 7,
+    paddingVertical: 9,
+    paddingHorizontal: 13,
+    borderRadius: RADIUS.md,
+    backgroundColor: 'rgba(251,191,36,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(251,191,36,0.18)',
+  },
+  privateLock: { fontSize: 13, marginTop: 1 },
+  privateNoteText: { color: 'rgba(251,191,36,0.75)', fontSize: 12, lineHeight: 18, flex: 1, fontStyle: 'italic' },
+  privateBadge: {
+    borderColor: 'rgba(251,191,36,0.28)',
+    backgroundColor: 'rgba(251,191,36,0.06)',
+  },
+  privateText: { color: 'rgba(251,191,36,0.8)', fontSize: 13, fontWeight: '700' },
 });

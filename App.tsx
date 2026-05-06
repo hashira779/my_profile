@@ -7,7 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { injectGlobalStyles } from './utils/webStyles';
 import { usePrefersReducedMotion } from './utils/motion';
-import { pageSheenAnim, dividerScanAnim } from './utils/webAnimKeyframes';
+import { webAnim } from './utils/webAnimKeyframes';
 import { ScrollAnimProvider } from './context/ScrollAnimContext';
 import CursorGlow from './components/CursorGlow';
 import Navbar from './components/Navbar';
@@ -46,7 +46,7 @@ function ScrollBackdrop({ scrollY }: { scrollY: Animated.Value }) {
     outputRange: [0.34, 0.24, 0.16],
     extrapolate: 'clamp',
   });
-  const webSheen: any = Platform.OS === 'web' && !reduceMotion ? pageSheenAnim() : {};
+  const webSheen: any = Platform.OS === 'web' && !reduceMotion ? webAnim.pageSheen() : {};
 
   return (
     <View style={[backStyles.wrap, { pointerEvents: 'none' } as any]}>
@@ -95,7 +95,7 @@ function DotNav({
 // Gradient transition divider between sections
 function SectionDivider({ flip = false }: { flip?: boolean }) {
   const reduceMotion = usePrefersReducedMotion();
-  const sparkStyle: any = Platform.OS === 'web' && !reduceMotion ? dividerScanAnim(flip) : {};
+  const sparkStyle: any = Platform.OS === 'web' && !reduceMotion ? webAnim.dividerScan(flip) : {};
   return (
     <View style={[divStyles.wrap, { pointerEvents: 'none' } as any]}>
       <LinearGradient

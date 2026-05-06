@@ -12,8 +12,6 @@ interface Props {
 
 const APPLE = Easing.bezier(0.22, 1, 0.36, 1);
 const DURATION = MOTION.duration.reveal;
-const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
-const easeOut = (value: number) => 1 - Math.pow(1 - value, 3);
 
 function directionVector(direction: Props['direction']) {
   if (direction === 'left') return { x: -1, y: 0 };
@@ -68,91 +66,44 @@ function WebScrollSection({
     const el = webRef.current as unknown as HTMLElement | null;
     if (!el) return;
 
-    const root = document.getElementById('scroll-root');
-    const getScrollTop = () => (
-      root instanceof HTMLElement
-        ? root.scrollTop
-        : window.scrollY || document.documentElement.scrollTop || 0
+    const vector = directionVector(direction);
+    const scaleInit = direction === 'zoom' ? 0.94 : 0.96;
+
+    // ── Initial hidden state ─────────────────────────────────────────────────
+    el.style.opacity = '0';
+    el.style.filter = 'blur(3px)';
+    el.style.transform = [
+      `translate3d(${vector.x * offset}px, ${vector.y * offset}px, 0)`,
+      `scale(${scaleInit})`,
+    ].join(' ');
+    el.style.willChange = 'transform, opacity, filter';
+    el.style.backfaceVisibility = 'hidden';
+    // Apply easing + delay inside the transition so the delay only fires once
+    el.style.transition = [
+      `opacity ${DURATION}ms ${MOTION.easing.standard} ${delay}ms`,
+      `transform ${DURATION}ms ${MOTION.easing.standard} ${delay}ms`,
+      `filter ${DURATION}ms ${MOTION.easing.standard} ${delay}ms`,
+    ].join(', ');
+
+    // ── One-shot reveal via IntersectionObserver ─────────────────────────────
+    // Threshold 0.08 → trigger as soon as 8 % of the element is visible.
+    // rootMargin bottom offset pushes the trigger line slightly up so cards
+    // reveal before they hit the very bottom of the viewport.
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          el.style.opacity = '1';
+          el.style.filter = 'blur(0px)';
+          el.style.transform = 'translate3d(0, 0, 0) scale(1)';
+          // Disconnect immediately — element stays revealed forever after this
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -32px 0px' },
     );
 
-    const vector = directionVector(direction);
-    const origin =
-      direction === 'left' ? 'left center' :
-      direction === 'right' ? 'right center' :
-      direction === 'down' ? 'center top' :
-      'center bottom';
-
-    let raf = 0;
-    let ready = false;
-    let lastScroll = getScrollTop();
-    let scrollDir = 1;
-
-    el.style.opacity = '0';
-    el.style.transform = `translate3d(${vector.x * offset}px, ${vector.y * offset}px, 0) scale(0.96)`;
-    el.style.transformOrigin = origin;
-    el.style.transformStyle = 'preserve-3d';
-    el.style.willChange = 'transform, opacity, filter';
-    el.style.transition = `opacity ${DURATION}ms ${MOTION.easing.standard}, transform ${DURATION}ms ${MOTION.easing.standard}, filter ${DURATION}ms ${MOTION.easing.standard}`;
-    el.style.backfaceVisibility = 'hidden';
-
-    const update = () => {
-      raf = 0;
-      if (!ready) return;
-
-      const currentScroll = getScrollTop();
-      if (Math.abs(currentScroll - lastScroll) > 0.5) {
-        scrollDir = currentScroll > lastScroll ? 1 : -1;
-      }
-      lastScroll = currentScroll;
-
-      const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight || 1;
-      const center = rect.top + rect.height * 0.5;
-      const viewportCenter = vh * 0.52;
-      const distance = Math.abs(center - viewportCenter);
-      const activeRange = Math.max(vh * 0.74, rect.height * 0.9);
-      const progress = easeOut(clamp(1 - distance / activeRange, 0, 1));
-      const hidden = 1 - progress;
-      const side = center < viewportCenter ? -1 : 1;
-      const x = vector.x * hidden * (offset + 12);
-      const y = (vector.y * hidden * offset) + (side * hidden * 12) + (scrollDir * hidden * 7);
-      const scaleBase = direction === 'zoom' ? 0.94 : 0.975;
-      const scale = scaleBase + (1 - scaleBase) * progress;
-      const rotateX = direction === 'fade' ? 0 : scrollDir * hidden * -3.2;
-      const rotateZ = vector.x ? vector.x * hidden * -2.4 : 0;
-      const opacity = clamp(0.28 + progress * 0.72, 0, 1);
-      const blur = hidden * 1.6;
-
-      el.style.opacity = opacity.toFixed(3);
-      el.style.filter = `blur(${blur.toFixed(2)}px)`;
-      el.style.transform = [
-        `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0)`,
-        `scale(${scale.toFixed(4)})`,
-        `rotateX(${rotateX.toFixed(2)}deg)`,
-        `rotateZ(${rotateZ.toFixed(2)}deg)`,
-      ].join(' ');
-    };
-
-    const schedule = () => {
-      if (!raf) raf = window.requestAnimationFrame(update);
-    };
-
-    const timer = window.setTimeout(() => {
-      ready = true;
-      schedule();
-    }, delay);
-
-    const options: AddEventListenerOptions = { passive: true };
-    (root ?? window).addEventListener('scroll', schedule, options);
-    window.addEventListener('resize', schedule, options);
-    schedule();
-
-    return () => {
-      window.clearTimeout(timer);
-      if (raf) window.cancelAnimationFrame(raf);
-      (root ?? window).removeEventListener('scroll', schedule);
-      window.removeEventListener('resize', schedule);
-    };
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [delay, direction, offset]);
 
   return (

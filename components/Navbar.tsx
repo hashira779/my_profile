@@ -12,6 +12,7 @@ interface Props {
 export default function Navbar({ scrollY, onNavPress }: Props) {
   const { width } = useWindowDimensions();
   const isWide = width >= 768;
+  const useNativeDriver = Platform.OS !== 'web';
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuAnim = useRef(new Animated.Value(0)).current;
@@ -22,9 +23,9 @@ export default function Navbar({ scrollY, onNavPress }: Props) {
     const toOpen = !menuOpen;
     setMenuOpen(toOpen);
     Animated.parallel([
-      Animated.timing(menuAnim, { toValue: toOpen ? 1 : 0, duration: 280, useNativeDriver: true }),
-      Animated.timing(line1, { toValue: toOpen ? 1 : 0, duration: 220, useNativeDriver: true }),
-      Animated.timing(line3, { toValue: toOpen ? 1 : 0, duration: 220, useNativeDriver: true }),
+      Animated.timing(menuAnim, { toValue: toOpen ? 1 : 0, duration: 280, useNativeDriver }),
+      Animated.timing(line1, { toValue: toOpen ? 1 : 0, duration: 220, useNativeDriver }),
+      Animated.timing(line3, { toValue: toOpen ? 1 : 0, duration: 220, useNativeDriver }),
     ]).start();
   };
 

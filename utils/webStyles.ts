@@ -41,8 +41,16 @@ export function injectGlobalStyles() {
       66%     { transform: translateY(-8px) translateX(-14px) scale(0.9); opacity: 0.4; }
     }
     @keyframes ct-avatar-float {
-      0%, 100% { transform: translateY(0px); }
-      50%      { transform: translateY(-10px); }
+      0%   { transform: translateY(0px) scale(1); }
+      30%  { transform: translateY(-6px) scale(1.005); }
+      60%  { transform: translateY(-14px) scale(1.01); }
+      80%  { transform: translateY(-10px) scale(1.008); }
+      100% { transform: translateY(0px) scale(1); }
+    }
+    @keyframes ct-avatar-pulse {
+      0%   { transform: scale(1);   opacity: 0.55; }
+      80%  { transform: scale(1.7); opacity: 0; }
+      100% { transform: scale(1.7); opacity: 0; }
     }
     @keyframes ct-scan {
       0%   { transform: translateY(-100%); opacity: 0; }

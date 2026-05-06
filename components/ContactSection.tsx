@@ -6,7 +6,7 @@ import { CONTACT } from '../constants/data';
 import AnimatedSection from './AnimatedSection';
 import { sectionPadH, sectionPadV, numSize } from '../utils/responsive';
 import { usePrefersReducedMotion } from '../utils/motion';
-import { KF_FLOAT, KF_PULSE_RING, KF_BORDER_GLOW } from '../utils/webAnimKeyframes';
+import { webAnim } from '../utils/webAnimKeyframes';
 
 function ContactOrb({ style }: { style: any }) {
   if (Platform.OS !== 'web') return null;
@@ -58,38 +58,16 @@ export default function ContactSection() {
 
   const cardBorder = borderAnim.interpolate({ inputRange: [0, 1], outputRange: ['rgba(37,99,235,0.2)', 'rgba(14,165,233,0.48)'] });
   const orb1Style: any = Platform.OS === 'web' ? {
-    position: 'absolute',
-    top: -60, left: -60,
-    width: 280, height: 280, borderRadius: 140,
+    position: 'absolute', top: -60, left: -60, width: 280, height: 280, borderRadius: 140,
     backgroundImage: 'radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%)',
-    ...(reduceMotion ? {} : {
-      animationKeyframes: KF_FLOAT,
-      animationDuration: '8s',
-      animationTimingFunction: 'ease-in-out',
-      animationIterationCount: 'infinite',
-    }),
+    ...(reduceMotion ? {} : webAnim.float('8s','0s')),
   } : {};
   const orb2Style: any = Platform.OS === 'web' ? {
-    position: 'absolute',
-    bottom: -40, right: -40,
-    width: 220, height: 220, borderRadius: 110,
+    position: 'absolute', bottom: -40, right: -40, width: 220, height: 220, borderRadius: 110,
     backgroundImage: 'radial-gradient(circle, rgba(14,165,233,0.1) 0%, transparent 70%)',
-    ...(reduceMotion ? {} : {
-      animationKeyframes: KF_FLOAT,
-      animationDuration: '6s',
-      animationDelay: '2s',
-      animationTimingFunction: 'ease-in-out',
-      animationIterationCount: 'infinite',
-    }),
+    ...(reduceMotion ? {} : webAnim.float('6s','2s')),
   } : {};
-  const dotRingStyle: any = Platform.OS === 'web' && !reduceMotion
-    ? {
-        animationKeyframes: KF_PULSE_RING,
-        animationDuration: '2s',
-        animationTimingFunction: 'ease-out',
-        animationIterationCount: 'infinite',
-      }
-    : {};
+  const dotRingStyle: any = Platform.OS === 'web' && !reduceMotion ? webAnim.pulseRing('2s') : {};
 
   return (
     <View style={[styles.wrapper, { paddingHorizontal: ph, paddingVertical: pv }]}>
@@ -149,6 +127,12 @@ export default function ContactSection() {
               </LinearGradient>
             </Pressable>
             <Pressable
+              style={({ pressed, hovered }: any) => [styles.btnTelegram, { paddingVertical: btnPad, paddingHorizontal: btnHPad }, (pressed || hovered) && styles.btnTelegramHover]}
+              onPress={() => Linking.openURL(CONTACT.telegram)}
+            >
+              <Text style={styles.btnTelegramText}>Telegram</Text>
+            </Pressable>
+            <Pressable
               style={({ pressed, hovered }: any) => [styles.btnSecondary, { paddingVertical: btnPad, paddingHorizontal: btnHPad }, (pressed || hovered) && styles.btnSecondaryHover]}
               onPress={() => Linking.openURL(`tel:${CONTACT.phone}`)}
             >
@@ -173,30 +157,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center', flex: 1,
   },
   ctaCard: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADIUS.xl,
-    paddingVertical: 56,
-    paddingHorizontal: 24,
-    gap: 20,
-    overflow: 'hidden',
-    alignItems: 'center',
+    borderWidth: 1, borderColor: COLORS.border, borderRadius: RADIUS.xl,
+    paddingVertical: 56, paddingHorizontal: 24, gap: 20, overflow: 'hidden', alignItems: 'center',
     ...(Platform.OS === 'web' ? ({
       backdropFilter: 'blur(16px)',
-      animationKeyframes: KF_BORDER_GLOW,
-      animationDuration: '3s',
-      animationTimingFunction: 'ease-in-out',
-      animationIterationCount: 'infinite',
+      ...webAnim.borderGlow(),
     } as any) : { backgroundColor: COLORS.card }),
   },
   cardStill: Platform.OS === 'web' ? ({ animationPlayState: 'paused' } as any) : {},
   borderGlowWeb: {
-    borderRadius: RADIUS.xl,
-    borderWidth: 1,
-    borderColor: 'transparent',
-    ...(Platform.OS === 'web'
-      ? ({ animationKeyframes: KF_BORDER_GLOW, animationDuration: '3s', animationTimingFunction: 'ease-in-out', animationIterationCount: 'infinite' } as any)
-      : {}),
+    borderRadius: RADIUS.xl, borderWidth: 1, borderColor: 'transparent',
+    ...(Platform.OS === 'web' ? ({ ...webAnim.borderGlow() } as any) : {}),
   },
   borderGlowStill: { borderColor: 'rgba(37,99,235,0.24)' },
   sectionNum: { color: 'rgba(37,99,235,0.18)', fontWeight: '900', letterSpacing: -4, textAlign: 'center', marginBottom: 8 },
@@ -216,6 +187,13 @@ const styles = StyleSheet.create({
   },
   btnSecondaryHover: { borderColor: COLORS.indigo },
   btnSecondaryText: { color: COLORS.textPrimary, fontWeight: '700', fontSize: 15 },
+  btnTelegram: {
+    borderRadius: RADIUS.full, borderWidth: 1,
+    borderColor: 'rgba(41,182,246,0.35)', backgroundColor: 'rgba(41,182,246,0.08)',
+    ...(Platform.OS === 'web' ? ({ transition: 'all 0.2s' } as any) : {}),
+  },
+  btnTelegramHover: { borderColor: '#29B6F6', backgroundColor: 'rgba(41,182,246,0.16)' },
+  btnTelegramText: { color: '#29B6F6', fontWeight: '700', fontSize: 15 },
   emailRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' },
   emailLabel: { color: COLORS.textMuted, fontSize: 14 },
   emailValue: { color: COLORS.sky, fontSize: 14, fontWeight: '600' },

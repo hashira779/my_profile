@@ -1,10 +1,17 @@
 ﻿import React from 'react';
-import { Platform, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Image, Platform, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, GRADIENTS, RADIUS } from '../constants/theme';
 import { EDUCATION, LEARNING_FOCUS, TOOLS } from '../constants/data';
 import AnimatedSection from './AnimatedSection';
+import UniversityBadge from './UniversityBadge';
 import { sectionPadH, sectionPadV, titleSize, titleLetterSpacing, numSize, subSize, bodySize, cardPad } from '../utils/responsive';
+
+// Local logo assets — keyed by institution name
+const LOCAL_LOGOS: Record<string, any> = {
+  'Royal University of Phnom Penh': require('../assets/education/rupp.png'),
+};
+
 
 const TOOL_LEVEL_COLOR: Record<string, string> = {
   Excellent: COLORS.emerald,
@@ -38,18 +45,32 @@ export default function EducationSection() {
       <View style={[styles.grid, isWide && { flexDirection: 'row' }]}>
         <AnimatedSection style={[styles.card, isWide && { flex: 1 }, { padding: cp }]} delay={100} direction="left">
           <Text style={[styles.cardTitle, { fontSize: bs + 2 }]}>Education</Text>
-          {EDUCATION.map((edu, i) => (
-            <View key={edu.institution} style={[styles.eduItem, i > 0 && { marginTop: 20, paddingTop: 20, borderTopWidth: 1, borderTopColor: COLORS.border }]}>
-              <View style={[styles.eduIcon, { backgroundColor: `${edu.color}18` }]}>
-                <Text style={[styles.eduIconText, { color: edu.color }]}>{edu.institution.slice(0, 1)}</Text>
+          {EDUCATION.map((edu, i) => {
+            const badge = (edu as any).badge;
+            const localLogo = LOCAL_LOGOS[edu.institution];
+            return (
+              <View key={edu.institution} style={[styles.eduItem, i > 0 && { marginTop: 20, paddingTop: 20, borderTopWidth: 1, borderTopColor: COLORS.border }]}>
+                {localLogo ? (
+                  <View style={[styles.logoWrap, { borderColor: `${edu.color}30` }]}>
+                    <Image source={localLogo} style={styles.logoImg} resizeMode="contain" />
+                  </View>
+                ) : (
+                  <UniversityBadge
+                    initials={badge?.initials ?? edu.institution.slice(0, 1)}
+                    color={edu.color}
+                    bgFrom={badge?.bgFrom}
+                    bgTo={badge?.bgTo}
+                    size={52}
+                  />
+                )}
+                <View style={{ flex: 1, gap: 4 }}>
+                  <Text style={[styles.institution, { fontSize: bs }]}>{edu.institution}</Text>
+                  <Text style={[styles.degree, { color: edu.color }]}>{edu.degree}</Text>
+                  <Text style={styles.period}>{edu.period}</Text>
+                </View>
               </View>
-              <View style={{ flex: 1, gap: 4 }}>
-                <Text style={[styles.institution, { fontSize: bs }]}>{edu.institution}</Text>
-                <Text style={[styles.degree, { color: edu.color }]}>{edu.degree}</Text>
-                <Text style={styles.period}>{edu.period}</Text>
-              </View>
-            </View>
-          ))}
+            );
+          })}
         </AnimatedSection>
         <AnimatedSection style={[styles.card, isWide && { flex: 1 }, { padding: cp }]} delay={200} direction="right">
           <Text style={[styles.cardTitle, { fontSize: bs + 2 }]}>Tools & Productivity</Text>
@@ -107,9 +128,15 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'web' ? ({ backdropFilter: 'blur(12px)' } as any) : {}),
   },
   cardTitle: { color: COLORS.textPrimary, fontWeight: '700' },
-  eduItem: { flexDirection: 'row', gap: 14, alignItems: 'flex-start' },
-  eduIcon: { width: 44, height: 44, borderRadius: RADIUS.md, alignItems: 'center', justifyContent: 'center' },
-  eduIconText: { fontSize: 22, fontWeight: '700' },
+  eduItem: { flexDirection: 'row', gap: 14, alignItems: 'center' },
+  logoWrap: {
+    width: 58, height: 58, borderRadius: 12,
+    borderWidth: 1, overflow: 'hidden',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    alignItems: 'center', justifyContent: 'center',
+    flexShrink: 0,
+  },
+  logoImg: { width: 52, height: 52 },
   institution: { color: COLORS.textPrimary, fontWeight: '700' },
   degree: { fontSize: 13, fontWeight: '600' },
   period: { color: COLORS.textMuted, fontSize: 12, fontWeight: '600' },
