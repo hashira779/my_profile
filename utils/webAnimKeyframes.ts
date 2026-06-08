@@ -81,6 +81,15 @@ export const webAnim = {
   float: (duration: string, delay: string) =>
     wa('ct-float', duration, 'ease-in-out', delay),
 
+  ambientDrift: (duration = '16s', delay = '0s') =>
+    wa('ct-ambient-drift', duration, 'ease-in-out', delay),
+
+  ambientDriftAlt: (duration = '18s', delay = '0s') =>
+    wa('ct-ambient-drift-alt', duration, 'ease-in-out', delay),
+
+  softBreathe: (duration = '4s', delay = '0s') =>
+    wa('ct-soft-breathe', duration, 'ease-in-out', delay),
+
   /** Status-dot pulse ring */
   pulseRing: (duration = '2.2s') =>
     wa('ct-pulse-ring', duration, 'ease-out'),
@@ -119,6 +128,12 @@ export const webAnim = {
 
   borderGlow: () =>
     wa('ct-border-glow', '3s', 'ease-in-out'),
+
+  shinyCta: () =>
+    wa('ct-shiny-cta', '3s', 'ease-in-out', '0s', 'infinite'),
+
+  panelSheen: (duration = '6.5s') =>
+    wa('ct-panel-sheen', duration, 'ease-in-out'),
 };
 
 /** Map animation name string → heroAnim builder (used by heroAnim helper). */

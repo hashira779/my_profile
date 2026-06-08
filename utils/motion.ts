@@ -4,14 +4,14 @@ import { Platform } from 'react-native';
 export const MOTION = {
   duration: {
     hover: 180,
-    reveal: 620,
+    reveal: 760,
     hero: 680,
   },
   easing: {
     standard: 'cubic-bezier(0.22, 1, 0.36, 1)',
   },
   offset: {
-    reveal: 18,
+    reveal: 24,
     hero: 20,
   },
 };

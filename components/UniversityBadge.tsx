@@ -1,6 +1,7 @@
 import React from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { FONT_FAMILY } from '../constants/theme';
 
 interface Props {
   initials: string;
@@ -71,6 +72,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '900',
     textAlign: 'center',
+    fontFamily: FONT_FAMILY.header,
     ...(Platform.OS === 'web' ? ({ textShadow: '0 1px 4px rgba(0,0,0,0.4)' } as any) : {}),
   },
   accentLine: {

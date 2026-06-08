@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Image, Platform, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from '../context/ThemeContext';
 import { usePrefersReducedMotion } from '../utils/motion';
 import { webAnim } from '../utils/webAnimKeyframes';
 
@@ -9,146 +10,95 @@ const profilePhoto = require('../assets/profile/IMG_4682.JPG');
 interface Props { size?: number; }
 
 export default function ProfileAvatar({ size = 220 }: Props) {
+  const { colors, isDark } = useTheme();
   const reduceMotion = usePrefersReducedMotion();
-  const pulse1       = useRef(new Animated.Value(1)).current;
-  const pulse2       = useRef(new Animated.Value(1)).current;
-  const rotateVal    = useRef(new Animated.Value(0)).current;
-  const rotateRevVal = useRef(new Animated.Value(0)).current;
-  const floatY       = useRef(new Animated.Value(0)).current;
+  const floatY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (Platform.OS === 'web' || reduceMotion) {
-      pulse1.setValue(1); pulse2.setValue(1);
-      rotateVal.setValue(0); rotateRevVal.setValue(0); floatY.setValue(0);
+      floatY.setValue(0);
       return;
     }
-    const ringSpin    = Animated.loop(Animated.timing(rotateVal,    { toValue: 1, duration: 5000, useNativeDriver: true }));
-    const ringRevSpin = Animated.loop(Animated.timing(rotateRevVal, { toValue: 1, duration: 8000, useNativeDriver: true }));
-    const outerPulse  = Animated.loop(Animated.sequence([
-      Animated.timing(pulse1, { toValue: 1.12, duration: 2400, useNativeDriver: true }),
-      Animated.timing(pulse1, { toValue: 1,    duration: 2400, useNativeDriver: true }),
-    ]));
-    const innerPulse  = Animated.loop(Animated.sequence([
-      Animated.timing(pulse2, { toValue: 1.04, duration: 3200, useNativeDriver: true }),
-      Animated.timing(pulse2, { toValue: 0.96, duration: 3200, useNativeDriver: true }),
-    ]));
-    const floatLoop   = Animated.loop(Animated.sequence([
-      Animated.timing(floatY, { toValue: -12, duration: 3500, useNativeDriver: true }),
-      Animated.timing(floatY, { toValue:  12, duration: 3500, useNativeDriver: true }),
-    ]));
-    ringSpin.start(); ringRevSpin.start(); outerPulse.start(); innerPulse.start(); floatLoop.start();
-    return () => { ringSpin.stop(); ringRevSpin.stop(); outerPulse.stop(); innerPulse.stop(); floatLoop.stop(); };
-  }, [floatY, pulse1, pulse2, reduceMotion, rotateVal, rotateRevVal]);
 
-  const rotate    = rotateVal.interpolate({    inputRange: [0,1], outputRange: ['0deg','360deg'] });
-  const rotateRev = rotateRevVal.interpolate({ inputRange: [0,1], outputRange: ['0deg','-360deg'] });
+    const floatLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatY, { toValue: -8, duration: 3200, useNativeDriver: true }),
+        Animated.timing(floatY, { toValue: 0, duration: 3200, useNativeDriver: true }),
+      ]),
+    );
+    floatLoop.start();
+    return () => floatLoop.stop();
+  }, [floatY, reduceMotion]);
 
-  const ringSize      = size + 16;
-  const outerRingSize = size + 38;
-  const glowSize      = size + 80;
-
-  const webFloatStyle     = Platform.OS === 'web' && !reduceMotion ? webAnim.avatarFloat()  : {};
-  const webRingStyle      = Platform.OS === 'web' && !reduceMotion ? webAnim.spinSlow()     : {};
-  const webOuterRingStyle = Platform.OS === 'web' && !reduceMotion ? webAnim.spinRev()      : {};
+  const frameSize = size + 34;
+  const webFloatStyle = Platform.OS === 'web' && !reduceMotion ? webAnim.avatarFloat() : {};
+  const styles = getStyles(colors, isDark);
 
   return (
     <Animated.View
       style={[
         styles.container,
-        { width: size + 110, height: size + 110 },
+        { width: frameSize + 80, height: frameSize + 80 },
         Platform.OS === 'web' ? webFloatStyle : { transform: [{ translateY: floatY }] },
       ]}
     >
-      {/* Deep glow blob */}
-      <Animated.View
-        style={[
-          styles.glow,
-          { width: glowSize, height: glowSize, borderRadius: glowSize / 2 },
-          Platform.OS === 'web' ? null : { transform: [{ scale: pulse1 }] },
-        ]}
-      />
-
-      {/* CSS expanding pulse rings (web only) */}
-      {Platform.OS === 'web' && !reduceMotion && (['0s','1.1s','2.2s'] as string[]).map((delay, i) => (
-        <View
-          key={i}
-          style={[
-            styles.pulseRing,
-            { width: ringSize+18, height: ringSize+18, borderRadius: (ringSize+18)/2 },
-            webAnim.avatarPulse(delay) as any,
-          ]}
-        />
-      ))}
-
-      {/* Outer counter-rotating ring (violet → sky) */}
-      <Animated.View
-        style={[
-          styles.outerRingWrap,
-          { width: outerRingSize, height: outerRingSize, borderRadius: outerRingSize / 2 },
-          Platform.OS === 'web'
-            ? webOuterRingStyle
-            : { transform: [{ scale: pulse1 }, { rotate: rotateRev }] },
-        ]}
+      <View style={[styles.halo, { width: size + 100, height: size + 100, borderRadius: (size + 100) / 2 }]} />
+      <LinearGradient
+        colors={isDark ? ['rgba(255,255,255,0.06)', 'rgba(255,255,255,0.02)'] : ['#FFFFFF', '#FAF9F6']}
+        style={[styles.frame, { width: frameSize, height: frameSize, borderRadius: frameSize / 2 }]}
       >
-        <LinearGradient
-          colors={['#7C3AED','transparent','#0EA5E9','transparent','#7C3AED']}
-          style={StyleSheet.absoluteFillObject}
-          start={{ x:0,y:0 }} end={{ x:1,y:1 }}
-        />
-      </Animated.View>
-
-      {/* Main spinning gradient ring */}
-      <Animated.View
-        style={[
-          styles.ringWrap,
-          { width: ringSize, height: ringSize, borderRadius: ringSize / 2 },
-          Platform.OS === 'web'
-            ? webRingStyle
-            : { transform: [{ scale: pulse2 }, { rotate }] },
-        ]}
-      >
-        <LinearGradient
-          colors={['#2563EB','#0EA5E9','#059669','#2563EB']}
-          style={StyleSheet.absoluteFillObject}
-          start={{ x:0,y:0 }} end={{ x:1,y:1 }}
-        />
-      </Animated.View>
-
-      {/* Avatar photo */}
-      <View style={[styles.avatarBg, { width: size, height: size, borderRadius: size/2 }]}>
-        <Image
-          source={profilePhoto}
-          style={[styles.photo, { width: size, height: size, borderRadius: size/2 }]}
-          resizeMode="cover"
-        />
-        <View
-          style={[
-            styles.vignette,
-            { width: size, height: size, borderRadius: size/2, pointerEvents: 'none' } as any,
-          ]}
-        />
-      </View>
+        <View style={[styles.photoWrap, { width: size, height: size, borderRadius: size / 2 }]}>
+          <Image source={profilePhoto} style={[styles.photo, { width: size, height: size, borderRadius: size / 2 }]} resizeMode="cover" />
+          <View style={[styles.vignette, { width: size, height: size, borderRadius: size / 2, pointerEvents: 'none' } as any]} />
+        </View>
+      </LinearGradient>
     </Animated.View>
   );
 }
 
-const styles = StyleSheet.create({
-  container:     { alignItems: 'center', justifyContent: 'center' },
-  glow: {
-    position: 'absolute',
-    backgroundColor: '#2563EB',
-    opacity: 0.16,
-    ...(Platform.OS === 'web' ? ({ filter: 'blur(52px)' } as any) : {}),
-  },
-  pulseRing:     { position: 'absolute', borderWidth: 1.5, borderColor: 'rgba(37,99,235,0.5)' },
-  outerRingWrap: { position: 'absolute', overflow: 'hidden', opacity: 0.55 },
-  ringWrap:      { position: 'absolute', overflow: 'hidden' },
-  avatarBg:      { overflow: 'hidden', alignItems: 'center', justifyContent: 'center', zIndex: 2 },
-  photo:         { position: 'absolute', top: 0, left: 0 },
-  vignette: {
-    position: 'absolute', top: 0, left: 0,
-    ...(Platform.OS === 'web'
-      ? ({ backgroundImage: 'radial-gradient(circle at 50% 50%, transparent 55%, rgba(2,6,23,0.58) 100%)' } as any)
-      : { backgroundColor: 'transparent' }),
-  },
-});
+const getStyles = (colors: any, isDark: boolean) => {
+  const frameShadow = Platform.OS === 'web'
+    ? ({ boxShadow: isDark ? `0 34px 90px ${colors.shadow}, inset 0 1px 0 rgba(255,255,255,0.08)` : `0 24px 60px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.95)` } as any)
+    : {};
+
+  // Convert hex accent to rgba for subtle halo glow
+  const hexToRgba = (hex: string, alpha: number) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
+  const haloBg = hexToRgba(colors.accent, isDark ? 0.12 : 0.08);
+
+  return StyleSheet.create({
+    container: { alignItems: 'center', justifyContent: 'center' },
+    halo: {
+      position: 'absolute',
+      backgroundColor: haloBg,
+      ...(Platform.OS === 'web' ? ({ filter: 'blur(48px)' } as any) : {}),
+    },
+    frame: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: colors.border,
+      ...frameShadow,
+    },
+    photoWrap: {
+      overflow: 'hidden',
+      backgroundColor: colors.surfaceSoft,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    photo: { position: 'absolute', top: 0, left: 0 },
+    vignette: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      ...(Platform.OS === 'web'
+        ? ({ backgroundImage: isDark ? 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.38) 100%)' : 'linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.12) 100%)' } as any)
+        : { backgroundColor: 'transparent' }),
+    },
+  });
+};

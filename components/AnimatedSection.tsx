@@ -17,9 +17,13 @@ function directionVector(direction: Props['direction']) {
   if (direction === 'left') return { x: -1, y: 0 };
   if (direction === 'right') return { x: 1, y: 0 };
   if (direction === 'down') return { x: 0, y: -1 };
-  if (direction === 'fade') return { x: 0, y: 0.35 };
-  if (direction === 'zoom') return { x: 0, y: 0.15 };
+  if (direction === 'fade') return { x: 0, y: 0.28 };
+  if (direction === 'zoom') return { x: 0, y: 0.12 };
   return { x: 0, y: 1 };
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
 }
 
 export default function AnimatedSection({
@@ -59,7 +63,7 @@ function WebScrollSection({
   direction: NonNullable<Props['direction']>;
 }) {
   const webRef = useRef<any>(null);
-  const offset = MOTION.offset.reveal + 14;
+  const offset = MOTION.offset.reveal + 16;
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
@@ -67,43 +71,78 @@ function WebScrollSection({
     if (!el) return;
 
     const vector = directionVector(direction);
-    const scaleInit = direction === 'zoom' ? 0.94 : 0.96;
+    const initialScale = direction === 'zoom' ? 0.95 : 0.985;
+    const scrollTarget: HTMLElement | Window = document.getElementById('scroll-root') ?? window;
+    let revealed = false;
+    let raf = 0;
+    let revealTimer: ReturnType<typeof setTimeout> | undefined;
 
-    // ── Initial hidden state ─────────────────────────────────────────────────
-    el.style.opacity = '0';
-    el.style.filter = 'blur(3px)';
-    el.style.transform = [
+    const initialTransform = [
       `translate3d(${vector.x * offset}px, ${vector.y * offset}px, 0)`,
-      `scale(${scaleInit})`,
+      `scale(${initialScale})`,
     ].join(' ');
+
+    el.style.opacity = '0';
+    el.style.transform = initialTransform;
+    el.style.filter = 'blur(10px)';
     el.style.willChange = 'transform, opacity, filter';
     el.style.backfaceVisibility = 'hidden';
-    // Apply easing + delay inside the transition so the delay only fires once
     el.style.transition = [
       `opacity ${DURATION}ms ${MOTION.easing.standard} ${delay}ms`,
       `transform ${DURATION}ms ${MOTION.easing.standard} ${delay}ms`,
       `filter ${DURATION}ms ${MOTION.easing.standard} ${delay}ms`,
     ].join(', ');
 
-    // ── One-shot reveal via IntersectionObserver ─────────────────────────────
-    // Threshold 0.08 → trigger as soon as 8 % of the element is visible.
-    // rootMargin bottom offset pushes the trigger line slightly up so cards
-    // reveal before they hit the very bottom of the viewport.
+    const updateScrollScrub = () => {
+      if (!revealed || raf) return;
+      raf = window.requestAnimationFrame(() => {
+        raf = 0;
+        const rect = el.getBoundingClientRect();
+        const viewportHeight = window.innerHeight || 1;
+        if (rect.bottom < -140 || rect.top > viewportHeight + 140) return;
+
+        const centerOffset = (rect.top + rect.height / 2 - viewportHeight / 2) / viewportHeight;
+        const progress = clamp(centerOffset, -1, 1);
+        const translateY = -progress * 8;
+        const scale = 1 - Math.abs(progress) * 0.006;
+        el.style.transform = `translate3d(0, ${translateY}px, 0) scale(${scale})`;
+      });
+    };
+
+    const reveal = () => {
+      if (revealed) return;
+      revealed = true;
+      el.style.opacity = '1';
+      el.style.transform = 'translate3d(0, 0, 0) scale(1)';
+      el.style.filter = 'blur(0px)';
+
+      revealTimer = setTimeout(() => {
+        el.style.transition = 'opacity 180ms ease-out, filter 180ms ease-out';
+        updateScrollScrub();
+      }, DURATION + delay + 40);
+    };
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          el.style.opacity = '1';
-          el.style.filter = 'blur(0px)';
-          el.style.transform = 'translate3d(0, 0, 0) scale(1)';
-          // Disconnect immediately — element stays revealed forever after this
+          reveal();
           observer.disconnect();
         }
       },
-      { threshold: 0.08, rootMargin: '0px 0px -32px 0px' },
+      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
     );
 
     observer.observe(el);
-    return () => observer.disconnect();
+    scrollTarget.addEventListener('scroll', updateScrollScrub, { passive: true });
+    window.addEventListener('resize', updateScrollScrub);
+
+    return () => {
+      observer.disconnect();
+      scrollTarget.removeEventListener('scroll', updateScrollScrub);
+      window.removeEventListener('resize', updateScrollScrub);
+      if (raf) window.cancelAnimationFrame(raf);
+      if (revealTimer) clearTimeout(revealTimer);
+    };
   }, [delay, direction, offset]);
 
   return (

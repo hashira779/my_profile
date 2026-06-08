@@ -1,20 +1,62 @@
 import React, { useRef, useState } from 'react';
 import { Animated, Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, GRADIENTS, RADIUS } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
+import { RADIUS, FONT_FAMILY } from '../constants/theme';
 import { EXPERIENCE } from '../constants/data';
 import AnimatedSection from './AnimatedSection';
-import { sectionPadH, sectionPadV, titleSize, titleLetterSpacing, numSize, subSize } from '../utils/responsive';
+import { numSize, sectionPadH, sectionPadV, subSize, titleLetterSpacing, titleLineH, titleSize } from '../utils/responsive';
 import { MOTION, usePrefersReducedMotion } from '../utils/motion';
+
+export default function ExperienceSection() {
+  const { colors, gradients, isDark } = useTheme();
+  const { width } = useWindowDimensions();
+  const reduceMotion = usePrefersReducedMotion();
+  const ph = sectionPadH(width);
+  const pv = sectionPadV(width);
+  const ts = titleSize(width);
+  const tlh = titleLineH(width);
+  const tls = titleLetterSpacing(width);
+  const ns = numSize(width);
+  const ss = subSize(width);
+
+  const styles = getStyles(colors, isDark);
+
+  return (
+    <View style={[styles.wrapper, { paddingHorizontal: ph, paddingVertical: pv }]}>
+      <AnimatedSection>
+        <View style={styles.labelRow}>
+          <Text style={[styles.sectionNum, { fontSize: ns, lineHeight: ns }]}>04</Text>
+          <LinearGradient colors={gradients.accent} style={styles.labelLine} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} />
+          <Text style={styles.labelText}>CAREER</Text>
+        </View>
+        <Text style={[styles.sectionTitle, { fontSize: ts, lineHeight: tlh, letterSpacing: tls }]}>Experience shaped by operations.</Text>
+        <Text style={[styles.sectionSub, { fontSize: ss }]}>Work focused on supporting real station environments and improving internal workflows.</Text>
+      </AnimatedSection>
+
+      <View style={styles.timeline}>
+        {EXPERIENCE.map((exp, i) => (
+          <AnimatedSection key={exp.company} delay={i * 120} direction="up">
+            <ExpCard exp={exp} isLast={i === EXPERIENCE.length - 1} reduceMotion={reduceMotion} styles={styles} colors={colors} />
+          </AnimatedSection>
+        ))}
+      </View>
+    </View>
+  );
+}
 
 function ExpCard({
   exp,
   isLast,
   reduceMotion,
+  styles,
+  colors,
 }: {
   exp: typeof EXPERIENCE[number];
   isLast: boolean;
   reduceMotion: boolean;
+  styles: any;
+  colors: any;
 }) {
   const [hovered, setHovered] = useState(false);
   const hoverAnim = useRef(new Animated.Value(0)).current;
@@ -33,56 +75,41 @@ function ExpCard({
     }
   };
 
-  const nativeScale = reduceMotion
-    ? 1
-    : hoverAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.015] });
+  const nativeScale = reduceMotion ? 1 : hoverAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.01] });
   const webHoverStyle: any = Platform.OS === 'web'
     ? {
-        transform: [{ translateY: hovered ? -5 : 0 }, { scale: hovered ? 1.01 : 1 }],
-        borderColor: hovered ? `${exp.color}55` : COLORS.border,
-        ...(hovered ? { boxShadow: `0 12px 36px ${exp.color}18` } : {}),
+        transform: [{ translateY: hovered ? -8 : 0 }, { scale: hovered ? 1.015 : 1 }],
+        borderColor: hovered ? `${exp.color}45` : styles.card.borderColor,
+        boxShadow: hovered ? `0 34px 90px ${exp.color}14` : 'none',
+        transition: 'all 240ms cubic-bezier(0.25, 0.8, 0.25, 1)',
       }
     : {};
 
   return (
     <View style={styles.timelineItem}>
       <View style={styles.dotCol}>
-        <View style={styles.dotWrap}>
-          <View style={[styles.dotHalo, { backgroundColor: `${exp.color}22` }]} />
-          <View style={[styles.dot, { borderColor: exp.color }]}>
-            <View style={[styles.dotInner, { backgroundColor: exp.color }]} />
-          </View>
+        <View style={[styles.dot, { borderColor: exp.color }]}>
+          <View style={[styles.dotInner, { backgroundColor: exp.color }]} />
         </View>
         {!isLast && <View style={styles.line} />}
       </View>
 
       <Pressable onHoverIn={onIn} onHoverOut={onOut} style={{ flex: 1 }}>
-        <Animated.View
-          style={[
-            styles.card,
-            webHoverStyle,
-            Platform.OS !== 'web' ? { transform: [{ scale: nativeScale }] } : null,
-          ]}
-        >
-          <LinearGradient
-            colors={['rgba(14,20,54,0.0)', `${exp.color}08`]}
-            style={StyleSheet.absoluteFillObject}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          />
+        <Animated.View style={[styles.card, webHoverStyle, Platform.OS !== 'web' ? { transform: [{ scale: nativeScale }] } : null]}>
           <View style={styles.cardHeader}>
             <View style={styles.cardHeaderLeft}>
               <Text style={styles.role}>{exp.role}</Text>
               <Text style={[styles.company, { color: exp.color }]}>{exp.company}</Text>
             </View>
             <View style={styles.cardHeaderRight}>
-              <View style={[styles.typePill, { borderColor: exp.color }]}>
+              <View style={[styles.typePill, { backgroundColor: `${exp.color}12` }]}>
                 <Text style={[styles.typeText, { color: exp.color }]}>{exp.type}</Text>
               </View>
               <Text style={styles.period}>{exp.period}</Text>
               <Text style={styles.location}>{exp.location}</Text>
             </View>
           </View>
+
           <View style={styles.highlights}>
             {exp.highlights.map((h, hi) => (
               <View key={hi} style={styles.highlightRow}>
@@ -91,9 +118,10 @@ function ExpCard({
               </View>
             ))}
           </View>
+
           <View style={styles.detailGrid}>
             <View style={styles.detailCol}>
-              <Text style={styles.detailTitle}>Core Responsibilities</Text>
+              <Text style={styles.detailTitle}>Core responsibilities</Text>
               {exp.responsibilities.map((item) => (
                 <View key={item} style={styles.responsibilityRow}>
                   <Text style={[styles.checkMark, { color: exp.color }]}>+</Text>
@@ -102,10 +130,10 @@ function ExpCard({
               ))}
             </View>
             <View style={styles.detailCol}>
-              <Text style={styles.detailTitle}>Tools & Systems</Text>
+              <Text style={styles.detailTitle}>Tools and systems</Text>
               <View style={styles.techWrap}>
                 {exp.tech.map((item) => (
-                  <View key={item} style={[styles.techPill, { borderColor: `${exp.color}40`, backgroundColor: `${exp.color}12` }]}>
+                  <View key={item} style={[styles.techPill, { backgroundColor: `${exp.color}10` }]}>
                     <Text style={[styles.techText, { color: exp.color }]}>{item}</Text>
                   </View>
                 ))}
@@ -118,105 +146,58 @@ function ExpCard({
   );
 }
 
-export default function ExperienceSection() {
-  const { width } = useWindowDimensions();
-  const reduceMotion = usePrefersReducedMotion();
-  const ph = sectionPadH(width);
-  const pv = sectionPadV(width);
-  const ts = titleSize(width);
-  const tls = titleLetterSpacing(width);
-  const ns = numSize(width);
-  const ss = subSize(width);
+const getStyles = (colors: any, isDark: boolean) => {
+  const cardShadow = Platform.OS === 'web'
+    ? ({ boxShadow: isDark ? '0 22px 70px rgba(0,0,0,0.40)' : '0 22px 70px rgba(0,0,0,0.04)' } as any)
+    : {};
 
-  return (
-    <View style={[styles.wrapper, { paddingHorizontal: ph, paddingVertical: pv }]}>
-      <AnimatedSection>
-        <View style={styles.labelRow}>
-          <Text style={[styles.sectionNum, { fontSize: ns, lineHeight: ns }]}>04</Text>
-          <LinearGradient colors={GRADIENTS.accent} style={styles.labelLine} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} />
-          <Text style={styles.labelText}>CAREER</Text>
-        </View>
-        <Text style={[styles.sectionTitle, { fontSize: ts, letterSpacing: tls }]}>Experience</Text>
-        <Text style={[styles.sectionSub, { fontSize: ss }]}>Where I've put the work in.</Text>
-      </AnimatedSection>
-
-      <View style={styles.timeline}>
-        {EXPERIENCE.map((exp, i) => (
-          <AnimatedSection key={exp.company} delay={i * 120} direction="left">
-            <ExpCard exp={exp} isLast={i === EXPERIENCE.length - 1} reduceMotion={reduceMotion} />
-          </AnimatedSection>
-        ))}
-      </View>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  wrapper: { gap: 36, maxWidth: 1200, alignSelf: 'center', width: '100%' },
-  labelRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
-  sectionNum: { color: 'rgba(124,58,237,0.18)', fontWeight: '900', letterSpacing: -3, marginRight: 4 },
-  labelLine: { width: 32, height: 2, borderRadius: 1 },
-  labelText: { color: COLORS.indigo, fontSize: 12, fontWeight: '700', letterSpacing: 3 },
-  sectionTitle: { color: COLORS.textPrimary, fontWeight: '900' },
-  sectionSub: { color: COLORS.textMuted, marginTop: 8 },
-  timeline: { gap: 0 },
-  timelineItem: { flexDirection: 'row', gap: 20, marginBottom: 28 },
-  dotCol: { alignItems: 'center', paddingTop: 4, width: 24 },
-  dotWrap: { alignItems: 'center', justifyContent: 'center' },
-  dotHalo: {
-    position: 'absolute',
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    ...(Platform.OS === 'web' ? ({ filter: 'blur(8px)' } as any) : {}),
-  },
-  dot: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: '#000' },
-  dotInner: { width: 8, height: 8, borderRadius: 4 },
-  line: { flex: 1, width: 2, backgroundColor: COLORS.border, marginTop: 6 },
-  card: {
-    flex: 1,
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADIUS.xl,
-    padding: 24,
-    gap: 16,
-    overflow: 'hidden',
-    ...(Platform.OS === 'web'
-      ? ({
-          backdropFilter: 'blur(12px)',
-          transition: `transform ${MOTION.duration.hover}ms ease, box-shadow 220ms ease, border-color 220ms ease`,
-          boxShadow: '0 2px 20px rgba(0,0,0,0.2)',
-        } as any)
-      : {}),
-  },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 },
-  cardHeaderLeft: { gap: 4, flex: 1 },
-  cardHeaderRight: { gap: 4, alignItems: 'flex-end' },
-  role: { color: COLORS.textPrimary, fontSize: 18, fontWeight: '700' },
-  company: { fontSize: 14, fontWeight: '600' },
-  typePill: { paddingVertical: 3, paddingHorizontal: 10, borderRadius: RADIUS.full, borderWidth: 1 },
-  typeText: { fontSize: 11, fontWeight: '700' },
-  period: { color: COLORS.textSecondary, fontSize: 13, fontWeight: '600' },
-  location: { color: COLORS.textMuted, fontSize: 12 },
-  highlights: { gap: 10 },
-  highlightRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
-  bullet: { width: 6, height: 6, borderRadius: 3, marginTop: 8 },
-  highlight: { color: COLORS.textSecondary, fontSize: 14, lineHeight: 22, flex: 1 },
-  detailGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 18,
-    paddingTop: 4,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-  },
-  detailCol: { flex: 1, minWidth: 240, gap: 10 },
-  detailTitle: { color: COLORS.textPrimary, fontSize: 13, fontWeight: '900', letterSpacing: 1, textTransform: 'uppercase' },
-  responsibilityRow: { flexDirection: 'row', gap: 9, alignItems: 'flex-start' },
-  checkMark: { fontSize: 13, fontWeight: '900', marginTop: 2 },
-  responsibilityText: { color: COLORS.textSecondary, fontSize: 13, lineHeight: 20, flex: 1 },
-  techWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  techPill: { paddingVertical: 5, paddingHorizontal: 10, borderRadius: RADIUS.full, borderWidth: 1 },
-  techText: { fontSize: 11, fontWeight: '800' },
-});
+  return StyleSheet.create({
+    wrapper: { gap: 34, maxWidth: 1180, alignSelf: 'center', width: '100%' },
+    labelRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
+    sectionNum: { color: colors.textMuted, fontWeight: '800', letterSpacing: 0, marginRight: 2, fontFamily: FONT_FAMILY.accent },
+    labelLine: { width: 28, height: 1, borderRadius: 1 },
+    labelText: { color: colors.textSecondary, fontSize: 12, fontWeight: '700', letterSpacing: 1.2, fontFamily: FONT_FAMILY.accent },
+    sectionTitle: { color: colors.textPrimary, fontWeight: '900', maxWidth: 760, fontFamily: FONT_FAMILY.header },
+    sectionSub: { color: colors.textMuted, marginTop: 10, lineHeight: 28, maxWidth: 680, fontFamily: FONT_FAMILY.body },
+    timeline: { gap: 0 },
+    timelineItem: { flexDirection: 'row', gap: 18, marginBottom: 28 },
+    dotCol: { alignItems: 'center', paddingTop: 16, width: 24 },
+    dot: { width: 18, height: 18, borderRadius: 9, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
+    dotInner: { width: 7, height: 7, borderRadius: 4 },
+    line: { flex: 1, width: 2, backgroundColor: colors.border, marginTop: 8 },
+    card: {
+      flex: 1,
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: RADIUS.xl,
+      padding: 26,
+      gap: 18,
+      overflow: 'hidden',
+      ...cardShadow,
+      ...(Platform.OS === 'web' ? ({ transition: `transform ${MOTION.duration.hover}ms ease, box-shadow 220ms ease, border-color 220ms ease` } as any) : {}),
+    },
+    cardHeader: { flexDirection: 'row', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 },
+    cardHeaderLeft: { gap: 5, flex: 1, minWidth: 240 },
+    cardHeaderRight: { gap: 5, alignItems: 'flex-end' },
+    role: { color: colors.textPrimary, fontSize: 24, lineHeight: 29, fontWeight: '900', letterSpacing: -0.8, fontFamily: FONT_FAMILY.header },
+    company: { fontSize: 15, fontWeight: '900', fontFamily: FONT_FAMILY.header },
+    typePill: { paddingVertical: 5, paddingHorizontal: 11, borderRadius: RADIUS.full },
+    typeText: { fontSize: 11, fontWeight: '900', letterSpacing: 0.4, textTransform: 'uppercase', fontFamily: FONT_FAMILY.accent },
+    period: { color: colors.textSecondary, fontSize: 13, fontWeight: '800', fontFamily: FONT_FAMILY.body },
+    location: { color: colors.textMuted, fontSize: 12, fontWeight: '600', fontFamily: FONT_FAMILY.body },
+    highlights: { gap: 10 },
+    highlightRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
+    bullet: { width: 6, height: 6, borderRadius: 3, marginTop: 8 },
+    highlight: { color: colors.textSecondary, fontSize: 14, lineHeight: 22, flex: 1, fontWeight: '600', fontFamily: FONT_FAMILY.body },
+    detailGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 18, paddingTop: 6, borderTopWidth: 1, borderTopColor: colors.border },
+    detailCol: { flex: 1, minWidth: 240, gap: 10 },
+    detailTitle: { color: colors.textPrimary, fontSize: 12, fontWeight: '900', letterSpacing: 1.2, textTransform: 'uppercase', fontFamily: FONT_FAMILY.accent },
+    responsibilityRow: { flexDirection: 'row', gap: 9, alignItems: 'flex-start' },
+    checkMark: { fontSize: 13, fontWeight: '900', marginTop: 2, fontFamily: FONT_FAMILY.accent },
+    responsibilityText: { color: colors.textSecondary, fontSize: 13, lineHeight: 20, flex: 1, fontWeight: '600', fontFamily: FONT_FAMILY.body },
+    techWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+    techPill: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: RADIUS.full },
+    techText: { fontSize: 11, fontWeight: '900', fontFamily: FONT_FAMILY.body },
+  });
+};

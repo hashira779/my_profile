@@ -1,163 +1,623 @@
-﻿import React from 'react';
-import { Image, Platform, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, GRADIENTS, RADIUS } from '../constants/theme';
+import React, { useState } from 'react';
+import { Image, Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
+import { RADIUS, FONT_FAMILY } from '../constants/theme';
 import { EDUCATION, LEARNING_FOCUS, TOOLS } from '../constants/data';
 import AnimatedSection from './AnimatedSection';
-import UniversityBadge from './UniversityBadge';
-import { sectionPadH, sectionPadV, titleSize, titleLetterSpacing, numSize, subSize, bodySize, cardPad } from '../utils/responsive';
+import { cardPad, sectionPadH, sectionPadV, subSize, titleLetterSpacing, titleLineH, titleSize } from '../utils/responsive';
 
-// Local logo assets — keyed by institution name
+type Education = typeof EDUCATION[number];
+type Tool = typeof TOOLS[number];
+
 const LOCAL_LOGOS: Record<string, any> = {
   'Royal University of Phnom Penh': require('../assets/education/rupp.png'),
 };
 
-
-const TOOL_LEVEL_COLOR: Record<string, string> = {
-  Excellent: COLORS.emerald,
-  Good: COLORS.sky,
-  Proficient: COLORS.indigo,
+const EDUCATION_META: Record<string, { short: string; focus: string; summary: string }> = {
+  'Royal University of Phnom Penh': {
+    short: 'RUPP',
+    focus: 'IT Engineering',
+    summary: 'Programming, databases, system design fundamentals, and practical IT problem solving.',
+  },
+  'Svay Chek High School': {
+    short: 'SCH',
+    focus: 'High School',
+    summary: 'General education foundation before university, with discipline and communication habits.',
+  },
 };
 
+const TOOL_GROUPS = [
+  { title: 'Reporting', tools: ['Microsoft Word', 'PowerPoint', 'Excel', 'Internet & E-mail'] },
+  { title: 'Development', tools: ['API Integration', 'Database Workflows', 'Git / GitHub'] },
+  { title: 'AI workflow', tools: ['ChatGPT / OpenAI API', 'GitHub Copilot', 'Claude', 'Cursor AI'] },
+  { title: 'Growth', tools: ['Prompt Engineering', 'AI Workflow Automation'] },
+];
+
+function findTool(name: string): Tool | undefined {
+  return TOOLS.find((tool) => tool.name === name);
+}
+
 export default function EducationSection() {
+  const { colors, isDark } = useTheme();
   const { width } = useWindowDimensions();
-  const isWide = width >= 768;
+  const isWide = width >= 920;
+  const isCompact = width < 620;
   const ph = sectionPadH(width);
   const pv = sectionPadV(width);
-  const ts = titleSize(width);
-  const tls = titleLetterSpacing(width);
-  const ns = numSize(width);
-  const ss = subSize(width);
-  const bs = bodySize(width);
   const cp = cardPad(width);
+  const ts = titleSize(width);
+  const tlh = titleLineH(width);
+  const tls = titleLetterSpacing(width);
+  const ss = subSize(width);
+  const styles = getStyles(colors, isDark, isCompact);
+  const latestEducation = EDUCATION[0];
+  const latestMeta = latestEducation ? EDUCATION_META[latestEducation.institution] : undefined;
 
   return (
     <View style={[styles.wrapper, { paddingHorizontal: ph, paddingVertical: pv }]}>
       <AnimatedSection>
-        <View style={styles.labelRow}>
-          <Text style={[styles.sectionNum, { fontSize: ns, lineHeight: ns }]}>05</Text>
-          <LinearGradient colors={GRADIENTS.accent} style={styles.labelLine} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} />
-          <Text style={styles.labelText}>BACKGROUND</Text>
-        </View>
-        <Text style={[styles.sectionTitle, { fontSize: ts, letterSpacing: tls }]}>Education & Tools</Text>
-        <Text style={[styles.sectionSub, { fontSize: ss }]}>The foundation and the tools I work with.</Text>
-      </AnimatedSection>
-      <View style={[styles.grid, isWide && { flexDirection: 'row' }]}>
-        <AnimatedSection style={[styles.card, isWide && { flex: 1 }, { padding: cp }]} delay={100} direction="left">
-          <Text style={[styles.cardTitle, { fontSize: bs + 2 }]}>Education</Text>
-          {EDUCATION.map((edu, i) => {
-            const badge = (edu as any).badge;
-            const localLogo = LOCAL_LOGOS[edu.institution];
-            return (
-              <View key={edu.institution} style={[styles.eduItem, i > 0 && { marginTop: 20, paddingTop: 20, borderTopWidth: 1, borderTopColor: COLORS.border }]}>
-                {localLogo ? (
-                  <View style={[styles.logoWrap, { borderColor: `${edu.color}30` }]}>
-                    <Image source={localLogo} style={styles.logoImg} resizeMode="contain" />
-                  </View>
-                ) : (
-                  <UniversityBadge
-                    initials={badge?.initials ?? edu.institution.slice(0, 1)}
-                    color={edu.color}
-                    bgFrom={badge?.bgFrom}
-                    bgTo={badge?.bgTo}
-                    size={52}
-                  />
-                )}
-                <View style={{ flex: 1, gap: 4 }}>
-                  <Text style={[styles.institution, { fontSize: bs }]}>{edu.institution}</Text>
-                  <Text style={[styles.degree, { color: edu.color }]}>{edu.degree}</Text>
-                  <Text style={styles.period}>{edu.period}</Text>
-                </View>
-              </View>
-            );
-          })}
-        </AnimatedSection>
-        <AnimatedSection style={[styles.card, isWide && { flex: 1 }, { padding: cp }]} delay={200} direction="right">
-          <Text style={[styles.cardTitle, { fontSize: bs + 2 }]}>Tools & Productivity</Text>
-          <View style={styles.toolsGrid}>
-            {TOOLS.map((tool) => {
-              const levelColor = TOOL_LEVEL_COLOR[tool.level] || COLORS.indigo;
-              return (
-                <View key={tool.name} style={styles.toolItem}>
-                  <Text style={[styles.toolName, { fontSize: bs - 1 }]}>{tool.name}</Text>
-                  <View style={[styles.levelBadge, { backgroundColor: `${levelColor}18`, borderColor: `${levelColor}44` }]}>
-                    <Text style={[styles.levelText, { color: levelColor }]}>{tool.level}</Text>
-                  </View>
-                </View>
-              );
-            })}
+        <View style={[styles.educationCard, isWide && styles.educationCardWide]}>
+          <View style={[styles.leftPanel, isWide && styles.leftPanelWide]}>
+            <View style={styles.leftTop}>
+              <Text style={styles.eyebrow}>04 / Education</Text>
+              <Text style={[styles.title, { fontSize: ts, lineHeight: tlh, letterSpacing: tls }]}>Education</Text>
+              <Text style={[styles.subtitle, { fontSize: ss }]}>University and school history, kept clean and easy to scan.</Text>
+            </View>
+
+            <View style={styles.sideMetaGrid}>
+              <MetaBox label="Latest" value={latestEducation?.period ?? '2020 - 2025'} styles={styles} />
+              <MetaBox label="Focus" value={latestMeta?.focus ?? 'IT Engineering'} styles={styles} />
+            </View>
           </View>
+
+          <View style={styles.timelinePanel}>
+            <View style={styles.timelineHeader}>
+              <Text style={styles.timelineTitle}>Study history</Text>
+              <Text style={styles.timelineStatus}>Completed</Text>
+            </View>
+
+            <View style={styles.timelineList}>
+              {EDUCATION.map((edu, index) => (
+                <EducationRow
+                  key={edu.institution}
+                  edu={edu}
+                  index={index}
+                  isCompact={isCompact}
+                  styles={styles}
+                  colors={colors}
+                  isDark={isDark}
+                />
+              ))}
+            </View>
+          </View>
+        </View>
+      </AnimatedSection>
+
+      <View style={[styles.supportGrid, isWide && styles.supportGridWide]}>
+        <AnimatedSection delay={130} direction="up" style={styles.supportItem}>
+          <ToolsPanel padding={cp} styles={styles} colors={colors} />
+        </AnimatedSection>
+
+        <AnimatedSection delay={190} direction="up" style={styles.supportItem}>
+          <LearningPanel padding={cp} styles={styles} colors={colors} />
         </AnimatedSection>
       </View>
-      <AnimatedSection style={[styles.card, { padding: cp }]} delay={260} direction="up">
-        <View style={styles.focusHeader}>
-          <Text style={[styles.cardTitle, { fontSize: bs + 2 }]}>Current Learning Focus</Text>
-          <Text style={styles.focusSub}>Areas I am improving to build stronger production tools.</Text>
-        </View>
-        <View style={[styles.focusGrid, isWide && { flexDirection: 'row', flexWrap: 'wrap' }]}>
-          {LEARNING_FOCUS.map((item) => (
-            <View key={item.name} style={[styles.focusItem, isWide && { width: '48.5%' }]}>
-              <View style={[styles.focusDot, { backgroundColor: item.color }]} />
-              <View style={{ flex: 1, gap: 4 }}>
-                <Text style={styles.focusName}>{item.name}</Text>
-                <Text style={styles.focusDetail}>{item.detail}</Text>
-              </View>
-            </View>
-          ))}
-        </View>
-      </AnimatedSection>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  wrapper: { gap: 36, maxWidth: 1200, alignSelf: 'center', width: '100%' },
-  labelRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
-  sectionNum: { color: 'rgba(217,119,6,0.18)', fontWeight: '900', letterSpacing: -3, marginRight: 4 },
-  labelLine: { width: 32, height: 2, borderRadius: 1 },
-  labelText: { color: COLORS.indigo, fontSize: 12, fontWeight: '700', letterSpacing: 3 },
-  sectionTitle: { color: COLORS.textPrimary, fontWeight: '900' },
-  sectionSub: { color: COLORS.textMuted, marginTop: 8 },
-  grid: { gap: 20, flexDirection: 'column' },
-  card: {
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADIUS.xl,
-    gap: 16,
-    ...(Platform.OS === 'web' ? ({ backdropFilter: 'blur(12px)' } as any) : {}),
-  },
-  cardTitle: { color: COLORS.textPrimary, fontWeight: '700' },
-  eduItem: { flexDirection: 'row', gap: 14, alignItems: 'center' },
-  logoWrap: {
-    width: 58, height: 58, borderRadius: 12,
-    borderWidth: 1, overflow: 'hidden',
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    alignItems: 'center', justifyContent: 'center',
-    flexShrink: 0,
-  },
-  logoImg: { width: 52, height: 52 },
-  institution: { color: COLORS.textPrimary, fontWeight: '700' },
-  degree: { fontSize: 13, fontWeight: '600' },
-  period: { color: COLORS.textMuted, fontSize: 12, fontWeight: '600' },
-  toolsGrid: { gap: 8 },
-  toolItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  toolName: { color: COLORS.textSecondary, fontWeight: '500' },
-  levelBadge: { paddingVertical: 3, paddingHorizontal: 10, borderRadius: RADIUS.full, borderWidth: 1 },
-  levelText: { fontSize: 11, fontWeight: '700' },
-  focusHeader: { gap: 6 },
-  focusSub: { color: COLORS.textMuted, fontSize: 13, lineHeight: 20 },
-  focusGrid: { gap: 12, flexDirection: 'column' },
-  focusItem: {
-    flexDirection: 'row',
-    gap: 12,
-    padding: 14,
-    borderRadius: RADIUS.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: 'rgba(255,255,255,0.025)',
-  },
-  focusDot: { width: 10, height: 10, borderRadius: 5, marginTop: 5 },
-  focusName: { color: COLORS.textPrimary, fontSize: 14, fontWeight: '800' },
-  focusDetail: { color: COLORS.textSecondary, fontSize: 12, lineHeight: 18 },
-});
+function MetaBox({ label, value, styles }: { label: string; value: string; styles: any }) {
+  return (
+    <View style={styles.metaBox}>
+      <Text style={styles.metaLabel}>{label}</Text>
+      <Text style={styles.metaValue}>{value}</Text>
+    </View>
+  );
+}
+
+function EducationRow({
+  edu,
+  index,
+  isCompact,
+  styles,
+  colors,
+  isDark,
+}: {
+  edu: Education;
+  index: number;
+  isCompact: boolean;
+  styles: any;
+  colors: any;
+  isDark: boolean;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const accent = edu.color || colors.accent;
+  const meta = EDUCATION_META[edu.institution] ?? {
+    short: edu.institution.slice(0, 3).toUpperCase(),
+    focus: edu.degree,
+    summary: 'Education record supporting technical work and continued learning.',
+  };
+  const logo = LOCAL_LOGOS[edu.institution];
+
+  return (
+    <Pressable
+      onHoverIn={() => setHovered(true)}
+      onHoverOut={() => setHovered(false)}
+      style={[
+        styles.educationRow,
+        isCompact && styles.educationRowCompact,
+        Platform.OS === 'web' && {
+          borderColor: hovered ? `${accent}70` : colors.border,
+          transform: [{ translateY: hovered ? -5 : 0 }],
+          boxShadow: hovered
+            ? isDark ? '0 26px 74px rgba(0,0,0,0.42)' : '0 24px 58px rgba(15,23,42,0.11)'
+            : 'none',
+          transition: 'all 220ms cubic-bezier(0.22, 1, 0.36, 1)',
+        } as any,
+      ]}
+    >
+      <View style={[styles.periodBlock, isCompact && styles.periodBlockCompact, { borderColor: `${accent}35`, backgroundColor: `${accent}10` }]}>
+        <Text style={[styles.rowNumber, { color: accent }]}>{String(index + 1).padStart(2, '0')}</Text>
+        <Text style={[styles.periodText, { color: accent }]}>{edu.period}</Text>
+      </View>
+
+      <View style={[styles.rowBody, isCompact && styles.rowBodyCompact]}>
+        <View style={[styles.logoFrame, { borderColor: `${accent}38`, backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#FFFFFF' }]}>
+          {logo ? (
+            <Image source={logo} style={styles.logoImage} resizeMode="contain" />
+          ) : (
+            <Text style={[styles.logoFallback, { color: accent }]}>{meta.short}</Text>
+          )}
+        </View>
+
+        <View style={styles.rowCopy}>
+          <View style={styles.rowTitleLine}>
+            <Text style={styles.institution}>{edu.institution}</Text>
+            <View style={[styles.focusPill, { borderColor: `${accent}35`, backgroundColor: `${accent}10` }]}>
+              <Text style={[styles.focusText, { color: accent }]}>{meta.focus}</Text>
+            </View>
+          </View>
+          <Text style={styles.degree}>{edu.degree}</Text>
+          <Text style={styles.summary}>{meta.summary}</Text>
+        </View>
+      </View>
+    </Pressable>
+  );
+}
+
+function ToolsPanel({ padding, styles, colors }: { padding: number; styles: any; colors: any }) {
+  return (
+    <View style={[styles.supportCard, { padding }]}>
+      <View style={styles.supportHeader}>
+        <Text style={styles.supportKicker}>Tools</Text>
+        <Text style={styles.supportTitle}>Work support</Text>
+      </View>
+
+      <View style={styles.toolGroupList}>
+        {TOOL_GROUPS.map((group) => {
+          const tools = group.tools.map(findTool).filter(Boolean) as Tool[];
+          return (
+            <View key={group.title} style={styles.toolGroup}>
+              <Text style={styles.toolGroupTitle}>{group.title}</Text>
+              <View style={styles.toolChipWrap}>
+                {tools.map((tool) => (
+                  <View key={tool.name} style={styles.toolChip}>
+                    <View style={[styles.toolDot, { backgroundColor: colors.accent }]} />
+                    <Text style={styles.toolChipText}>{tool.name}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function LearningPanel({ padding, styles, colors }: { padding: number; styles: any; colors: any }) {
+  return (
+    <View style={[styles.supportCard, { padding }]}>
+      <View style={styles.supportHeader}>
+        <Text style={styles.supportKicker}>Learning</Text>
+        <Text style={styles.supportTitle}>Current focus</Text>
+      </View>
+
+      <View style={styles.learningList}>
+        {LEARNING_FOCUS.map((item, index) => (
+          <View key={item.name} style={styles.learningRow}>
+            <Text style={[styles.learningIndex, { color: item.color || colors.accent }]}>{String(index + 1).padStart(2, '0')}</Text>
+            <View style={[styles.learningAccent, { backgroundColor: item.color || colors.accent }]} />
+            <View style={styles.learningCopy}>
+              <Text style={styles.learningName}>{item.name}</Text>
+              <Text style={styles.learningDetail}>{item.detail}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+const getStyles = (colors: any, isDark: boolean, isCompact: boolean) => {
+  const mainBg = isDark ? 'rgba(255,255,255,0.038)' : 'rgba(255,255,255,0.82)';
+  const sideBg = isDark ? 'rgba(0,0,0,0.22)' : 'rgba(15,23,42,0.035)';
+  const rowBg = isDark ? 'rgba(255,255,255,0.044)' : 'rgba(255,255,255,0.84)';
+  const supportBg = isDark ? 'rgba(255,255,255,0.034)' : 'rgba(255,255,255,0.70)';
+  const shadow = Platform.OS === 'web'
+    ? ({ boxShadow: isDark ? '0 30px 92px rgba(0,0,0,0.38)' : '0 28px 82px rgba(15,23,42,0.09)' } as any)
+    : {};
+
+  return StyleSheet.create({
+    wrapper: {
+      width: '100%',
+      maxWidth: 1210,
+      alignSelf: 'center',
+      gap: 16,
+    },
+    educationCard: {
+      width: '100%',
+      borderRadius: isCompact ? 28 : 34,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: mainBg,
+      overflow: 'hidden',
+      ...shadow,
+      ...(Platform.OS === 'web'
+        ? ({
+            backgroundImage: isDark
+              ? 'radial-gradient(circle at 0% 0%, rgba(6,182,212,0.14), transparent 31%), linear-gradient(135deg, rgba(255,255,255,0.055), rgba(255,255,255,0.018))'
+              : 'radial-gradient(circle at 0% 0%, rgba(37,99,235,0.11), transparent 31%), linear-gradient(135deg, rgba(255,255,255,0.96), rgba(255,255,255,0.62))',
+          } as any)
+        : {}),
+    },
+    educationCardWide: {
+      flexDirection: 'row',
+      alignItems: 'stretch',
+    },
+    leftPanel: {
+      padding: isCompact ? 20 : 28,
+      gap: 24,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      backgroundColor: sideBg,
+      justifyContent: 'space-between',
+    },
+    leftPanelWide: {
+      width: 360,
+      borderBottomWidth: 0,
+      borderRightWidth: 1,
+      borderRightColor: colors.border,
+    },
+    leftTop: {
+      gap: 10,
+    },
+    eyebrow: {
+      color: colors.accent,
+      fontSize: 12,
+      fontWeight: '900',
+      letterSpacing: 1.7,
+      textTransform: 'uppercase',
+      fontFamily: FONT_FAMILY.accent,
+    },
+    title: {
+      color: colors.textPrimary,
+      fontWeight: '900',
+      fontFamily: FONT_FAMILY.header,
+    },
+    subtitle: {
+      color: colors.textMuted,
+      lineHeight: 28,
+      fontWeight: '600',
+      maxWidth: 620,
+      fontFamily: FONT_FAMILY.body,
+    },
+    sideMetaGrid: {
+      flexDirection: 'row',
+      gap: 10,
+      flexWrap: 'wrap',
+    },
+    metaBox: {
+      flex: 1,
+      minWidth: 124,
+      padding: 14,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+      gap: 4,
+    },
+    metaLabel: {
+      color: colors.textDim,
+      fontSize: 10,
+      fontWeight: '900',
+      letterSpacing: 1,
+      textTransform: 'uppercase',
+      fontFamily: FONT_FAMILY.accent,
+    },
+    metaValue: {
+      color: colors.textPrimary,
+      fontSize: 14,
+      lineHeight: 20,
+      fontWeight: '900',
+      fontFamily: FONT_FAMILY.header,
+    },
+    timelinePanel: {
+      flex: 1,
+      padding: isCompact ? 16 : 22,
+      gap: 14,
+    },
+    timelineHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 12,
+      paddingHorizontal: 4,
+    },
+    timelineTitle: {
+      color: colors.textPrimary,
+      fontSize: 20,
+      lineHeight: 25,
+      fontWeight: '900',
+      letterSpacing: -0.55,
+      fontFamily: FONT_FAMILY.header,
+    },
+    timelineStatus: {
+      color: colors.textMuted,
+      fontSize: 11,
+      fontWeight: '900',
+      letterSpacing: 1.1,
+      textTransform: 'uppercase',
+      fontFamily: FONT_FAMILY.accent,
+    },
+    timelineList: {
+      gap: 12,
+    },
+    educationRow: {
+      flexDirection: 'row',
+      gap: 14,
+      padding: isCompact ? 12 : 14,
+      borderRadius: 24,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: rowBg,
+      overflow: 'hidden',
+    },
+    educationRowCompact: {
+      flexDirection: 'column',
+    },
+    periodBlock: {
+      width: 124,
+      flexShrink: 0,
+      padding: 13,
+      borderRadius: 20,
+      borderWidth: 1,
+      justifyContent: 'center',
+      gap: 5,
+    },
+    periodBlockCompact: {
+      width: '100%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    rowNumber: {
+      fontSize: 11,
+      fontWeight: '900',
+      letterSpacing: 1.1,
+      fontFamily: FONT_FAMILY.accent,
+    },
+    periodText: {
+      fontSize: 13,
+      lineHeight: 18,
+      fontWeight: '900',
+      fontFamily: FONT_FAMILY.header,
+    },
+    rowBody: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 14,
+      minWidth: 0,
+    },
+    rowBodyCompact: {
+      gap: 12,
+    },
+    logoFrame: {
+      width: isCompact ? 58 : 72,
+      height: isCompact ? 58 : 72,
+      borderRadius: isCompact ? 18 : 22,
+      borderWidth: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      flexShrink: 0,
+    },
+    logoImage: {
+      width: isCompact ? 46 : 58,
+      height: isCompact ? 46 : 58,
+    },
+    logoFallback: {
+      fontSize: isCompact ? 16 : 20,
+      fontWeight: '900',
+      letterSpacing: -0.5,
+      fontFamily: FONT_FAMILY.header,
+    },
+    rowCopy: {
+      flex: 1,
+      minWidth: 0,
+      gap: 7,
+    },
+    rowTitleLine: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 10,
+      flexWrap: 'wrap',
+    },
+    institution: {
+      color: colors.textPrimary,
+      fontSize: isCompact ? 16 : 19,
+      lineHeight: isCompact ? 22 : 24,
+      fontWeight: '900',
+      letterSpacing: -0.5,
+      flex: 1,
+      minWidth: isCompact ? 0 : 220,
+      fontFamily: FONT_FAMILY.header,
+    },
+    focusPill: {
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      borderRadius: RADIUS.full,
+      borderWidth: 1,
+    },
+    focusText: {
+      fontSize: 10,
+      fontWeight: '900',
+      letterSpacing: 0.7,
+      textTransform: 'uppercase',
+      fontFamily: FONT_FAMILY.accent,
+    },
+    degree: {
+      color: colors.textSecondary,
+      fontSize: 14,
+      lineHeight: 20,
+      fontWeight: '800',
+      fontFamily: FONT_FAMILY.body,
+    },
+    summary: {
+      color: colors.textMuted,
+      fontSize: 13,
+      lineHeight: 20,
+      fontWeight: '600',
+      maxWidth: 620,
+      fontFamily: FONT_FAMILY.body,
+    },
+    supportGrid: {
+      flexDirection: 'column',
+      gap: 14,
+    },
+    supportGridWide: {
+      flexDirection: 'row',
+      alignItems: 'stretch',
+    },
+    supportItem: {
+      flex: 1,
+    },
+    supportCard: {
+      flex: 1,
+      borderRadius: 28,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: supportBg,
+      gap: 16,
+      ...(Platform.OS === 'web'
+        ? ({ boxShadow: isDark ? '0 20px 64px rgba(0,0,0,0.28)' : '0 20px 58px rgba(15,23,42,0.06)' } as any)
+        : {}),
+    },
+    supportHeader: {
+      gap: 5,
+    },
+    supportKicker: {
+      color: colors.accent,
+      fontSize: 11,
+      fontWeight: '900',
+      letterSpacing: 1.6,
+      textTransform: 'uppercase',
+      fontFamily: FONT_FAMILY.accent,
+    },
+    supportTitle: {
+      color: colors.textPrimary,
+      fontSize: 22,
+      lineHeight: 28,
+      fontWeight: '900',
+      letterSpacing: -0.7,
+      fontFamily: FONT_FAMILY.header,
+    },
+    toolGroupList: {
+      gap: 12,
+    },
+    toolGroup: {
+      gap: 8,
+    },
+    toolGroupTitle: {
+      color: colors.textMuted,
+      fontSize: 11,
+      fontWeight: '900',
+      letterSpacing: 1,
+      textTransform: 'uppercase',
+      fontFamily: FONT_FAMILY.accent,
+    },
+    toolChipWrap: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    toolChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 7,
+      paddingVertical: 8,
+      paddingHorizontal: 10,
+      borderRadius: RADIUS.full,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+    },
+    toolDot: {
+      width: 5,
+      height: 5,
+      borderRadius: 3,
+    },
+    toolChipText: {
+      color: colors.textSecondary,
+      fontSize: 12,
+      lineHeight: 16,
+      fontWeight: '800',
+      fontFamily: FONT_FAMILY.body,
+    },
+    learningList: {
+      gap: 10,
+    },
+    learningRow: {
+      flexDirection: 'row',
+      alignItems: 'stretch',
+      gap: 11,
+      padding: 13,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surfaceSoft,
+    },
+    learningIndex: {
+      width: 24,
+      fontSize: 11,
+      fontWeight: '900',
+      letterSpacing: 0.9,
+      fontFamily: FONT_FAMILY.accent,
+    },
+    learningAccent: {
+      width: 4,
+      borderRadius: 4,
+    },
+    learningCopy: {
+      flex: 1,
+      gap: 4,
+    },
+    learningName: {
+      color: colors.textPrimary,
+      fontSize: 15,
+      lineHeight: 20,
+      fontWeight: '900',
+      letterSpacing: -0.35,
+      fontFamily: FONT_FAMILY.header,
+    },
+    learningDetail: {
+      color: colors.textMuted,
+      fontSize: 13,
+      lineHeight: 20,
+      fontWeight: '600',
+      fontFamily: FONT_FAMILY.body,
+    },
+  });
+};

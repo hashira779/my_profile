@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 import { usePrefersReducedMotion } from '../utils/motion';
 
 export default function CursorGlow() {
+  const { colors, isDark } = useTheme();
   const reduceMotion = usePrefersReducedMotion();
 
   useEffect(() => {
@@ -17,31 +19,44 @@ export default function CursorGlow() {
     }
 
     const finePointer = window.matchMedia('(pointer: fine)').matches;
-    if (!finePointer || window.innerWidth < 1024) {
-      return;
-    }
+    if (!finePointer || window.innerWidth < 1024) return;
+
+    // Convert hex color to rgba helper
+    const hexToRgba = (hex: string, alpha: number) => {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    };
+
+    const accentColor = colors.accent;
+    const orbColor1 = hexToRgba(accentColor, 0.08);
+    const orbColor2 = hexToRgba(accentColor, 0.03);
+    const ringColor = hexToRgba(accentColor, 0.24);
+    const activeRingColor = hexToRgba(accentColor, 0.42);
+    const shadowColor = hexToRgba(accentColor, 0.36);
+    const rippleColor = hexToRgba(accentColor, 0.22);
 
     const orb = document.createElement('div');
     orb.style.cssText = `
-      position: fixed; top: 0; left: 0; width: 360px; height: 360px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(37,99,235,0.09) 0%, rgba(14,165,233,0.055) 42%, transparent 72%);
-      pointer-events: none; z-index: 9990; mix-blend-mode: screen; opacity: 0.9;
-      will-change: transform;
+      position: fixed; top: 0; left: 0; width: 320px; height: 320px; border-radius: 50%;
+      background: radial-gradient(circle, ${orbColor1} 0%, ${orbColor2} 44%, transparent 72%);
+      pointer-events: none; z-index: 9990; opacity: 0.8; will-change: transform;
     `;
 
     const dot = document.createElement('div');
     dot.style.cssText = `
-      position: fixed; top: 0; left: 0; width: 7px; height: 7px; border-radius: 50%;
-      background: #2563EB; pointer-events: none; z-index: 9999;
-      box-shadow: 0 0 12px rgba(37,99,235,0.75), 0 0 24px rgba(14,165,233,0.28);
-      transition: width 0.16s ease, height 0.16s ease, background-color 0.16s ease, opacity 0.24s ease;
+      position: fixed; top: 0; left: 0; width: 6px; height: 6px; border-radius: 50%;
+      background: ${accentColor}; pointer-events: none; z-index: 9999;
+      box-shadow: 0 0 12px ${shadowColor};
+      transition: width 0.16s ease, height 0.16s ease, opacity 0.24s ease;
       will-change: transform;
     `;
 
     const ring = document.createElement('div');
     ring.style.cssText = `
       position: fixed; top: 0; left: 0; width: 30px; height: 30px; border-radius: 50%;
-      border: 1px solid rgba(37,99,235,0.42); pointer-events: none; z-index: 9998;
+      border: 1px solid ${ringColor}; pointer-events: none; z-index: 9998;
       transition: width 0.2s ease, height 0.2s ease, border-color 0.16s ease;
       will-change: transform;
     `;
@@ -63,17 +78,14 @@ export default function CursorGlow() {
       el.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
     };
     const getInteractive = (target: EventTarget | null) => (
-      target instanceof Element
-        ? target.closest('a, button, [role="button"]')
-        : null
+      target instanceof Element ? target.closest('a, button, [role="button"]') : null
     );
     const setInteractiveState = (active: boolean) => {
-      dot.style.width = active ? '12px' : '7px';
-      dot.style.height = active ? '12px' : '7px';
-      dot.style.backgroundColor = active ? '#0EA5E9' : '#2563EB';
-      ring.style.width = active ? '46px' : '30px';
-      ring.style.height = active ? '46px' : '30px';
-      ring.style.borderColor = active ? 'rgba(14,165,233,0.65)' : 'rgba(37,99,235,0.42)';
+      dot.style.width = active ? '11px' : '6px';
+      dot.style.height = active ? '11px' : '6px';
+      ring.style.width = active ? '44px' : '30px';
+      ring.style.height = active ? '44px' : '30px';
+      ring.style.borderColor = active ? activeRingColor : ringColor;
     };
 
     const onMove = (e: MouseEvent) => {
@@ -81,34 +93,23 @@ export default function CursorGlow() {
       my = e.clientY;
       setPosition(dot, mx, my);
     };
-
-    const onOver = (e: MouseEvent) => {
-      if (getInteractive(e.target)) {
-        setInteractiveState(true);
-      }
-    };
-
+    const onOver = (e: MouseEvent) => { if (getInteractive(e.target)) setInteractiveState(true); };
     const onOut = (e: MouseEvent) => {
       const from = getInteractive(e.target);
       const to = getInteractive(e.relatedTarget);
-      if (from && from !== to) {
-        setInteractiveState(false);
-      }
+      if (from && from !== to) setInteractiveState(false);
     };
-
     const onClick = (e: MouseEvent) => {
       const ripple = document.createElement('div');
       ripple.style.cssText = `
         position: fixed; left: 0; top: 0; width: 12px; height: 12px; border-radius: 50%;
-        background: rgba(37,99,235,0.35); pointer-events: none; z-index: 9997;
+        background: ${rippleColor}; pointer-events: none; z-index: 9997;
         animation: ct-ripple 0.55s ease-out forwards;
       `;
       setPosition(ripple, e.clientX, e.clientY);
       document.body.appendChild(ripple);
       window.setTimeout(() => {
-        if (document.body.contains(ripple)) {
-          document.body.removeChild(ripple);
-        }
+        if (document.body.contains(ripple)) document.body.removeChild(ripple);
       }, 650);
     };
 
@@ -135,12 +136,10 @@ export default function CursorGlow() {
       window.removeEventListener('click', onClick);
       cancelAnimationFrame(raf);
       [orb, ring, dot].forEach((el) => {
-        if (document.body.contains(el)) {
-          document.body.removeChild(el);
-        }
+        if (document.body.contains(el)) document.body.removeChild(el);
       });
     };
-  }, [reduceMotion]);
+  }, [reduceMotion, colors]);
 
   return null;
 }

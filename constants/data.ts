@@ -85,6 +85,12 @@ export const SKILLS = [
     description: 'Using AI tools to improve coding, documentation, and workflow speed',
   },
   {
+    label: 'Docker & Ubuntu Environments',
+    level: 'Good',
+    color: '#0EA5E9',
+    description: 'Working with Docker containers, Ubuntu server workflows, CLI setup, and deployment support',
+  },
+  {
     label: 'Project Management',
     level: 'Practical',
     color: '#2563EB',
@@ -108,6 +114,8 @@ export const TECH = [
   { name: 'Web Dashboards', icon: 'web' },
   { name: 'Database Design', icon: 'db' },
   { name: 'Linux / CLI', icon: 'terminal' },
+  { name: 'Docker', icon: 'container' },
+  { name: 'Ubuntu Server', icon: 'terminal' },
   { name: 'Git / GitHub', icon: 'github' },
   { name: 'Microsoft Excel', icon: 'table' },
 ];
@@ -253,6 +261,8 @@ export const EXPERIENCE = [
       'PHP',
       'Telegram API',
       'OpenAI API',
+      'Docker',
+      'Ubuntu Server',
       'ChatGPT',
       'GitHub Copilot',
       'Cursor',
@@ -323,8 +333,9 @@ export const TOOLS = [
 
 export const NAV_LINKS = [
   { label: 'About', section: 'about' },
-  { label: 'Projects', section: 'projects' },
   { label: 'Skills', section: 'skills' },
+  { label: 'Education', section: 'education' },
+  { label: 'Projects', section: 'projects' },
   { label: 'Experience', section: 'experience' },
   { label: 'Contact', section: 'contact' },
 ];
