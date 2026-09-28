@@ -139,20 +139,6 @@ export interface ProjectArchitecture {
   items: string[];
 }
 
-export interface ProjectCodeSnippet {
-  curl: string;
-  js: string;
-  python: string;
-  response: string;
-}
-
-export interface ProjectSimulator {
-  type: 'fleet' | 'checkout' | 'bot' | 'map' | 'audit' | 'console';
-  badge: string;
-  title: string;
-  subtitle: string;
-}
-
 export interface ProjectItem {
   title: string;
   headline: string;
@@ -172,8 +158,6 @@ export interface ProjectItem {
   live: string;
   private?: boolean;
   note?: string;
-  codeSnippet?: ProjectCodeSnippet;
-  simulator?: ProjectSimulator;
 }
 
 export const PROJECTS: ProjectItem[] = [
@@ -257,64 +241,12 @@ export const PROJECTS: ProjectItem[] = [
     ],
     status: 'Live',
     year: '2026',
-    color: '#00BCD4',
-    gradient: ['#00BCD4', '#055B83'] as [string, string],
+    color: '#7C3AED',
+    gradient: ['#7C3AED', '#4C1D95'] as [string, string],
     github: '',
     live: 'https://store.camtech.cam',
     private: false,
     note: 'Ecosystem modules: API, Blog, Business, Delivery, Gateway, HRMS, POS, and Store.',
-    simulator: {
-      type: 'checkout',
-      badge: 'ABA PAYWAY / KHQR DEMO',
-      title: 'Interactive POS & E-Commerce Checkout',
-      subtitle: 'Simulate instant retail checkout with ABA KHQR payment and real-time inventory reservation',
-    },
-    codeSnippet: {
-      curl: `curl -X POST https://api.camtech.cam/v1/checkout/purchase \\
-  -H "X-Api-Key: ct_live_9948201" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "order_id": "ORD-2026-8812",
-    "amount": 149.00,
-    "currency": "USD",
-    "payment_method": "ABA_KHQR",
-    "pos_terminal_id": "POS-CENTRAL-01"
-  }'`,
-      js: `import { CamTechClient } from '@camtech/sdk';
-
-const client = new CamTechClient({ apiKey: process.env.CAMTECH_KEY });
-const checkout = await client.orders.create({
-  orderId: 'ORD-2026-8812',
-  amount: 149.00,
-  currency: 'USD',
-  gateway: 'ABA_PAYWAY_KHQR',
-  syncPOS: true,
-});
-console.log('KHQR String:', checkout.qrString);`,
-      python: `import requests
-
-response = requests.post(
-    "https://api.camtech.cam/v1/checkout/purchase",
-    headers={"X-Api-Key": "ct_live_9948201"},
-    json={
-        "order_id": "ORD-2026-8812",
-        "amount": 149.00,
-        "payment_method": "ABA_KHQR",
-        "dispatch": "AUTO"
-    }
-)
-data = response.json()
-print("Payment QR generated in", data["latency_ms"], "ms")`,
-      response: `{
-  "status": 200,
-  "transaction_id": "TXN_77492019482",
-  "qr_string": "00020101021229300016aba.payway.kh...",
-  "inventory_status": "LOCKED_RESERVED",
-  "dispatch_channel": "AUTO_ASSIGNED_RIDER",
-  "cloudflare_tunnel": "SECURE_ZERO_TRUST",
-  "latency_ms": 32.4
-}`,
-    },
   },
   {
     title: 'PTT Station POS Monitor',
@@ -384,53 +316,12 @@ print("Payment QR generated in", data["latency_ms"], "ms")`,
     ],
     status: 'Production',
     year: '2024',
-    color: '#00BCD4',
-    gradient: ['#00BCD4', '#055B83'] as [string, string],
+    color: '#2563EB',
+    gradient: ['#2563EB', '#1D4ED8'] as [string, string],
     github: '',
     live: '',
     private: true,
     note: 'Live enterprise system in active production across 20+ stations. Repository is private due to enterprise security compliance.',
-    simulator: {
-      type: 'fleet',
-      badge: '20+ STATIONS FLEET RADAR',
-      title: 'Live 20+ Station POS Telemetry Simulator',
-      subtitle: 'Click any fueling station to inspect live dispenser flow, MySQL sync heartbeat, and hardware health',
-    },
-    codeSnippet: {
-      curl: `curl -X POST https://telemetry.ptt-stations.internal/v1/station/heartbeat \\
-  -H "Authorization: Bearer ptt_sec_token_9942" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "station_id": "ST-018",
-    "station_name": "PTT Sen Sok Express",
-    "pumps_active": 6,
-    "liters_dispensed_today": 14820.5,
-    "db_replication_lag_ms": 28,
-    "hardware_status": "ALL_SYSTEMS_OPTIMAL"
-  }'`,
-      js: `const telemetry = await fetch('https://telemetry.ptt-stations.internal/v1/stream', {
-  headers: { 'Authorization': 'Bearer ' + PTT_TOKEN },
-});
-const stream = await telemetry.json();
-console.log('Active Fleet:', stream.stationsCount); // 20+ Stations
-console.log('Replication Latency:', stream.avgLatencyMs, 'ms');`,
-      python: `from ptt_telemetry import FleetWatcher
-
-watcher = FleetWatcher(stations_count=20)
-@watcher.on_anomaly
-def handle_fault(alert):
-    print(f"🚨 Hardware alert at {alert.station_id}: {alert.message}")
-watcher.start()`,
-      response: `{
-  "status": 200,
-  "fleet_monitored": "20+ Fueling Stations",
-  "all_stations_online": true,
-  "total_dispensers": 128,
-  "telemetry_sync": "100% REAL_TIME",
-  "mysql_replication": "HEALTHY",
-  "avg_latency_ms": 28.6
-}`,
-    },
   },
   {
     title: 'Automated Sales Intel Bot',
@@ -496,47 +387,12 @@ watcher.start()`,
     ],
     status: 'Production',
     year: '2024',
-    color: '#00BCD4',
-    gradient: ['#00BCD4', '#055B83'] as [string, string],
+    color: '#0EA5E9',
+    gradient: ['#0EA5E9', '#0284C7'] as [string, string],
     github: '',
     live: '',
     private: true,
     note: 'Repository is private due to enterprise security compliance.',
-    simulator: {
-      type: 'bot',
-      badge: 'TELEGRAM BOT SIMULATOR',
-      title: 'Autonomous Executive Bot Simulator',
-      subtitle: 'Simulate running live slash commands to fetch instant sales reports and shift analytics',
-    },
-    codeSnippet: {
-      curl: `curl -X POST https://api.telegram.org/bot\${BOT_TOKEN}/sendMessage \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "chat_id": 99482012,
-    "parse_mode": "HTML",
-    "text": "📊 <b>DAILY REVENUE BRIEF</b>\\n• Total: $42,850\\n• Volume: 26,100L\\n• Stations: 20/20 Synced"
-  }'`,
-      js: `bot.command('today', async (ctx) => {
-  const stats = await db.query('SELECT SUM(revenue) FROM daily_station_sales');
-  await ctx.replyWithMarkdown(\`*Today Sales:* $\${stats.total} across 20 stations.\`);
-});`,
-      python: `from telegram.ext import ApplicationBuilder, CommandHandler
-
-async def sales_report(update, context):
-    report = await fetch_mysql_station_aggregates()
-    await update.message.reply_html(f"<b>Real-Time Sales:</b> \${report.total}")
-
-app = ApplicationBuilder().token("BOT_TOKEN").build()
-app.add_handler(CommandHandler("today", sales_report))`,
-      response: `{
-  "ok": true,
-  "result": {
-    "message_id": 14209,
-    "date": 1786529400,
-    "text": "📊 PTT 20+ Stations Sales: $42,850 USD | 100% Automated | Latency: 420ms"
-  }
-}`,
-    },
   },
   {
     title: 'Enterprise Cost Supply System',
@@ -602,44 +458,12 @@ app.add_handler(CommandHandler("today", sales_report))`,
     ],
     status: 'Internal Tool',
     year: '2026',
-    color: '#00BCD4',
-    gradient: ['#00BCD4', '#055B83'] as [string, string],
+    color: '#059669',
+    gradient: ['#059669', '#047857'] as [string, string],
     github: '',
     live: '',
     private: true,
     note: 'Internal enterprise financial system. Repository is private due to corporate compliance.',
-    simulator: {
-      type: 'audit',
-      badge: 'IMMUTABLE AUDIT LOG',
-      title: 'Tamper-Proof Expense & Procurement Console',
-      subtitle: 'Simulate purchase order approval workflow and cryptographic audit trail verification',
-    },
-    codeSnippet: {
-      curl: `curl -X POST https://supply.camtech.internal/api/v1/orders/approve \\
-  -H "Authorization: Bearer sec_token_procurement" \\
-  -d '{
-    "po_number": "PO-2026-9041",
-    "approved_by": "CHHOY_TOO_DIRECTOR",
-    "amount": 8450.00,
-    "audit_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-  }'`,
-      js: `const order = await procurementApi.approvePurchaseOrder({
-  poNumber: 'PO-2026-9041',
-  auditEnforced: true,
-});
-console.log('Immutable Audit Stamp:', order.auditTimestamp);`,
-      python: `with db.transaction():
-    po = PurchaseOrder.get(id=9041)
-    po.approve(user_id=1)
-    AuditLog.create(record=po.to_hash(), verified=True)`,
-      response: `{
-  "status": 200,
-  "po_status": "APPROVED",
-  "audit_trail_recorded": true,
-  "cryptographic_hash": "sha256_verified_e3b0...",
-  "discrepancy": 0.00
-}`,
-    },
   },
   {
     title: 'Strategic Station Map Portal',
@@ -705,34 +529,11 @@ console.log('Immutable Audit Stamp:', order.auditTimestamp);`,
     ],
     status: 'Live',
     year: '2026',
-    color: '#00BCD4',
-    gradient: ['#00BCD4', '#055B83'] as [string, string],
+    color: '#F59E0B',
+    gradient: ['#F59E0B', '#D97706'] as [string, string],
     github: 'https://github.com/hashira779/PTT_STATION_MAP',
     live: 'https://map.orsptt.space/',
     private: false,
-    simulator: {
-      type: 'map',
-      badge: 'GIS RADAR ENGINE',
-      title: 'Geospatial Distribution Command Center',
-      subtitle: 'Simulate GPS coordinates query and nationwide fuel delivery route calculation',
-    },
-    codeSnippet: {
-      curl: `curl -X GET "https://map.orsptt.space/api/stations?province=PhnomPenh&radius_km=15" \\
-  -H "Accept: application/json"`,
-      js: `const stations = await mapApi.getNearbyStations({ lat: 11.5564, lng: 104.9282, radiusKm: 15 });
-stations.forEach(st => renderStationPin(st));`,
-      python: `import geojson
-
-stations = geo_db.query_nearby(lat=11.5564, lng=104.9282, radius=15)
-print(f"Found {len(stations)} active stations in radius.")`,
-      response: `{
-  "status": 200,
-  "stations_found": 24,
-  "query_time_ms": 14.2,
-  "nearest_station": "PTT Central Sen Sok",
-  "vector_rendering": "60_FPS"
-}`,
-    },
   },
   {
     title: 'Centralized Operations Hub',
@@ -798,32 +599,12 @@ print(f"Found {len(stations)} active stations in radius.")`,
     ],
     status: 'Production',
     year: '2025',
-    color: '#00BCD4',
-    gradient: ['#00BCD4', '#055B83'] as [string, string],
+    color: '#14B8A6',
+    gradient: ['#14B8A6', '#0F766E'] as [string, string],
     github: '',
     live: '',
     private: true,
     note: 'Repository is private due to enterprise security compliance.',
-    simulator: {
-      type: 'console',
-      badge: 'ENTERPRISE SSO GATEWAY',
-      title: 'Single-Pane Operations Control Portal',
-      subtitle: 'Simulate unified authentication token exchange and modular service dock',
-    },
-    codeSnippet: {
-      curl: `curl -X POST https://hub.camtech.internal/oauth/token \\
-  -d "grant_type=client_credentials&scope=pos,inventory,reporting"`,
-      js: `const session = await ssoClient.authenticate({ role: 'SYSTEM_ANALYST' });
-console.log('Available internal modules:', session.authorizedApps);`,
-      python: `session = SSOGateway.verify_token(token)
-user_perms = session.get_roles() # ['POS_ADMIN', 'REPORTS', 'FLEET_20_STATIONS']`,
-      response: `{
-  "status": 200,
-  "token_type": "Bearer",
-  "expires_in": 28800,
-  "services_accessible": ["PTT_POS_MONITOR", "TELEGRAM_BOT", "SUPPLY_SYSTEM", "ECOMMERCE"]
-}`,
-    },
   },
   {
     title: 'Personal Portfolio Website',
@@ -889,35 +670,11 @@ user_perms = session.get_roles() # ['POS_ADMIN', 'REPORTS', 'FLEET_20_STATIONS']
     ],
     status: 'Live',
     year: '2026',
-    color: '#00BCD4',
-    gradient: ['#00BCD4', '#055B83'] as [string, string],
+    color: '#475569',
+    gradient: ['#475569', '#334155'] as [string, string],
     github: 'https://github.com/hashira779/my_profile',
     live: 'https://portfolio.camtech.cam',
     private: false,
-    simulator: {
-      type: 'console',
-      badge: 'UNIVERSAL WEB ENGINE',
-      title: 'Universal 60FPS Architecture',
-      subtitle: 'Simulate multi-platform responsive render tree and glassmorphism shader pipeline',
-    },
-    codeSnippet: {
-      curl: `curl -I https://portfolio.camtech.cam`,
-      js: `import { AppRegistry } from 'react-native';
-import App from './App';
-
-AppRegistry.registerComponent('MyProfile', () => App);
-AppRegistry.runApplication('MyProfile', { rootTag: document.getElementById('root') });`,
-      python: `# Automated performance audit check
-score = lighthouse.audit("https://portfolio.camtech.cam")
-print(f"Performance: {score.performance}/100, Smooth 60FPS")`,
-      response: `{
-  "framework": "Expo SDK 54 / React Native Web",
-  "cdn_edge": "Vercel Global Network",
-  "custom_domain": "portfolio.camtech.cam",
-  "render_speed": "60fps",
-  "type_safety": "100% Strict TypeScript"
-}`,
-    },
   },
 ];
 // ─── SOCIAL ──────────────────────────────────────────────────────────────────

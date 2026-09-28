@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { RADIUS, FONT_FAMILY } from '../constants/theme';
@@ -8,44 +8,12 @@ import { sectionPadH, sectionPadV } from '../utils/responsive';
 
 type Project = typeof PROJECTS[number];
 
-const THEME_ACCENT = {
-  navyDark: '#001122',
-  navyCard: '#001830',
-  navySurface: '#002244',
-  navyBorder: 'rgba(0, 188, 212, 0.28)',
-  cyan: '#00BCD4',
-  cyanLight: '#4DD0E1',
-  cyanGlow: 'rgba(0, 188, 212, 0.45)',
-  cyanSubtle: 'rgba(0, 188, 212, 0.12)',
-  emerald: '#00E676',
-  emeraldSubtle: 'rgba(0, 230, 118, 0.14)',
-  amber: '#FFB300',
-  textLight: '#E0F7FA',
-  textMuted: '#80DEEA',
+const STATUS_COLOR: Record<string, string> = {
+  Production: '#34D399',
+  Live: '#22D3EE',
+  'Internal Tool': '#FBBF24',
+  'In Progress': '#A78BFA',
 };
-
-const STATIONS_20_DATA = [
-  { id: 'ST-01', name: 'PTT Monivong Blvd', city: 'Phnom Penh', status: 'Online', latency: '14ms', liters: '16,420 L', revenue: '$18,883', nozz: 8, qrShare: '72%' },
-  { id: 'ST-02', name: 'PTT Toul Kork', city: 'Phnom Penh', status: 'Online', latency: '16ms', liters: '14,110 L', revenue: '$16,226', nozz: 8, qrShare: '68%' },
-  { id: 'ST-03', name: 'PTT Boeung Keng Kang', city: 'Phnom Penh', status: 'Online', latency: '12ms', liters: '19,850 L', revenue: '$22,827', nozz: 10, qrShare: '79%' },
-  { id: 'ST-04', name: 'PTT Russian Blvd (Airport)', city: 'Phnom Penh', status: 'Online', latency: '15ms', liters: '24,200 L', revenue: '$27,830', nozz: 12, qrShare: '74%' },
-  { id: 'ST-05', name: 'PTT Chbar Ampov', city: 'Phnom Penh', status: 'Online', latency: '18ms', liters: '12,900 L', revenue: '$14,835', nozz: 6, qrShare: '61%' },
-  { id: 'ST-06', name: 'PTT Sen Sok (AEON 2)', city: 'Phnom Penh', status: 'Online', latency: '14ms', liters: '21,300 L', revenue: '$24,495', nozz: 10, qrShare: '81%' },
-  { id: 'ST-07', name: 'PTT Veng Sreng Expressway', city: 'Phnom Penh', status: 'Online', latency: '21ms', liters: '17,800 L', revenue: '$20,470', nozz: 8, qrShare: '59%' },
-  { id: 'ST-08', name: 'PTT Chroy Changvar', city: 'Phnom Penh', status: 'Online', latency: '17ms', liters: '13,400 L', revenue: '$15,410', nozz: 6, qrShare: '65%' },
-  { id: 'ST-09', name: 'PTT Steung Meanchey', city: 'Phnom Penh', status: 'Online', latency: '15ms', liters: '15,600 L', revenue: '$17,940', nozz: 8, qrShare: '64%' },
-  { id: 'ST-10', name: 'PTT Chamkarmon Center', city: 'Phnom Penh', status: 'Online', latency: '13ms', liters: '18,100 L', revenue: '$20,815', nozz: 8, qrShare: '76%' },
-  { id: 'ST-11', name: 'PTT Kampong Cham Central', city: 'Kompong Cham', status: 'Online', latency: '26ms', liters: '11,400 L', revenue: '$13,110', nozz: 6, qrShare: '54%' },
-  { id: 'ST-12', name: 'PTT Battambang HW 5', city: 'Battambang', status: 'Online', latency: '28ms', liters: '15,200 L', revenue: '$17,480', nozz: 8, qrShare: '58%' },
-  { id: 'ST-13', name: 'PTT Siem Reap Airport Rd', city: 'Siem Reap', status: 'Online', latency: '24ms', liters: '18,900 L', revenue: '$21,735', nozz: 8, qrShare: '82%' },
-  { id: 'ST-14', name: 'PTT Siem Reap Ring Rd', city: 'Siem Reap', status: 'Online', latency: '25ms', liters: '13,100 L', revenue: '$15,065', nozz: 6, qrShare: '77%' },
-  { id: 'ST-15', name: 'PTT Sihanoukville Port', city: 'Preah Sihanouk', status: 'Online', latency: '27ms', liters: '22,600 L', revenue: '$25,990', nozz: 10, qrShare: '71%' },
-  { id: 'ST-16', name: 'PTT Kampot Riverfront', city: 'Kampot', status: 'Online', latency: '29ms', liters: '10,800 L', revenue: '$12,420', nozz: 6, qrShare: '63%' },
-  { id: 'ST-17', name: 'PTT Poipet Border Hub', city: 'Banteay Meanchey', status: 'Online', latency: '32ms', liters: '16,700 L', revenue: '$19,205', nozz: 8, qrShare: '56%' },
-  { id: 'ST-18', name: 'PTT Bavet SEZ Tollgate', city: 'Svay Rieng', status: 'Online', latency: '30ms', liters: '14,500 L', revenue: '$16,675', nozz: 8, qrShare: '53%' },
-  { id: 'ST-19', name: 'PTT Takeo Junction Rd 2', city: 'Takeo', status: 'Online', latency: '26ms', liters: '9,800 L', revenue: '$11,270', nozz: 6, qrShare: '51%' },
-  { id: 'ST-20', name: 'PTT Expressway Rest Area #1', city: 'Kandal', status: 'Online', latency: '19ms', liters: '28,400 L', revenue: '$32,660', nozz: 12, qrShare: '78%' },
-];
 
 export default function ProjectsSection() {
   const { colors, isDark } = useTheme();
@@ -72,7 +40,7 @@ export default function ProjectsSection() {
               <Text style={styles.headerIconText}>{'</>'}</Text>
             </View>
             <Text style={styles.title}>Projects <Text style={styles.titleAccent}>Made</Text></Text>
-            <Text style={styles.subtitle}>Enterprise software, automated retail fleets, database sync, and high-performance system architectures.</Text>
+            <Text style={styles.subtitle}>Selected real work from support, reporting, automation, database, and internal web systems.</Text>
           </View>
 
           <View style={[styles.projectGrid, cols > 1 && styles.projectGridWrap]}>
@@ -116,7 +84,7 @@ export default function ProjectsSection() {
 
 function ProjectCard({ project, index, onPress, styles }: { project: Project; index: number; onPress: () => void; styles: any }) {
   const [hovered, setHovered] = useState(false);
-  const accent = project.color || THEME_ACCENT.cyan;
+  const accent = project.status === 'Internal Tool' ? '#FBBF24' : project.status === 'Live' ? '#22D3EE' : '#34D399';
   const initials = project.title
     .split(' ')
     .filter(Boolean)
@@ -138,8 +106,8 @@ function ProjectCard({ project, index, onPress, styles }: { project: Project; in
         styles.projectCard,
         Platform.OS === 'web' && {
           transform: [{ translateY: hovered ? -8 : 0 }, { scale: hovered ? 1.012 : 1 }],
-          borderColor: hovered ? THEME_ACCENT.cyan : 'rgba(0, 188, 212, 0.22)',
-          boxShadow: hovered ? `0 24px 60px rgba(0, 188, 212, 0.32)` : '0 12px 32px rgba(0, 15, 30, 0.45)',
+          borderColor: hovered ? `${accent}88` : 'rgba(255,255,255,0.10)',
+          boxShadow: hovered ? `0 26px 70px ${accent}26` : '0 14px 34px rgba(0,0,0,0.24)',
           transition: 'all 230ms cubic-bezier(0.22, 1, 0.36, 1)',
           cursor: 'pointer',
         } as any,
@@ -151,7 +119,8 @@ function ProjectCard({ project, index, onPress, styles }: { project: Project; in
         <View style={[styles.previewOrbB, { backgroundColor: `${accent}16` }]} />
 
         <View style={styles.previewTopRow}>
-          <View style={[styles.statusPill, { borderColor: `${accent}55`, backgroundColor: `${accent}18` }]}>
+          <Text style={styles.projectNumber}>{String(index + 1).padStart(2, '0')}</Text>
+          <View style={[styles.statusPill, { borderColor: `${accent}44`, backgroundColor: `${accent}14` }]}>
             <View style={[styles.statusDot, { backgroundColor: accent }]} />
             <Text style={[styles.statusText, { color: accent }]}>{project.status}</Text>
           </View>
@@ -164,7 +133,7 @@ function ProjectCard({ project, index, onPress, styles }: { project: Project; in
         </View>
 
         {heroMetric && (
-          <View style={[styles.cardMetricBadge, { borderColor: `${accent}40`, backgroundColor: `${accent}12` }]}>
+          <View style={[styles.cardMetricBadge, { borderColor: `${accent}33`, backgroundColor: `${accent}10` }]}>
             <Text style={[styles.cardMetricValue, { color: accent }]}>{heroMetric.value}</Text>
             <Text style={styles.cardMetricLabel}>{heroMetric.label}</Text>
           </View>
@@ -179,10 +148,10 @@ function ProjectCard({ project, index, onPress, styles }: { project: Project; in
         </View>
       </View>
 
-      <View style={[styles.projectStrip, { backgroundColor: THEME_ACCENT.cyan }]}>
+      <View style={[styles.projectStrip, { backgroundColor: accent }]}>
         <Text style={styles.projectTitle} numberOfLines={1}>{project.title}</Text>
         <View style={styles.exploreBadge}>
-          <Text style={styles.exploreText}>View Architecture</Text>
+          <Text style={styles.exploreText}>Case Study</Text>
           <Text style={styles.projectArrow}>{'->'}</Text>
         </View>
       </View>
@@ -210,93 +179,14 @@ function ProjectDetailModal({
   isDark: boolean;
 }) {
   const { width, height } = useWindowDimensions();
-  const [viewMode, setViewMode] = useState<'production' | 'developer'>('production');
-  const [activeTab, setActiveTab] = useState<'overview' | 'simulator' | 'features' | 'architecture' | 'impact'>('overview');
-  const [activeCodeLang, setActiveCodeLang] = useState<'curl' | 'js' | 'python' | 'response'>('curl');
-  const [copied, setCopied] = useState(false);
-
-  // Architecture Simulation States
-  const [isHighTraffic, setIsHighTraffic] = useState(false);
-  const [selectedStationIndex, setSelectedStationIndex] = useState(0);
-  const [checkoutStep, setCheckoutStep] = useState<'cart' | 'scanning' | 'approved'>('cart');
-  const [botChatMessages, setBotChatMessages] = useState<Array<{ sender: 'user' | 'bot'; text: string; time: string }>>([
-    { sender: 'bot', text: '👋 CamTech 20+ Station Telemetry Online. Tap a command below to test live report dispatch.', time: '10:00:02 AM' },
-  ]);
-
-  const isFleet = project?.simulator?.type === 'fleet';
-
-  // 100% Code-Drawn Pipeline Stages
-  const pipelineStages = isFleet
-    ? [
-        {
-          stage: '1. HARDWARE EDGE',
-          nodes: [
-            { id: 'dispensers', icon: '⛽', name: '20+ Station Fuel Dispensers', metric: '160 Nozzles Active', tech: 'RS-485 Modbus Protocol', desc: 'Hardware flowmeters monitoring real-time liter pulses with digital cut-off valves.' },
-            { id: 'counter', icon: '🏪', name: 'Station Cashier Touch POS', metric: '< 8ms Response', tech: 'Offline SQLite Buffer', desc: 'In-store cashier terminals logging cash & ABA KHQR transactions even during ISP outage.' },
-          ],
-        },
-        {
-          stage: '2. REPLICATION STREAM',
-          nodes: [
-            { id: 'binlog', icon: '🔄', name: 'MySQL Binlog Sync Stream', metric: '< 22ms Delta Lag', tech: 'Binlog Streamer / TCP', desc: 'Event-driven row replication pushing verified station transactions to HQ cluster.' },
-          ],
-        },
-        {
-          stage: '3. CONSOLIDATED CORE',
-          nodes: [
-            { id: 'db', icon: '🗄️', name: 'Corporate Master Database', metric: 'ACID Consolidated', tech: 'MySQL Master Cluster', desc: 'Central corporate ledger aggregating revenue, fuel volumes, and stock audits.' },
-          ],
-        },
-        {
-          stage: '4. OBSERVABILITY & BOTS',
-          nodes: [
-            { id: 'telegram', icon: '🤖', name: 'Telegram Fleet Alert Bot', metric: '20/20 Stations Live', tech: 'Telegram Bot API / Webhook', desc: 'Automated executive channel sending hourly volume summaries and disconnection warnings.' },
-          ],
-        },
-      ]
-    : [
-        {
-          stage: '1. CLIENT CHANNELS',
-          nodes: [
-            { id: 'web', icon: '🛍️', name: 'Next.js E-Commerce Store', metric: '< 50ms Catalog SSR', tech: 'Next.js 14 / React', desc: 'High-speed B2B/B2C storefront handling customer traffic, cart reservations, and search.' },
-            { id: 'pos', icon: '💳', name: 'Real-Time POS Counter', metric: 'Sub-second Checkout', tech: 'Local Hardware Hub', desc: 'Physical store cashier counter terminal syncing receipts and stock in real time.' },
-          ],
-        },
-        {
-          stage: '2. ZERO TRUST PERIMETER',
-          nodes: [
-            { id: 'gateway', icon: '🛡️', name: 'Cloudflare Zero Trust Gateway', metric: '100% Closed Ports', tech: 'Cloudflare Tunnel / JWT', desc: 'Perimeter gateway enforcing strict authentication without exposing public IP addresses.' },
-          ],
-        },
-        {
-          stage: '3. MICROSERVICES & DATA',
-          nodes: [
-            { id: 'db', icon: '🗄️', name: 'Master DB & Redis Cache Layer', metric: 'Zero Stock Mismatch', tech: 'PostgreSQL / Redis ACID', desc: 'Atomic transaction locks guaranteeing instant stock reservations across web and POS.' },
-          ],
-        },
-        {
-          stage: '4. DISPATCH & ALERTS',
-          nodes: [
-            { id: 'dispatch', icon: '🚚', name: 'Automated Logistics Dispatch', metric: 'Live Rider Routing', tech: 'Dynamic GPS Dispatch', desc: 'Automated warehouse-to-doorstep parcel routing with live rider telemetry.' },
-            { id: 'bot', icon: '🤖', name: 'Telegram Management Bot', metric: 'Hourly Audit Push', tech: 'Telegram Bot API', desc: 'Automated daily revenue reconciliation and critical inventory depletion alerts.' },
-          ],
-        },
-      ];
-
-  const allNodesList = pipelineStages.flatMap((s) => s.nodes);
-  const [selectedNode, setSelectedNode] = useState(allNodesList[0]);
-
+  const [activeTab, setActiveTab] = useState<'pitch' | 'features' | 'architecture' | 'impact'>('pitch');
   const styles = getModalStyles(colors, isDark);
 
-  useEffect(() => {
-    setActiveTab('overview');
-    setViewMode('production');
-    setCheckoutStep('cart');
-    setSelectedStationIndex(0);
-    setSelectedNode(allNodesList[0]);
-  }, [projectIndex, project]);
+  React.useEffect(() => {
+    setActiveTab('pitch');
+  }, [projectIndex]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (Platform.OS !== 'web' || typeof window === 'undefined') return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -309,58 +199,28 @@ function ProjectDetailModal({
 
   if (!project) return null;
 
-  const isWide = width >= 880;
-  const maxHeight = Math.min(height * 0.94, 900);
+  const accent = STATUS_COLOR[project.status] ?? colors.accent;
   const isPrivate = Boolean((project as any).private);
   const note = (project as any).note as string | undefined;
+  const isWide = width >= 860;
+  const maxHeight = Math.min(height * 0.92, 840);
 
   const telegramUrl = 'https://t.me/chhoy_too';
-  const emailUrl = `mailto:chhoytoo@outlook.com?subject=${encodeURIComponent(`Enterprise Project Inquiry: ${project.title}`)}`;
+  const emailUrl = `mailto:chhoytoo@outlook.com?subject=${encodeURIComponent(`Project Inquiry: ${project.title}`)}`;
 
-  const copyCode = (code: string) => {
-    if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2200);
-    }
-  };
+  const tabs = [
+    { key: 'pitch', label: '🎯 The Solution', sub: 'Problem vs Fix' },
+    { key: 'features', label: '⚡ Capabilities', sub: 'Feature Modules' },
+    { key: 'architecture', label: '🏗️ Architecture', sub: 'Stack & Security' },
+    { key: 'impact', label: '📈 Proven ROI', sub: 'Business Impact' },
+  ] as const;
 
-  const handleBotCommand = (cmd: string) => {
-    const timeStr = new Date().toLocaleTimeString();
-    if (cmd === '/today') {
-      setBotChatMessages((prev) => [
-        ...prev,
-        { sender: 'user', text: '/today', time: timeStr },
-        {
-          sender: 'bot',
-          text: `📊 DAILY FLEET SUMMARY (20/20 Stations)\n• Total Fuel Pumped: 334,130 Liters\n• Total Gross Revenue: $383,988 USD\n• ABA PayWay / KHQR Share: 68.4%\n• Cash Counter Share: 31.6%\n• Binlog Replication Health: 100% OK`,
-          time: timeStr,
-        },
-      ]);
-    } else if (cmd === '/station_report') {
-      setBotChatMessages((prev) => [
-        ...prev,
-        { sender: 'user', text: '/station_report', time: timeStr },
-        {
-          sender: 'bot',
-          text: `⛽ STATION MATRIX STATUS:\n✅ ST-01 Monivong: 16,420 L | Latency: 14ms\n✅ ST-04 Russian Blvd: 24,200 L | Latency: 15ms\n✅ ST-13 Siem Reap: 18,900 L | Latency: 24ms\n✅ ST-20 Expressway: 28,400 L | Latency: 19ms\n[All 20 nodes pinging successfully]`,
-          time: timeStr,
-        },
-      ]);
-    } else if (cmd === '/alerts') {
-      setBotChatMessages((prev) => [
-        ...prev,
-        { sender: 'user', text: '/alerts', time: timeStr },
-        {
-          sender: 'bot',
-          text: `🟢 ZERO CRITICAL ALERTS\n• 0 Dropped transactions\n• Max sync lag: 32ms (ST-17 Poipet)\n• Cloudflare Zero Trust Tunnel: Active\n• Next automated report: 18:00 ICT`,
-          time: timeStr,
-        },
-      ]);
-    }
-  };
-
-  const currentCode = project.codeSnippet ? project.codeSnippet[activeCodeLang] : `// API Reference for ${project.title}\nGET https://api.camtech.cam/v1/health\nStatus: 200 OK`;
+  const partAnim = (delayMs: number) =>
+    Platform.OS === 'web'
+      ? ({
+          animation: `ct-part-reveal 420ms cubic-bezier(0.16, 1, 0.3, 1) ${delayMs}ms both`,
+        } as any)
+      : {};
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
@@ -378,599 +238,125 @@ function ProjectDetailModal({
               } as any),
           ]}
         >
-          {/* Ambient luminous energy orbs */}
-          <View style={styles.modalAmbientOrbA} pointerEvents="none" />
-          <View style={styles.modalAmbientOrbB} pointerEvents="none" />
+          {/* Ambient luminous orb in modal corner */}
+          <View style={[styles.modalAmbientOrb, { backgroundColor: `${accent}18` }]} pointerEvents="none" />
 
-          {/* Top Control Navigation Bar */}
-          <View style={styles.paywayHeader}>
-            <View style={styles.paywayBrandCol}>
-              <View style={styles.paywayLogoBadge}>
-                <View style={styles.paywayLogoDot} />
-                <Text style={styles.paywayLogoText}>SYSTEM ARCHITECTURE</Text>
+          {/* Top Control Bar */}
+          <View style={styles.modalTopBar}>
+            <View style={styles.modalMetaGroup}>
+              <View style={styles.caseStudyBadge}>
+                <Text style={styles.caseStudyText}>
+                  CASE STUDY {String(projectIndex + 1).padStart(2, '0')} / {String(totalProjects).padStart(2, '0')}
+                </Text>
               </View>
+              <View style={[styles.modalStatusPill, { borderColor: `${accent}55`, backgroundColor: `${accent}16` }]}>
+                <View style={[styles.modalStatusDot, { backgroundColor: accent }]} />
+                <Text style={[styles.modalStatusText, { color: accent }]}>{project.status} • {project.year}</Text>
+              </View>
+              {project.metrics && project.metrics[0] ? (
+                <View style={[styles.specialHighlightPill, { borderColor: `${accent}40`, backgroundColor: `${accent}12` }]}>
+                  <Text style={[styles.specialHighlightText, { color: accent }]}>
+                    ⚡ {project.metrics[0].value} {project.metrics[0].label}
+                  </Text>
+                </View>
+              ) : null}
             </View>
 
-            {/* Mode Switcher: Production vs Developer Sandbox */}
-            <View style={styles.modeSwitchWrap}>
-              <Pressable
-                onPress={() => setViewMode('production')}
-                style={[
-                  styles.modeSwitchBtn,
-                  viewMode === 'production' && styles.modeSwitchBtnActive,
-                ]}
-              >
-                <Text style={[styles.modeSwitchText, viewMode === 'production' && styles.modeSwitchTextActive]}>
-                  ● Production Architecture
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => setViewMode('developer')}
-                style={[
-                  styles.modeSwitchBtn,
-                  viewMode === 'developer' && styles.modeSwitchBtnActive,
-                ]}
-              >
-                <Text style={[styles.modeSwitchText, viewMode === 'developer' && styles.modeSwitchTextActive]}>
-                  🧪 Developer Sandbox
-                </Text>
-              </Pressable>
-            </View>
-
-            {/* Modal Controls */}
-            <View style={styles.headerControls}>
+            <View style={styles.modalControlsGroup}>
               <Pressable
                 onPress={onPrev}
-                style={({ pressed, hovered }: any) => [styles.headerNavBtn, (pressed || hovered) && styles.headerNavBtnHover]}
+                style={({ pressed, hovered }: any) => [
+                  styles.navBtn,
+                  (pressed || hovered) && styles.navBtnHover,
+                ]}
                 accessibilityLabel="Previous Project"
               >
-                <Text style={styles.headerNavBtnText}>{'< Prev'}</Text>
+                <Text style={styles.navBtnText}>{'< Prev'}</Text>
               </Pressable>
 
               <Pressable
                 onPress={onNext}
-                style={({ pressed, hovered }: any) => [styles.headerNavBtn, (pressed || hovered) && styles.headerNavBtnHover]}
+                style={({ pressed, hovered }: any) => [
+                  styles.navBtn,
+                  (pressed || hovered) && styles.navBtnHover,
+                ]}
                 accessibilityLabel="Next Project"
               >
-                <Text style={styles.headerNavBtnText}>{'Next >'}</Text>
+                <Text style={styles.navBtnText}>{'Next >'}</Text>
               </Pressable>
 
               <Pressable
                 onPress={onClose}
-                style={({ pressed, hovered }: any) => [styles.headerCloseBtn, (pressed || hovered) && styles.headerCloseBtnHover]}
+                style={({ pressed, hovered }: any) => [
+                  styles.closeBtn,
+                  (pressed || hovered) && styles.closeBtnHover,
+                ]}
                 accessibilityLabel="Close Modal"
               >
-                <Text style={styles.headerCloseBtnText}>✕</Text>
+                <Text style={styles.closeBtnText}>✕</Text>
               </Pressable>
             </View>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-            {/* HERO SECTION */}
-            <View style={styles.heroSection}>
-              <View style={styles.heroMetaRow}>
-                <View style={styles.heroStatusBadge}>
-                  <View style={styles.heroStatusDot} />
-                  <Text style={styles.heroStatusLabel}>{project.status.toUpperCase()} SYSTEM • {project.year}</Text>
-                </View>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalScrollBody}>
+            {/* PART 1: Hero Sales Pitch (delay 0ms) */}
+            <View style={[styles.partContainer, partAnim(0)]}>
+              <Text style={styles.modalProjectTitle}>{project.title}</Text>
+              <Text style={[styles.modalHeadline, { color: accent }]}>{project.headline}</Text>
+              <Text style={styles.modalDescription}>{project.description}</Text>
 
-                {project.metrics && project.metrics[0] ? (
-                  <View style={styles.heroMetricPill}>
-                    <Text style={styles.heroMetricPillText}>⚡ {project.metrics[0].value} {project.metrics[0].label}</Text>
-                  </View>
-                ) : null}
-              </View>
-
-              <Text style={styles.heroTitle}>{project.title}</Text>
-              <Text style={styles.heroHeadline}>{project.headline}</Text>
-              <Text style={styles.heroDescription}>{project.description}</Text>
-
-              {/* Action Bar */}
+              {/* Action Buttons Bar */}
               <View style={styles.heroActionRow}>
                 {project.live ? (
                   <Pressable
                     style={({ pressed, hovered }: any) => [
-                      styles.btnPaywayPrimary,
-                      (pressed || hovered) && styles.btnPaywayPrimaryHover,
+                      styles.actionPrimaryBtn,
+                      { backgroundColor: accent },
+                      (pressed || hovered) && { opacity: 0.9, transform: [{ translateY: -2 }] },
                     ]}
                     onPress={() => Linking.openURL(project.live)}
                   >
-                    <Text style={styles.btnPaywayPrimaryText}>🚀 Launch Live System ↗</Text>
+                    <Text style={styles.actionPrimaryText}>🚀 Launch Live System ↗</Text>
                   </Pressable>
                 ) : null}
 
                 {!isPrivate && project.github ? (
                   <Pressable
                     style={({ pressed, hovered }: any) => [
-                      styles.btnPaywayOutline,
-                      (pressed || hovered) && styles.btnPaywayOutlineHover,
+                      styles.actionSecondaryBtn,
+                      (pressed || hovered) && styles.actionSecondaryBtnHover,
                     ]}
                     onPress={() => Linking.openURL(project.github)}
                   >
-                    <Text style={styles.btnPaywayOutlineText}>📦 GitHub Repository ↗</Text>
+                    <Text style={[styles.actionSecondaryText, { color: colors.textPrimary }]}>📦 GitHub Repository ↗</Text>
                   </Pressable>
                 ) : null}
 
                 <Pressable
                   style={({ pressed, hovered }: any) => [
-                    styles.btnPaywayCyanOutline,
-                    (pressed || hovered) && styles.btnPaywayCyanOutlineHover,
+                    styles.actionInquireBtn,
+                    (pressed || hovered) && styles.actionInquireBtnHover,
                   ]}
                   onPress={() => Linking.openURL(telegramUrl)}
                 >
-                  <Text style={styles.btnPaywayCyanOutlineText}>💬 Contact on Telegram ↗</Text>
+                  <Text style={styles.actionInquireText}>💬 Discuss on Telegram ↗</Text>
                 </Pressable>
 
                 <Pressable
                   style={({ pressed, hovered }: any) => [
-                    styles.btnPaywayOutline,
-                    (pressed || hovered) && styles.btnPaywayOutlineHover,
+                    styles.actionEmailBtn,
+                    (pressed || hovered) && styles.actionEmailBtnHover,
                   ]}
                   onPress={() => Linking.openURL(emailUrl)}
                 >
-                  <Text style={styles.btnPaywayOutlineText}>✉️ Email Inquiry ↗</Text>
+                  <Text style={styles.actionEmailText}>✉️ Email Inquiry ↗</Text>
                 </Pressable>
               </View>
             </View>
 
-            {/* 100% CODE-DRAWN ANIMATED ARCHITECTURE PIPELINE */}
-            <View style={styles.codeArchStageBox}>
-              <View style={styles.codeArchHeader}>
-                <View style={styles.codeArchTagRow}>
-                  <View style={styles.codeArchTag}>
-                    <Text style={styles.codeArchTagText}>100% CODE-DRAWN SYSTEM ARCHITECTURE</Text>
-                  </View>
-                  <View style={styles.livePulseTag}>
-                    <View style={styles.livePulseDot} />
-                    <Text style={styles.livePulseText}>
-                      {isHighTraffic ? '⚡ HIGH-THROUGHPUT BUS (500 REQ/S)' : '🟢 EVENT BUS: REAL-TIME STREAMING'}
-                    </Text>
-                  </View>
-                </View>
-                <Text style={styles.codeArchTitle}>
-                  {isFleet ? 'PTT 20+ Station Telemetry & Binlog Replication Pipeline' : 'CamTech Omnichannel Microservices & Hardware Bus'}
-                </Text>
-                <Text style={styles.codeArchSubtitle}>
-                  {isFleet
-                    ? 'Pure code-drawn topology mapping physical pump dispensers, local POS cache, real-time MySQL binary log streams, and Telegram fleet alerts.'
-                    : 'Pure code-drawn architecture coordinating client web storefronts, retail POS counters, Zero-Trust tunnels, ACID databases, and automated delivery dispatch.'}
-                </Text>
-              </View>
-
-              {/* Traffic Speed Toggle */}
-              <View style={styles.codeArchControlBar}>
-                <Pressable
-                  onPress={() => setIsHighTraffic(!isHighTraffic)}
-                  style={[styles.codeArchTrafficBtn, isHighTraffic && styles.codeArchTrafficBtnActive]}
-                >
-                  <Text style={styles.codeArchTrafficIcon}>{isHighTraffic ? '⚡' : '🚀'}</Text>
-                  <Text style={[styles.codeArchTrafficText, isHighTraffic && styles.codeArchTrafficTextActive]}>
-                    {isHighTraffic ? 'Stress Test: 500 req/s Active (Speed 2.5x)' : 'Simulate High-Load Event Traffic (Click)'}
-                  </Text>
-                </Pressable>
-                <Text style={styles.codeArchHint}>Tap any architecture block to inspect live protocol, hardware interfaces, and failover mechanics.</Text>
-              </View>
-
-              {/* The Pipeline Canvas */}
-              <ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={styles.pipelineFlowScroll}>
-                <View style={styles.pipelineFlowContainer}>
-                  {pipelineStages.map((stg, stgIdx) => (
-                    <React.Fragment key={stg.stage}>
-                      <View style={styles.pipelineStageCol}>
-                        <View style={styles.pipelineStageHeaderPill}>
-                          <Text style={styles.pipelineStageHeaderText}>{stg.stage}</Text>
-                        </View>
-
-                        <View style={styles.pipelineNodesCol}>
-                          {stg.nodes.map((node) => {
-                            const isNodeActive = selectedNode.id === node.id;
-                            return (
-                              <Pressable
-                                key={node.id}
-                                onPress={() => setSelectedNode(node)}
-                                style={[
-                                  styles.codeNodeCard,
-                                  isNodeActive && styles.codeNodeCardActive,
-                                ]}
-                              >
-                                <View style={styles.codeNodeTopRow}>
-                                  <View style={[styles.codeNodeIconBox, isNodeActive && styles.codeNodeIconBoxActive]}>
-                                    <Text style={styles.codeNodeIconText}>{node.icon}</Text>
-                                  </View>
-                                  <View style={styles.codeNodeStatusPill}>
-                                    <View style={[styles.codeNodeStatusDot, { backgroundColor: isNodeActive ? THEME_ACCENT.emerald : THEME_ACCENT.cyan }]} />
-                                    <Text style={styles.codeNodeStatusText}>{node.metric}</Text>
-                                  </View>
-                                </View>
-
-                                <Text style={styles.codeNodeName}>{node.name}</Text>
-                                <Text style={styles.codeNodeTech}>{node.tech}</Text>
-                              </Pressable>
-                            );
-                          })}
-                        </View>
-                      </View>
-
-                      {/* Animated Connector Arrow between stages */}
-                      {stgIdx < pipelineStages.length - 1 && (
-                        <View style={styles.pipelineConnectorCol}>
-                          {Platform.OS === 'web' &&
-                            React.createElement(
-                              'svg',
-                              {
-                                width: 48,
-                                height: 80,
-                                style: { overflow: 'visible' },
-                              },
-                              React.createElement('line', {
-                                x1: 0,
-                                y1: 40,
-                                x2: 48,
-                                y2: 40,
-                                stroke: THEME_ACCENT.cyan,
-                                strokeWidth: isHighTraffic ? 2.5 : 1.8,
-                                strokeDasharray: '5,5',
-                                style: {
-                                  animation: `ct-dash-flow ${isHighTraffic ? '0.4s' : '1.1s'} linear infinite`,
-                                  filter: 'drop-shadow(0 0 4px #00BCD4)',
-                                },
-                              }),
-                              React.createElement('circle', {
-                                cx: 24,
-                                cy: 40,
-                                r: isHighTraffic ? 4 : 3,
-                                fill: THEME_ACCENT.emerald,
-                                style: {
-                                  animation: `ct-pulse-dot ${isHighTraffic ? '0.6s' : '1.4s'} ease-in-out infinite`,
-                                },
-                              })
-                            )}
-                        </View>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </View>
-              </ScrollView>
-
-              {/* Active Node Architectural Inspector Card */}
-              <View style={styles.codeInspectorCard}>
-                <View style={styles.codeInspectorHeader}>
-                  <View style={styles.codeInspectorTitleRow}>
-                    <Text style={styles.codeInspectorIcon}>{selectedNode.icon}</Text>
-                    <View>
-                      <Text style={styles.codeInspectorName}>{selectedNode.name}</Text>
-                      <Text style={styles.codeInspectorProtocol}>Protocol: {selectedNode.tech}</Text>
-                    </View>
-                  </View>
-                  <View style={styles.codeInspectorMetricBadge}>
-                    <Text style={styles.codeInspectorMetricText}>Status: {selectedNode.metric} (Operational)</Text>
-                  </View>
-                </View>
-                <Text style={styles.codeInspectorDesc}>{selectedNode.desc}</Text>
-              </View>
-
-              {/* Real-Time Live Bus Log Stream Ticker */}
-              <View style={styles.busTerminalBox}>
-                <View style={styles.busTerminalHeader}>
-                  <Text style={styles.busTerminalTitle}>LIVE EVENT BUS TELEMETRY STREAM</Text>
-                  <Text style={styles.busTerminalLive}>● LOGGING ACTIVE</Text>
-                </View>
-                <View style={styles.busTerminalBody}>
-                  <Text style={styles.busTerminalLine}>
-                    [10:18:02] <Text style={{ color: THEME_ACCENT.cyan }}>[GATEWAY]</Text> ACK heartbeat from 20 station nodes • Delta lag: 14ms
-                  </Text>
-                  <Text style={styles.busTerminalLine}>
-                    [10:18:05] <Text style={{ color: THEME_ACCENT.emerald }}>[POS_SYNC]</Text> Binlog transaction #8812 committed to master cluster
-                  </Text>
-                  <Text style={styles.busTerminalLine}>
-                    [10:18:08] <Text style={{ color: THEME_ACCENT.amber }}>[TELEGRAM]</Text> Hourly consolidated ledger push dispatched to management
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* IF IN DEVELOPER SANDBOX MODE */}
-            {viewMode === 'developer' ? (
-              <View style={styles.developerSuiteBox}>
-                <View style={styles.suiteHeader}>
-                  <View>
-                    <Text style={styles.suiteTitle}>Developer Code Suite</Text>
-                    <Text style={styles.suiteSub}>Production REST API payload specifications, headers, and verified responses</Text>
-                  </View>
-                  <View style={styles.suiteLiveTag}>
-                    <Text style={styles.suiteLiveTagText}>🟢 SANDBOX ACTIVE</Text>
-                  </View>
-                </View>
-
-                {/* Language Switch Tabs */}
-                <View style={styles.langTabBar}>
-                  {(['curl', 'js', 'python', 'response'] as const).map((lang) => (
-                    <Pressable
-                      key={lang}
-                      onPress={() => setActiveCodeLang(lang)}
-                      style={[
-                        styles.langTabBtn,
-                        activeCodeLang === lang && styles.langTabBtnActive,
-                      ]}
-                    >
-                      <Text style={[styles.langTabBtnText, activeCodeLang === lang && styles.langTabBtnTextActive]}>
-                        {lang === 'curl' ? 'cURL' : lang === 'js' ? 'Node.js / JS' : lang === 'python' ? 'Python' : 'JSON Response (200 OK)'}
-                      </Text>
-                    </Pressable>
-                  ))}
-                  <Pressable onPress={() => copyCode(currentCode)} style={styles.copyBtn}>
-                    <Text style={styles.copyBtnText}>{copied ? '✓ Copied' : '📋 Copy Code'}</Text>
-                  </Pressable>
-                </View>
-
-                {/* Code Terminal View */}
-                <View style={styles.codeTerminal}>
-                  <ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={{ padding: 16 }}>
-                    <Text style={styles.codeContent}>{currentCode}</Text>
-                  </ScrollView>
-                </View>
-
-                {/* API Request Fields Reference Table */}
-                <View style={styles.paramTable}>
-                  <Text style={styles.paramTableTitle}>API PARAMETER SPECIFICATIONS</Text>
-                  <View style={styles.paramRowHeader}>
-                    <Text style={[styles.paramCell, { flex: 1.8, fontWeight: '900' }]}>FIELD</Text>
-                    <Text style={[styles.paramCell, { flex: 1.2, fontWeight: '900' }]}>TYPE</Text>
-                    <Text style={[styles.paramCell, { flex: 1.2, fontWeight: '900' }]}>REQUIREMENT</Text>
-                    <Text style={[styles.paramCell, { flex: 3.5, fontWeight: '900' }]}>DESCRIPTION</Text>
-                  </View>
-                  <View style={styles.paramRow}>
-                    <Text style={[styles.paramCell, styles.paramCode, { flex: 1.8 }]}>X-Api-Key</Text>
-                    <Text style={[styles.paramCell, { flex: 1.2 }]}>String</Text>
-                    <Text style={[styles.paramCell, styles.paramReq, { flex: 1.2 }]}>Required</Text>
-                    <Text style={[styles.paramCell, { flex: 3.5 }]}>HMAC authorization token generated via Cloudflare Gateway</Text>
-                  </View>
-                  <View style={styles.paramRow}>
-                    <Text style={[styles.paramCell, styles.paramCode, { flex: 1.8 }]}>order_id / station_id</Text>
-                    <Text style={[styles.paramCell, { flex: 1.2 }]}>String</Text>
-                    <Text style={[styles.paramCell, styles.paramReq, { flex: 1.2 }]}>Required</Text>
-                    <Text style={[styles.paramCell, { flex: 3.5 }]}>Unique alphanumeric transaction or hardware terminal identifier</Text>
-                  </View>
-                  <View style={styles.paramRow}>
-                    <Text style={[styles.paramCell, styles.paramCode, { flex: 1.8 }]}>payment_method</Text>
-                    <Text style={[styles.paramCell, { flex: 1.2 }]}>Enum</Text>
-                    <Text style={[styles.paramCell, styles.paramReq, { flex: 1.2 }]}>Required</Text>
-                    <Text style={[styles.paramCell, { flex: 3.5 }]}>Supported: ABA_KHQR, BAKONG, VISA, MASTERCARD, CASH_POS</Text>
-                  </View>
-                  <View style={styles.paramRow}>
-                    <Text style={[styles.paramCell, styles.paramCode, { flex: 1.8 }]}>replication_lag_ms</Text>
-                    <Text style={[styles.paramCell, { flex: 1.2 }]}>Integer</Text>
-                    <Text style={[styles.paramCell, styles.paramOpt, { flex: 1.2 }]}>Telemetry</Text>
-                    <Text style={[styles.paramCell, { flex: 3.5 }]}>Binlog delta verification timestamp for cross-station sync</Text>
-                  </View>
-                </View>
-              </View>
-            ) : null}
-
-            {/* INTERACTIVE SIMULATOR WIDGET */}
-            <View style={styles.simulatorWrapper}>
-              <View style={styles.simulatorHeader}>
-                <View style={styles.simBadge}>
-                  <Text style={styles.simBadgeText}>{project.simulator?.badge || 'INTERACTIVE DEMONSTRATION'}</Text>
-                </View>
-                <Text style={styles.simTitle}>{project.simulator?.title || 'Interactive Live Simulator'}</Text>
-                <Text style={styles.simSubtitle}>{project.simulator?.subtitle || 'Experience live execution behavior and real-time outputs'}</Text>
-              </View>
-
-              {/* SIMULATOR TYPE: FLEET TELEMETRY (PTT 20+ STATIONS) */}
-              {isFleet ? (
-                <View style={styles.fleetSimulatorBox}>
-                  <View style={styles.fleetTopBar}>
-                    <Text style={styles.fleetBarTitle}>CAMBODIA FLEET RADAR: 20 STATIONS ACTIVE</Text>
-                    <Text style={styles.fleetBarSub}>🟢 All Nodes Online • 0 Offline Events • Binlog Sync &lt; 25ms</Text>
-                  </View>
-
-                  {/* Horizontal station selectors (20 stations) */}
-                  <Text style={styles.fleetSelectorHint}>Select any station node to inspect live pump metrics & replication latency:</Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={styles.stationChipsList}>
-                    {STATIONS_20_DATA.map((st, idx) => {
-                      const isSel = idx === selectedStationIndex;
-                      return (
-                        <Pressable
-                          key={st.id}
-                          onPress={() => setSelectedStationIndex(idx)}
-                          style={[styles.stationChip, isSel && styles.stationChipActive]}
-                        >
-                          <Text style={[styles.stationChipId, isSel && styles.stationChipIdActive]}>{st.id}</Text>
-                          <Text style={[styles.stationChipName, isSel && styles.stationChipNameActive]} numberOfLines={1}>
-                            {st.city}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </ScrollView>
-
-                  {/* Selected Station Telemetry Cockpit */}
-                  {(() => {
-                    const activeSt = STATIONS_20_DATA[selectedStationIndex] || STATIONS_20_DATA[0];
-                    return (
-                      <View style={styles.telemetryCard}>
-                        <View style={styles.telemetryCardHeader}>
-                          <View>
-                            <Text style={styles.telemetryStationTitle}>{activeSt.id}: {activeSt.name}</Text>
-                            <Text style={styles.telemetryStationMeta}>{activeSt.city}, Cambodia • {activeSt.nozz} Fuel Dispenser Nozzles</Text>
-                          </View>
-                          <View style={styles.telemetryLiveBadge}>
-                            <View style={styles.telemetryLiveDot} />
-                            <Text style={styles.telemetryLiveText}>{activeSt.status} • {activeSt.latency}</Text>
-                          </View>
-                        </View>
-
-                        <View style={styles.telemetryMetricsRow}>
-                          <View style={styles.telemetryMetricItem}>
-                            <Text style={styles.telemetryMetricVal}>{activeSt.liters}</Text>
-                            <Text style={styles.telemetryMetricLbl}>Today's Fuel Flow</Text>
-                          </View>
-                          <View style={styles.telemetryMetricItem}>
-                            <Text style={[styles.telemetryMetricVal, { color: THEME_ACCENT.cyan }]}>{activeSt.revenue}</Text>
-                            <Text style={styles.telemetryMetricLbl}>Gross Station Revenue</Text>
-                          </View>
-                          <View style={styles.telemetryMetricItem}>
-                            <Text style={[styles.telemetryMetricVal, { color: THEME_ACCENT.emerald }]}>{activeSt.qrShare}</Text>
-                            <Text style={styles.telemetryMetricLbl}>ABA KHQR Penetration</Text>
-                          </View>
-                          <View style={styles.telemetryMetricItem}>
-                            <Text style={styles.telemetryMetricVal}>{activeSt.latency}</Text>
-                            <Text style={styles.telemetryMetricLbl}>MySQL Sync Latency</Text>
-                          </View>
-                        </View>
-
-                        <View style={styles.telemetryFooter}>
-                          <Text style={styles.telemetryFooterText}>
-                            🛡️ Hardware Protocol: RS-485 / Modbus Gateway • Edge Failover Buffer: 0 Dropped Packets • Auto-reconnect on 4G recovery
-                          </Text>
-                        </View>
-                      </View>
-                    );
-                  })()}
-                </View>
-              ) : null}
-
-              {/* SIMULATOR TYPE: CHECKOUT (ABA PAYWAY KHQR) */}
-              {project.simulator?.type === 'checkout' ? (
-                <View style={styles.checkoutSimulatorBox}>
-                  <View style={styles.checkoutOrderSummary}>
-                    <View style={styles.checkoutSummaryCol}>
-                      <Text style={styles.checkoutBrandTag}>CAMTECH OFFICIAL STORE & POS</Text>
-                      <Text style={styles.checkoutOrderTitle}>Order #CT-2026-9810</Text>
-                      <Text style={styles.checkoutOrderItems}>• Pro Workstation License & Hardware Adapter</Text>
-                    </View>
-                    <View style={styles.checkoutPriceCol}>
-                      <Text style={styles.checkoutPriceTotal}>$149.00</Text>
-                      <Text style={styles.checkoutPriceSub}>USD</Text>
-                    </View>
-                  </View>
-
-                  {/* Payment Stage */}
-                  {checkoutStep === 'cart' && (
-                    <View style={styles.checkoutCardBody}>
-                      <View style={styles.khqrFrame}>
-                        <View style={styles.khqrInnerBox}>
-                          <View style={styles.khqrLaserLine} pointerEvents="none" />
-                          <Text style={styles.khqrMockQr}>[ KHQR CODE MATRIX ]</Text>
-                          <View style={styles.khqrPaywayLogoRow}>
-                            <Text style={styles.khqrPaywayLogo}>PAYWAY KHQR</Text>
-                          </View>
-                        </View>
-                        <Text style={styles.khqrScanText}>Scan with ABA Mobile or any Bakong App</Text>
-                      </View>
-
-                      <View style={styles.checkoutCtaWrap}>
-                        <Pressable
-                          onPress={() => {
-                            setCheckoutStep('scanning');
-                            setTimeout(() => setCheckoutStep('approved'), 1200);
-                          }}
-                          style={({ pressed, hovered }: any) => [
-                            styles.btnPaywayPrimary,
-                            (pressed || hovered) && styles.btnPaywayPrimaryHover,
-                          ]}
-                        >
-                          <Text style={styles.btnPaywayPrimaryText}>📲 Simulate ABA Mobile Scan & Pay ($149.00)</Text>
-                        </Pressable>
-                        <Text style={styles.checkoutSimNote}>Simulates instant webhook dispatch and inventory deduction in POS</Text>
-                      </View>
-                    </View>
-                  )}
-
-                  {checkoutStep === 'scanning' && (
-                    <View style={styles.checkoutProcessingBox}>
-                      <Text style={styles.processingSpinner}>⚡</Text>
-                      <Text style={styles.processingTitle}>Authorizing Transaction API...</Text>
-                      <Text style={styles.processingSub}>Validating cryptographic signature & reserving inventory</Text>
-                    </View>
-                  )}
-
-                  {checkoutStep === 'approved' && (
-                    <View style={styles.checkoutApprovedBox}>
-                      <View style={styles.approvedIconWrap}>
-                        <Text style={styles.approvedIcon}>✓</Text>
-                      </View>
-                      <Text style={styles.approvedTitle}>Payment Approved via ABA PayWay!</Text>
-                      <Text style={styles.approvedSub}>Transaction Ref: PW-20260928-847291 • Status: COMPLETED</Text>
-                      <View style={styles.approvedLogBox}>
-                        <Text style={styles.approvedLogLine}>[Webhook] Received payment verification from gateway</Text>
-                        <Text style={styles.approvedLogLine}>[POS Hub] Deducted stock in warehouse #1 • Receipt printed in 42ms</Text>
-                      </View>
-                      <Pressable onPress={() => setCheckoutStep('cart')} style={styles.resetSimBtn}>
-                        <Text style={styles.resetSimBtnText}>↺ Test Again</Text>
-                      </Pressable>
-                    </View>
-                  )}
-                </View>
-              ) : null}
-
-              {/* SIMULATOR TYPE: TELEGRAM BOT */}
-              {project.simulator?.type === 'bot' ? (
-                <View style={styles.telegramSimulatorBox}>
-                  <View style={styles.tgHeader}>
-                    <View style={styles.tgAvatar}>
-                      <Text style={styles.tgAvatarText}>🤖</Text>
-                    </View>
-                    <View>
-                      <Text style={styles.tgBotName}>CamTech Fleet Telemetry Bot</Text>
-                      <Text style={styles.tgBotStatus}>bot • 20+ Stations Connected</Text>
-                    </View>
-                  </View>
-
-                  <ScrollView style={styles.tgChatArea} contentContainerStyle={{ padding: 14, gap: 10 }}>
-                    {botChatMessages.map((msg, i) => (
-                      <View
-                        key={i}
-                        style={[
-                          styles.tgBubble,
-                          msg.sender === 'user' ? styles.tgBubbleUser : styles.tgBubbleBot,
-                        ]}
-                      >
-                        <Text style={styles.tgMsgText}>{msg.text}</Text>
-                        <Text style={styles.tgMsgTime}>{msg.time}</Text>
-                      </View>
-                    ))}
-                  </ScrollView>
-
-                  {/* Quick Telegram Command Action Bar */}
-                  <View style={styles.tgCommandsRow}>
-                    <Pressable onPress={() => handleBotCommand('/today')} style={styles.tgCmdChip}>
-                      <Text style={styles.tgCmdChipText}>📊 /today (Revenue)</Text>
-                    </Pressable>
-                    <Pressable onPress={() => handleBotCommand('/station_report')} style={styles.tgCmdChip}>
-                      <Text style={styles.tgCmdChipText}>⛽ /station_report (20 Stations)</Text>
-                    </Pressable>
-                    <Pressable onPress={() => handleBotCommand('/alerts')} style={styles.tgCmdChip}>
-                      <Text style={styles.tgCmdChipText}>⚠️ /alerts (Health Check)</Text>
-                    </Pressable>
-                  </View>
-                </View>
-              ) : null}
-
-              {/* SIMULATOR TYPE: CONSOLE / AUDIT / MAP */}
-              {!isFleet && project.simulator?.type !== 'checkout' && project.simulator?.type !== 'bot' ? (
-                <View style={styles.consoleSimulatorBox}>
-                  <View style={styles.consoleHeader}>
-                    <Text style={styles.consoleHeaderTitle}>LIVE API PIPELINE TESTER</Text>
-                    <Text style={styles.consoleHeaderStatus}>200 OK • LATENCY: 18ms</Text>
-                  </View>
-                  <View style={styles.consoleBody}>
-                    <Text style={styles.consoleCodeLine}>&gt; POST /v1/telemetry/event HTTP/1.1</Text>
-                    <Text style={styles.consoleCodeLine}>&gt; Host: api.camtech.cam</Text>
-                    <Text style={styles.consoleCodeLine}>&gt; Authorization: Bearer ct_live_token</Text>
-                    <Text style={[styles.consoleCodeLine, { color: THEME_ACCENT.emerald }]}>&lt; HTTP/1.1 200 OK</Text>
-                    <Text style={[styles.consoleCodeLine, { color: THEME_ACCENT.textMuted }]}>
-                      &lt; {`{"status": "ACK", "station_nodes_synced": 20, "binlog_delta": 0, "hash": "sha256:8f4a2"}`}
-                    </Text>
-                  </View>
-                </View>
-              ) : null}
-            </View>
-
-            {/* KEY PERFORMANCE METRICS STRIP */}
+            {/* PART 2: Key KPI Metrics Strip (delay 70ms) */}
             {project.metrics && project.metrics.length > 0 && (
-              <View style={styles.metricsSection}>
+              <View style={[styles.partContainer, partAnim(70)]}>
                 <View style={styles.sectionHeaderRow}>
                   <Text style={styles.sectionHeaderLabel}>KEY PERFORMANCE METRICS</Text>
                   <View style={styles.sectionHeaderLine} />
@@ -978,8 +364,17 @@ function ProjectDetailModal({
 
                 <View style={styles.metricsGrid}>
                   {project.metrics.map((metric) => (
-                    <View key={metric.label} style={styles.metricCard}>
-                      <Text style={[styles.metricValue, { color: THEME_ACCENT.cyan }]}>{metric.value}</Text>
+                    <View
+                      key={metric.label}
+                      style={[
+                        styles.metricCard,
+                        Platform.OS === 'web' &&
+                          ({
+                            transition: 'all 200ms ease',
+                          } as any),
+                      ]}
+                    >
+                      <Text style={[styles.metricValue, { color: accent }]}>{metric.value}</Text>
                       <Text style={styles.metricLabel}>{metric.label}</Text>
                       {metric.sub && <Text style={styles.metricSub}>{metric.sub}</Text>}
                     </View>
@@ -988,171 +383,176 @@ function ProjectDetailModal({
               </View>
             )}
 
-            {/* TAB SELECTOR */}
-            <View style={styles.detailTabsBar}>
-              {[
-                { key: 'overview', label: '🎯 The Solution', sub: 'Problem vs Fix' },
-                { key: 'features', label: '⚡ Capabilities', sub: 'Feature Modules' },
-                { key: 'architecture', label: '🏗️ Architecture', sub: 'Stack & Security' },
-                { key: 'impact', label: '📈 Proven ROI', sub: 'Business Impact' },
-              ].map((tab: any) => {
-                const isSelected = activeTab === tab.key;
-                return (
-                  <Pressable
-                    key={tab.key}
-                    onPress={() => setActiveTab(tab.key)}
-                    style={[styles.detailTabBtn, isSelected && styles.detailTabBtnActive]}
-                  >
-                    <Text style={[styles.detailTabBtnLabel, isSelected && styles.detailTabBtnLabelActive]}>
-                      {tab.label}
-                    </Text>
-                    <Text style={[styles.detailTabBtnSub, isSelected && styles.detailTabBtnSubActive]}>
-                      {tab.sub}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+            {/* PART 3: Interactive Tabs Switcher (delay 130ms) */}
+            <View style={[styles.partContainer, partAnim(130)]}>
+              <View style={styles.tabBar}>
+                {tabs.map((tab) => {
+                  const isActive = activeTab === tab.key;
+                  return (
+                    <Pressable
+                      key={tab.key}
+                      onPress={() => setActiveTab(tab.key)}
+                      style={[
+                        styles.tabBtn,
+                        isActive && [styles.tabBtnActive, { borderColor: accent, backgroundColor: `${accent}18` }],
+                      ]}
+                    >
+                      <Text style={[styles.tabBtnLabel, isActive && { color: accent, fontWeight: '900' }]}>
+                        {tab.label}
+                      </Text>
+                      <Text style={[styles.tabBtnSub, isActive && { color: colors.textPrimary }]}>
+                        {tab.sub}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
             </View>
 
-            {/* DYNAMIC TAB CONTENT */}
-            {activeTab === 'overview' && (
-              <View style={styles.comparativeContainer}>
-                {/* The Problem / Challenge */}
-                <View style={styles.challengeBox}>
-                  <View style={styles.boxTitleRow}>
-                    <View style={styles.boxIconDanger}>
-                      <Text style={styles.boxIconDangerText}>🛑</Text>
-                    </View>
-                    <View>
-                      <Text style={styles.boxTitleDanger}>The Business Challenge</Text>
-                      <Text style={styles.boxSubDanger}>Operational Friction & Bottlenecks</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.boxDesc}>{project.challenge}</Text>
-                </View>
-
-                {/* The Engineering Solution */}
-                <View style={styles.solutionBox}>
-                  <View style={styles.boxTitleRow}>
-                    <View style={styles.boxIconSuccess}>
-                      <Text style={styles.boxIconSuccessText}>💡</Text>
-                    </View>
-                    <View>
-                      <Text style={styles.boxTitleSuccess}>The Engineering Breakthrough</Text>
-                      <Text style={styles.boxSubSuccess}>Engineered by Chhoy Too</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.boxDesc}>{project.solution}</Text>
-                </View>
-              </View>
-            )}
-
-            {activeTab === 'features' && (
-              <View style={styles.featuresGrid}>
-                {project.features.map((feat) => (
-                  <View key={feat.title} style={styles.featureCard}>
-                    <View style={styles.featureCardTop}>
-                      <View style={styles.featureIconBadge}>
-                        <Text style={styles.featureIconText}>{feat.icon}</Text>
+            {/* PART 4: Tab Content Dynamic View (delay 190ms) */}
+            <View style={[styles.partContainer, partAnim(190)]}>
+              {activeTab === 'pitch' && (
+                <View style={styles.comparativeContainer}>
+                  {/* The Problem / Challenge */}
+                  <View style={styles.challengeBox}>
+                    <View style={styles.boxTitleRow}>
+                      <View style={styles.boxIconDanger}>
+                        <Text style={styles.boxIconDangerText}>🛑</Text>
                       </View>
-                      {feat.badge && (
-                        <View style={styles.featurePill}>
-                          <Text style={styles.featurePillText}>{feat.badge}</Text>
+                      <View>
+                        <Text style={styles.boxTitleDanger}>The Business Challenge</Text>
+                        <Text style={styles.boxSubDanger}>Operational Friction & Bottlenecks</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.boxDesc}>{project.challenge}</Text>
+                  </View>
+
+                  {/* The Solution */}
+                  <View style={[styles.solutionBox, { borderColor: `${accent}66` }]}>
+                    <View style={styles.boxTitleRow}>
+                      <View style={[styles.boxIconSuccess, { backgroundColor: `${accent}22` }]}>
+                        <Text style={styles.boxIconSuccessText}>💡</Text>
+                      </View>
+                      <View>
+                        <Text style={[styles.boxTitleSuccess, { color: accent }]}>The Engineering Breakthrough</Text>
+                        <Text style={styles.boxSubSuccess}>Engineered by Chhoy Too</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.boxDesc}>{project.solution}</Text>
+                  </View>
+                </View>
+              )}
+
+              {activeTab === 'features' && (
+                <View style={styles.featuresGrid}>
+                  {project.features.map((feat) => (
+                    <View key={feat.title} style={styles.featureCard}>
+                      <View style={styles.featureCardTop}>
+                        <View style={[styles.featureIconBadge, { backgroundColor: `${accent}16`, borderColor: `${accent}33` }]}>
+                          <Text style={styles.featureIconText}>{feat.icon}</Text>
                         </View>
-                      )}
-                    </View>
-                    <Text style={styles.featureTitle}>{feat.title}</Text>
-                    <Text style={styles.featureDesc}>{feat.desc}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
-
-            {activeTab === 'architecture' && (
-              <View style={styles.architectureContainer}>
-                <View style={styles.archGrid}>
-                  {project.architecture.map((arch) => (
-                    <View key={arch.category} style={styles.archCard}>
-                      <Text style={styles.archCategoryTitle}>{arch.category}</Text>
-                      <View style={styles.archItemsList}>
-                        {arch.items.map((item) => (
-                          <View key={item} style={styles.archItemBadge}>
-                            <View style={styles.archDot} />
-                            <Text style={styles.archItemText}>{item}</Text>
+                        {feat.badge && (
+                          <View style={[styles.featurePill, { borderColor: `${accent}44`, backgroundColor: `${accent}10` }]}>
+                            <Text style={[styles.featurePillText, { color: accent }]}>{feat.badge}</Text>
                           </View>
-                        ))}
+                        )}
                       </View>
+                      <Text style={styles.featureTitle}>{feat.title}</Text>
+                      <Text style={styles.featureDesc}>{feat.desc}</Text>
                     </View>
                   ))}
                 </View>
+              )}
 
-                <View style={styles.archTagsBlock}>
-                  <Text style={styles.archTagsLabel}>TECHNOLOGIES & PROTOCOLS</Text>
-                  <View style={styles.techPillWrap}>
-                    {project.tags.map((tag) => (
-                      <View key={tag} style={styles.techPill}>
-                        <Text style={styles.techPillText}>{tag}</Text>
+              {activeTab === 'architecture' && (
+                <View style={styles.architectureContainer}>
+                  <View style={styles.archGrid}>
+                    {project.architecture.map((arch) => (
+                      <View key={arch.category} style={styles.archCard}>
+                        <Text style={[styles.archCategoryTitle, { color: accent }]}>{arch.category}</Text>
+                        <View style={styles.archItemsList}>
+                          {arch.items.map((item) => (
+                            <View key={item} style={styles.archItemBadge}>
+                              <View style={[styles.archDot, { backgroundColor: accent }]} />
+                              <Text style={styles.archItemText}>{item}</Text>
+                            </View>
+                          ))}
+                        </View>
                       </View>
                     ))}
                   </View>
-                </View>
-              </View>
-            )}
 
-            {activeTab === 'impact' && (
-              <View style={styles.impactContainer}>
-                <View style={styles.impactCardList}>
-                  {project.impact.map((point) => (
-                    <View key={point} style={styles.impactCard}>
-                      <View style={styles.impactCheckBadge}>
-                        <Text style={styles.impactCheckText}>✓</Text>
-                      </View>
-                      <Text style={styles.impactPointText}>{point}</Text>
+                  <View style={styles.archTagsBlock}>
+                    <Text style={styles.archTagsLabel}>TECHNOLOGIES & PROTOCOLS</Text>
+                    <View style={styles.techPillWrap}>
+                      {project.tags.map((tag) => (
+                        <View key={tag} style={styles.techPill}>
+                          <Text style={styles.techPillText}>{tag}</Text>
+                        </View>
+                      ))}
                     </View>
-                  ))}
+                  </View>
+                </View>
+              )}
+
+              {activeTab === 'impact' && (
+                <View style={styles.impactContainer}>
+                  <View style={styles.impactCardList}>
+                    {project.impact.map((point) => (
+                      <View key={point} style={styles.impactCard}>
+                        <View style={[styles.impactCheckBadge, { backgroundColor: `${accent}18` }]}>
+                          <Text style={[styles.impactCheckText, { color: accent }]}>✓</Text>
+                        </View>
+                        <Text style={styles.impactPointText}>{point}</Text>
+                      </View>
+                    ))}
+                  </View>
+
+                  {isPrivate && (
+                    <View style={styles.complianceNoticeBox}>
+                      <Text style={styles.complianceTitle}>🔒 Enterprise Security & Compliance Notice</Text>
+                      <Text style={styles.complianceDesc}>
+                        {note || 'This codebase is protected by enterprise Non-Disclosure Agreements (NDA) and commercial compliance standards. Demonstrates production-grade experience with confidential corporate databases and mission-critical live hardware.'}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              )}
+            </View>
+
+            {/* PART 5: High-Ticket Client Conversion CTA Banner (delay 250ms) */}
+            <View style={[styles.partContainer, partAnim(250)]}>
+              <View style={[styles.ctaBanner, { borderColor: `${accent}55` }]}>
+                <View style={[styles.ctaGlowOrb, { backgroundColor: `${accent}20` }]} pointerEvents="none" />
+                <View style={styles.ctaTextCol}>
+                  <Text style={styles.ctaHeading}>Need a High-Performance System Engineered for Your Business?</Text>
+                  <Text style={styles.ctaSub}>
+                    From 20+ station POS telemetry and hardware observability to omnichannel microservices commerce networks, I turn complex business challenges into reliable, automated digital realities.
+                  </Text>
                 </View>
 
-                {isPrivate && (
-                  <View style={styles.complianceNoticeBox}>
-                    <Text style={styles.complianceTitle}>🔒 Enterprise Security & Compliance Notice</Text>
-                    <Text style={styles.complianceDesc}>
-                      {note || 'This codebase is protected by enterprise Non-Disclosure Agreements (NDA) and commercial compliance standards. Demonstrates production-grade experience with confidential corporate databases and mission-critical live hardware.'}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            )}
+                <View style={styles.ctaButtonsCol}>
+                  <Pressable
+                    style={({ pressed, hovered }: any) => [
+                      styles.ctaMainBtn,
+                      { backgroundColor: accent },
+                      (pressed || hovered) && { opacity: 0.9, transform: [{ scale: 1.02 }] },
+                    ]}
+                    onPress={() => Linking.openURL(telegramUrl)}
+                  >
+                    <Text style={styles.ctaMainBtnText}>💬 Chat on Telegram</Text>
+                  </Pressable>
 
-            {/* ENTERPRISE CALL TO ACTION */}
-            <View style={styles.ctaBanner}>
-              <View style={styles.ctaGlowOrb} pointerEvents="none" />
-              <View style={styles.ctaTextCol}>
-                <Text style={styles.ctaHeading}>Deploy Resilient Systems Engineered for Your Business</Text>
-                <Text style={styles.ctaSub}>
-                  From 20+ station POS hardware telemetry and automated database replication to omnichannel e-commerce microservices, I design and build mission-critical systems that never go down.
-                </Text>
-              </View>
-
-              <View style={styles.ctaButtonsCol}>
-                <Pressable
-                  style={({ pressed, hovered }: any) => [
-                    styles.btnPaywayPrimary,
-                    (pressed || hovered) && styles.btnPaywayPrimaryHover,
-                  ]}
-                  onPress={() => Linking.openURL(telegramUrl)}
-                >
-                  <Text style={styles.btnPaywayPrimaryText}>💬 Inquire on Telegram ↗</Text>
-                </Pressable>
-
-                <Pressable
-                  style={({ pressed, hovered }: any) => [
-                    styles.btnPaywayOutline,
-                    (pressed || hovered) && styles.btnPaywayOutlineHover,
-                  ]}
-                  onPress={() => Linking.openURL(emailUrl)}
-                >
-                  <Text style={styles.btnPaywayOutlineText}>✉️ Email Project Brief ↗</Text>
-                </Pressable>
+                  <Pressable
+                    style={({ pressed, hovered }: any) => [
+                      styles.ctaSubBtn,
+                      (pressed || hovered) && styles.ctaSubBtnHover,
+                    ]}
+                    onPress={() => Linking.openURL(emailUrl)}
+                  >
+                    <Text style={[styles.ctaSubBtnText, { color: colors.textPrimary }]}>✉️ Email Project Brief</Text>
+                  </Pressable>
+                </View>
               </View>
             </View>
           </ScrollView>
@@ -1163,6 +563,10 @@ function ProjectDetailModal({
 }
 
 const getStyles = (colors: any, isDark: boolean) => {
+  const sectionShadow = Platform.OS === 'web'
+    ? ({ boxShadow: isDark ? '0 26px 90px rgba(0,0,0,0.42)' : '0 26px 90px rgba(15,23,42,0.14)' } as any)
+    : {};
+
   return StyleSheet.create({
     wrapper: {
       width: '100%',
@@ -1173,14 +577,13 @@ const getStyles = (colors: any, isDark: boolean) => {
       padding: 24,
       borderRadius: 32,
       borderWidth: 1,
-      borderColor: 'rgba(0, 188, 212, 0.22)',
-      backgroundColor: '#001424',
+      borderColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(15,23,42,0.16)',
+      backgroundColor: '#030425',
       overflow: 'hidden',
+      ...sectionShadow,
       ...(Platform.OS === 'web'
         ? ({
-            backgroundImage:
-              'radial-gradient(circle at 18% 4%, rgba(0, 188, 212, 0.24), transparent 36%), radial-gradient(circle at 88% 12%, rgba(5, 91, 131, 0.28), transparent 32%), linear-gradient(135deg, #00172B 0%, #001220 58%, #000B14 100%)',
-            boxShadow: '0 28px 90px rgba(0, 10, 20, 0.65)',
+            backgroundImage: 'radial-gradient(circle at 16% 4%, rgba(37,99,235,0.34), transparent 34%), radial-gradient(circle at 88% 12%, rgba(251,191,36,0.16), transparent 26%), linear-gradient(135deg, #060735 0%, #02031F 58%, #01020F 100%)',
           } as any)
         : {}),
     },
@@ -1190,95 +593,105 @@ const getStyles = (colors: any, isDark: boolean) => {
       marginBottom: 24,
     },
     headerIcon: {
-      width: 40,
-      height: 36,
+      width: 38,
+      height: 34,
       borderRadius: 10,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: 'rgba(0, 188, 212, 0.16)',
+      backgroundColor: 'rgba(255,255,255,0.08)',
       borderWidth: 1,
-      borderColor: 'rgba(0, 188, 212, 0.35)',
+      borderColor: 'rgba(255,255,255,0.14)',
     },
     headerIconText: {
-      color: THEME_ACCENT.cyan,
-      fontSize: 16,
+      color: '#FFFFFF',
+      fontSize: 14,
       fontWeight: '900',
       fontFamily: FONT_FAMILY.accent,
     },
     title: {
       color: '#FFFFFF',
       fontSize: 32,
+      lineHeight: 38,
       fontWeight: '900',
       letterSpacing: -0.8,
       textAlign: 'center',
       fontFamily: FONT_FAMILY.header,
     },
     titleAccent: {
-      color: THEME_ACCENT.cyan,
+      color: '#FACC15',
     },
     subtitle: {
-      color: 'rgba(255,255,255,0.72)',
+      color: 'rgba(255,255,255,0.66)',
       fontSize: 15,
-      lineHeight: 22,
+      lineHeight: 23,
+      fontWeight: '600',
       textAlign: 'center',
-      maxWidth: 620,
+      maxWidth: 720,
       fontFamily: FONT_FAMILY.body,
     },
     projectGrid: {
-      gap: 16,
+      gap: 14,
+      flexDirection: 'column',
     },
     projectGridWrap: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      justifyContent: 'space-between',
     },
     projectCard: {
-      borderRadius: 22,
-      borderWidth: 1,
-      borderColor: 'rgba(0, 188, 212, 0.20)',
-      backgroundColor: '#001A30',
+      minHeight: 300,
+      borderRadius: 14,
       overflow: 'hidden',
+      backgroundColor: 'rgba(2,6,23,0.92)',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.10)',
     },
     preview: {
-      minHeight: 240,
-      padding: 18,
-      justifyContent: 'space-between',
+      flex: 1,
+      minHeight: 246,
+      padding: 16,
       position: 'relative',
       overflow: 'hidden',
-      backgroundColor: '#001E38',
+      justifyContent: 'space-between',
     },
     previewGrid: {
       ...StyleSheet.absoluteFillObject,
-      opacity: 0.15,
+      opacity: 0.12,
       ...(Platform.OS === 'web'
         ? ({
-            backgroundImage:
-              'linear-gradient(rgba(0,188,212,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(0,188,212,0.3) 1px, transparent 1px)',
+            backgroundImage: 'linear-gradient(rgba(255,255,255,0.20) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.16) 1px, transparent 1px)',
             backgroundSize: '24px 24px',
           } as any)
         : {}),
     },
     previewOrbA: {
       position: 'absolute',
-      width: 180,
-      height: 180,
-      borderRadius: 90,
-      top: -30,
-      right: -30,
+      top: -54,
+      right: -42,
+      width: 160,
+      height: 160,
+      borderRadius: 80,
     },
     previewOrbB: {
       position: 'absolute',
-      width: 140,
-      height: 140,
-      borderRadius: 70,
-      bottom: -20,
-      left: -20,
+      bottom: -70,
+      left: -52,
+      width: 180,
+      height: 180,
+      borderRadius: 90,
     },
     previewTopRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'flex-end',
+      justifyContent: 'space-between',
+      gap: 10,
       zIndex: 2,
+    },
+    projectNumber: {
+      color: 'rgba(255,255,255,0.38)',
+      fontSize: 12,
+      fontWeight: '900',
+      letterSpacing: 1.2,
+      fontFamily: FONT_FAMILY.accent,
     },
     statusPill: {
       flexDirection: 'row',
@@ -1316,7 +729,7 @@ const getStyles = (colors: any, isDark: boolean) => {
       fontFamily: FONT_FAMILY.header,
     },
     previewMeta: {
-      color: THEME_ACCENT.cyan,
+      color: 'rgba(255,255,255,0.56)',
       fontSize: 11,
       fontWeight: '900',
       letterSpacing: 1.4,
@@ -1367,26 +780,26 @@ const getStyles = (colors: any, isDark: boolean) => {
       paddingVertical: 5,
       paddingHorizontal: 8,
       borderRadius: RADIUS.full,
-      backgroundColor: 'rgba(0, 188, 212, 0.10)',
+      backgroundColor: 'rgba(255,255,255,0.08)',
       borderWidth: 1,
-      borderColor: 'rgba(0, 188, 212, 0.24)',
+      borderColor: 'rgba(255,255,255,0.10)',
     },
     previewTagText: {
-      color: THEME_ACCENT.textLight,
+      color: 'rgba(255,255,255,0.78)',
       fontSize: 10,
       fontWeight: '800',
       fontFamily: FONT_FAMILY.accent,
     },
     projectStrip: {
-      minHeight: 52,
-      paddingHorizontal: 16,
+      minHeight: 54,
+      paddingHorizontal: 14,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       gap: 10,
     },
     projectTitle: {
-      color: '#001424',
+      color: '#030712',
       fontSize: 14,
       fontWeight: '900',
       letterSpacing: -0.3,
@@ -1399,14 +812,14 @@ const getStyles = (colors: any, isDark: boolean) => {
       gap: 4,
     },
     exploreText: {
-      color: '#001424',
+      color: '#030712',
       fontSize: 11,
       fontWeight: '900',
       letterSpacing: 0.5,
       fontFamily: FONT_FAMILY.accent,
     },
     projectArrow: {
-      color: '#001424',
+      color: '#030712',
       fontSize: 16,
       fontWeight: '900',
       fontFamily: FONT_FAMILY.accent,
@@ -1418,16 +831,16 @@ const getStyles = (colors: any, isDark: boolean) => {
       paddingHorizontal: 24,
       borderRadius: 10,
       borderWidth: 1,
-      borderColor: THEME_ACCENT.cyan,
-      backgroundColor: 'rgba(0, 188, 212, 0.08)',
+      borderColor: 'rgba(255,255,255,0.42)',
+      backgroundColor: 'rgba(255,255,255,0.04)',
       ...(Platform.OS === 'web' ? ({ transition: 'all 180ms ease' } as any) : {}),
     },
     viewAllBtnHover: {
-      backgroundColor: 'rgba(0, 188, 212, 0.20)',
+      backgroundColor: 'rgba(255,255,255,0.10)',
       transform: [{ translateY: -2 }],
     },
     viewAllText: {
-      color: THEME_ACCENT.cyan,
+      color: '#FFFFFF',
       fontSize: 14,
       fontWeight: '900',
       fontFamily: FONT_FAMILY.accent,
@@ -1438,235 +851,181 @@ const getStyles = (colors: any, isDark: boolean) => {
 const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   modalRoot: {
     flex: 1,
-    backgroundColor: 'rgba(0, 12, 22, 0.88)',
+    backgroundColor: isDark ? 'rgba(2, 6, 23, 0.78)' : 'rgba(15, 23, 42, 0.58)',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
   },
   modalShell: {
     width: '100%',
-    maxWidth: 1120,
-    borderRadius: 24,
+    maxWidth: 1060,
+    borderRadius: 28,
     overflow: 'hidden',
-    backgroundColor: '#00162B',
+    backgroundColor: colors.cardSolid,
     borderWidth: 1,
-    borderColor: THEME_ACCENT.navyBorder,
+    borderColor: isDark ? 'rgba(255, 255, 255, 0.14)' : 'rgba(0, 0, 0, 0.12)',
     position: 'relative',
     ...(Platform.OS === 'web'
       ? ({
-          boxShadow: '0 32px 100px -10px rgba(0, 0, 0, 0.85), 0 0 40px rgba(0, 188, 212, 0.22)',
+          boxShadow: isDark
+            ? '0 32px 100px -12px rgba(0, 0, 0, 0.82), 0 0 0 1px rgba(255, 255, 255, 0.08)'
+            : '0 32px 100px -12px rgba(15, 23, 42, 0.22)',
         } as any)
       : {}),
   },
   modalShellWide: {
-    width: '94%',
+    width: '92%',
   },
-  modalAmbientOrbA: {
+  modalAmbientOrb: {
     position: 'absolute',
-    top: -120,
-    right: -120,
-    width: 360,
-    height: 360,
-    borderRadius: 180,
-    backgroundColor: 'rgba(0, 188, 212, 0.16)',
-    filter: 'blur(80px)',
-  } as any,
-  modalAmbientOrbB: {
-    position: 'absolute',
-    bottom: -100,
-    left: -100,
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: 'rgba(5, 91, 131, 0.24)',
+    top: -100,
+    right: -100,
+    width: 320,
+    height: 320,
+    borderRadius: 160,
     filter: 'blur(70px)',
   } as any,
-  paywayHeader: {
+  modalTopBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 22,
     paddingVertical: 14,
-    backgroundColor: '#001A33',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 188, 212, 0.22)',
+    borderBottomColor: colors.border,
+    backgroundColor: colors.surfaceSoft,
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
     zIndex: 10,
   },
-  paywayBrandCol: {
+  modalMetaGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    flexWrap: 'wrap',
+    gap: 8,
   },
-  paywayLogoBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
+  caseStudyBadge: {
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 188, 212, 0.15)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.40)',
+    borderColor: colors.border,
   },
-  paywayLogoDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-    backgroundColor: THEME_ACCENT.cyan,
-  },
-  paywayLogoText: {
-    color: THEME_ACCENT.cyan,
+  caseStudyText: {
+    color: colors.textDim,
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.1,
     fontFamily: FONT_FAMILY.accent,
   },
-  modeSwitchWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#001020',
-    borderRadius: RADIUS.full,
-    padding: 3,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.30)',
-  },
-  modeSwitchBtn: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: RADIUS.full,
-    ...(Platform.OS === 'web' ? ({ transition: 'all 160ms ease', cursor: 'pointer' } as any) : {}),
-  },
-  modeSwitchBtnActive: {
-    backgroundColor: THEME_ACCENT.cyan,
-  },
-  modeSwitchText: {
-    color: 'rgba(255, 255, 255, 0.65)',
-    fontSize: 11,
-    fontWeight: '800',
-    fontFamily: FONT_FAMILY.accent,
-  },
-  modeSwitchTextActive: {
-    color: '#001424',
-    fontWeight: '900',
-  },
-  headerControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  headerNavBtn: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    ...(Platform.OS === 'web' ? ({ transition: 'all 160ms ease', cursor: 'pointer' } as any) : {}),
-  },
-  headerNavBtnHover: {
-    backgroundColor: 'rgba(0, 188, 212, 0.20)',
-    borderColor: THEME_ACCENT.cyan,
-  },
-  headerNavBtnText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontWeight: '800',
-    fontFamily: FONT_FAMILY.accent,
-  },
-  headerCloseBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    ...(Platform.OS === 'web' ? ({ transition: 'all 160ms ease', cursor: 'pointer' } as any) : {}),
-  },
-  headerCloseBtnHover: {
-    backgroundColor: 'rgba(239, 68, 68, 0.25)',
-    borderColor: '#EF4444',
-  },
-  headerCloseBtnText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '900',
-  },
-  scrollContent: {
-    padding: 24,
-    gap: 24,
-  },
-  heroSection: {
-    width: '100%',
-    gap: 12,
-  },
-  heroMetaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  heroStatusBadge: {
+  modalStatusPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 230, 118, 0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(0, 230, 118, 0.35)',
   },
-  heroStatusDot: {
+  modalStatusDot: {
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: THEME_ACCENT.emerald,
   },
-  heroStatusLabel: {
-    color: THEME_ACCENT.emerald,
+  modalStatusText: {
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 0.8,
+    textTransform: 'uppercase',
     fontFamily: FONT_FAMILY.accent,
   },
-  heroMetricPill: {
+  specialHighlightPill: {
     paddingVertical: 5,
-    paddingHorizontal: 11,
+    paddingHorizontal: 10,
     borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 188, 212, 0.14)',
     borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.35)',
   },
-  heroMetricPillText: {
-    color: THEME_ACCENT.cyan,
+  specialHighlightText: {
     fontSize: 11,
     fontWeight: '900',
     fontFamily: FONT_FAMILY.accent,
   },
-  heroTitle: {
-    color: '#FFFFFF',
-    fontSize: 32,
-    lineHeight: 38,
-    fontWeight: '900',
-    letterSpacing: -1,
-    fontFamily: FONT_FAMILY.header,
+  modalControlsGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
-  heroHeadline: {
-    color: THEME_ACCENT.cyan,
-    fontSize: 16,
-    lineHeight: 24,
+  navBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: RADIUS.full,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...(Platform.OS === 'web' ? ({ transition: 'all 160ms ease', cursor: 'pointer' } as any) : {}),
+  },
+  navBtnHover: {
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)',
+    transform: [{ translateY: -1 }],
+  },
+  navBtnText: {
+    color: colors.textPrimary,
+    fontSize: 11,
     fontWeight: '800',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  closeBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...(Platform.OS === 'web' ? ({ transition: 'all 160ms ease', cursor: 'pointer' } as any) : {}),
+  },
+  closeBtnHover: {
+    backgroundColor: isDark ? 'rgba(239, 68, 68, 0.22)' : 'rgba(239, 68, 68, 0.12)',
+    borderColor: 'rgba(239, 68, 68, 0.44)',
+    transform: [{ scale: 1.05 }],
+  },
+  closeBtnText: {
+    color: colors.textPrimary,
+    fontSize: 13,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  modalScrollBody: {
+    padding: 24,
+    gap: 24,
+  },
+  partContainer: {
+    width: '100%',
+  },
+  modalProjectTitle: {
+    color: colors.textPrimary,
+    fontSize: 34,
+    lineHeight: 40,
+    fontWeight: '900',
+    letterSpacing: -1.2,
     fontFamily: FONT_FAMILY.header,
   },
-  heroDescription: {
-    color: 'rgba(255, 255, 255, 0.78)',
+  modalHeadline: {
+    fontSize: 17,
+    lineHeight: 25,
+    fontWeight: '800',
+    letterSpacing: -0.3,
+    marginTop: 6,
+    fontFamily: FONT_FAMILY.header,
+  },
+  modalDescription: {
+    color: colors.textSecondary,
     fontSize: 15,
     lineHeight: 24,
-    fontWeight: '500',
+    fontWeight: '600',
+    marginTop: 12,
     fontFamily: FONT_FAMILY.body,
   },
   heroActionRow: {
@@ -1674,1116 +1033,87 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: 10,
-    marginTop: 8,
+    marginTop: 18,
   },
-  btnPaywayPrimary: {
-    paddingVertical: 11,
-    paddingHorizontal: 20,
-    borderRadius: RADIUS.full,
-    backgroundColor: THEME_ACCENT.cyan,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...(Platform.OS === 'web'
-      ? ({
-          boxShadow: '0 4px 18px rgba(0, 188, 212, 0.40)',
-          transition: 'all 180ms ease',
-          cursor: 'pointer',
-        } as any)
-      : {}),
-  },
-  btnPaywayPrimaryHover: {
-    backgroundColor: THEME_ACCENT.cyanLight,
-    transform: [{ translateY: -2 }],
-  },
-  btnPaywayPrimaryText: {
-    color: '#001424',
-    fontSize: 13,
-    fontWeight: '900',
-    fontFamily: FONT_FAMILY.accent,
-  },
-  btnPaywayOutline: {
-    paddingVertical: 11,
-    paddingHorizontal: 18,
-    borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...(Platform.OS === 'web' ? ({ transition: 'all 180ms ease', cursor: 'pointer' } as any) : {}),
-  },
-  btnPaywayOutlineHover: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    borderColor: 'rgba(255, 255, 255, 0.35)',
-    transform: [{ translateY: -1 }],
-  },
-  btnPaywayOutlineText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '800',
-    fontFamily: FONT_FAMILY.accent,
-  },
-  btnPaywayCyanOutline: {
-    paddingVertical: 11,
-    paddingHorizontal: 18,
-    borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 188, 212, 0.10)',
-    borderWidth: 1,
-    borderColor: THEME_ACCENT.cyan,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...(Platform.OS === 'web' ? ({ transition: 'all 180ms ease', cursor: 'pointer' } as any) : {}),
-  },
-  btnPaywayCyanOutlineHover: {
-    backgroundColor: 'rgba(0, 188, 212, 0.22)',
-    transform: [{ translateY: -1 }],
-  },
-  btnPaywayCyanOutlineText: {
-    color: THEME_ACCENT.cyan,
-    fontSize: 13,
-    fontWeight: '900',
-    fontFamily: FONT_FAMILY.accent,
-  },
-
-  // 100% Code-Drawn Architecture Matrix Styles
-  codeArchStageBox: {
-    borderRadius: 22,
-    backgroundColor: '#00152B',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.35)',
-    padding: 22,
-    gap: 18,
-    position: 'relative',
-    overflow: 'hidden',
-    ...(Platform.OS === 'web'
-      ? ({
-          boxShadow: '0 20px 60px rgba(0, 188, 212, 0.12)',
-        } as any)
-      : {}),
-  },
-  codeArchHeader: {
-    gap: 6,
-  },
-  codeArchTagRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  codeArchTag: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 188, 212, 0.16)',
-    borderWidth: 1,
-    borderColor: THEME_ACCENT.cyan,
-  },
-  codeArchTagText: {
-    color: THEME_ACCENT.cyan,
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 1.1,
-    fontFamily: FONT_FAMILY.accent,
-  },
-  livePulseTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 230, 118, 0.12)',
-    borderWidth: 1,
-    borderColor: THEME_ACCENT.emerald,
-  },
-  livePulseDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: THEME_ACCENT.emerald,
-  },
-  livePulseText: {
-    color: THEME_ACCENT.emerald,
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 0.8,
-    fontFamily: FONT_FAMILY.accent,
-  },
-  codeArchTitle: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: '900',
-    letterSpacing: -0.4,
-    fontFamily: FONT_FAMILY.header,
-  },
-  codeArchSubtitle: {
-    color: 'rgba(255, 255, 255, 0.70)',
-    fontSize: 13,
-    lineHeight: 19,
-    fontFamily: FONT_FAMILY.body,
-  },
-  codeArchControlBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: 8,
-    paddingVertical: 4,
-  },
-  codeArchTrafficBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 188, 212, 0.12)',
-    borderWidth: 1,
-    borderColor: THEME_ACCENT.cyan,
-    ...(Platform.OS === 'web' ? ({ cursor: 'pointer' } as any) : {}),
-  },
-  codeArchTrafficBtnActive: {
-    backgroundColor: 'rgba(0, 230, 118, 0.18)',
-    borderColor: THEME_ACCENT.emerald,
-  },
-  codeArchTrafficIcon: {
-    fontSize: 12,
-  },
-  codeArchTrafficText: {
-    color: THEME_ACCENT.cyan,
-    fontSize: 11,
-    fontWeight: '900',
-    fontFamily: FONT_FAMILY.accent,
-  },
-  codeArchTrafficTextActive: {
-    color: THEME_ACCENT.emerald,
-  },
-  codeArchHint: {
-    color: 'rgba(255, 255, 255, 0.50)',
-    fontSize: 11,
-    fontFamily: FONT_FAMILY.body,
-  },
-  pipelineFlowScroll: {
+  actionPrimaryBtn: {
     paddingVertical: 10,
-  },
-  pipelineFlowContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  pipelineStageCol: {
-    gap: 10,
-    minWidth: 200,
-  },
-  pipelineStageHeaderPill: {
-    alignSelf: 'flex-start',
-    paddingVertical: 3,
-    paddingHorizontal: 8,
+    paddingHorizontal: 18,
     borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
-  },
-  pipelineStageHeaderText: {
-    color: 'rgba(255, 255, 255, 0.60)',
-    fontSize: 9.5,
-    fontWeight: '900',
-    letterSpacing: 0.8,
-    fontFamily: FONT_FAMILY.accent,
-  },
-  pipelineNodesCol: {
-    gap: 10,
-  },
-  pipelineConnectorCol: {
-    width: 48,
     alignItems: 'center',
     justifyContent: 'center',
+    ...(Platform.OS === 'web' ? ({ transition: 'all 180ms ease', cursor: 'pointer' } as any) : {}),
   },
-  codeNodeCard: {
-    padding: 14,
-    borderRadius: 16,
-    backgroundColor: '#001D38',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.22)',
-    gap: 6,
-    ...(Platform.OS === 'web'
-      ? ({
-          transition: 'all 160ms ease',
-          cursor: 'pointer',
-        } as any)
-      : {}),
-  },
-  codeNodeCardActive: {
-    backgroundColor: '#00254A',
-    borderColor: THEME_ACCENT.cyan,
-    transform: [{ translateY: -2 }],
-    ...(Platform.OS === 'web'
-      ? ({
-          boxShadow: '0 6px 20px rgba(0, 188, 212, 0.35)',
-        } as any)
-      : {}),
-  },
-  codeNodeTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 6,
-  },
-  codeNodeIconBox: {
-    width: 32,
-    height: 32,
-    borderRadius: 9,
-    backgroundColor: 'rgba(0, 188, 212, 0.14)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.30)',
-  },
-  codeNodeIconBoxActive: {
-    backgroundColor: 'rgba(0, 188, 212, 0.30)',
-    borderColor: THEME_ACCENT.cyan,
-  },
-  codeNodeIconText: {
-    fontSize: 16,
-  },
-  codeNodeStatusPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 0, 0, 0.40)',
-  },
-  codeNodeStatusDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-  },
-  codeNodeStatusText: {
-    color: '#FFFFFF',
-    fontSize: 9.5,
-    fontWeight: '800',
-    fontFamily: FONT_FAMILY.accent,
-  },
-  codeNodeName: {
-    color: '#FFFFFF',
+  actionPrimaryText: {
+    color: '#020617',
     fontSize: 13,
     fontWeight: '900',
-    fontFamily: FONT_FAMILY.header,
-  },
-  codeNodeTech: {
-    color: THEME_ACCENT.cyan,
-    fontSize: 10.5,
-    fontWeight: '700',
-    fontFamily: Platform.OS === 'web' ? 'monospace' : FONT_FAMILY.accent,
-  },
-  codeInspectorCard: {
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: '#001A33',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.32)',
-    gap: 8,
-  },
-  codeInspectorHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  codeInspectorTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  codeInspectorIcon: {
-    fontSize: 22,
-  },
-  codeInspectorName: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '900',
-    fontFamily: FONT_FAMILY.header,
-  },
-  codeInspectorProtocol: {
-    color: THEME_ACCENT.cyan,
-    fontSize: 11,
-    fontWeight: '700',
-    fontFamily: Platform.OS === 'web' ? 'monospace' : FONT_FAMILY.accent,
-  },
-  codeInspectorMetricBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 9,
-    borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 230, 118, 0.15)',
-    borderWidth: 1,
-    borderColor: THEME_ACCENT.emerald,
-  },
-  codeInspectorMetricText: {
-    color: THEME_ACCENT.emerald,
-    fontSize: 10.5,
-    fontWeight: '900',
     fontFamily: FONT_FAMILY.accent,
   },
-  codeInspectorDesc: {
-    color: 'rgba(255, 255, 255, 0.78)',
-    fontSize: 12.5,
-    lineHeight: 19,
-    fontFamily: FONT_FAMILY.body,
-  },
-  busTerminalBox: {
-    borderRadius: 14,
-    backgroundColor: '#000A14',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.20)',
-    overflow: 'hidden',
-  },
-  busTerminalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 7,
-    paddingHorizontal: 12,
-    backgroundColor: '#001224',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 188, 212, 0.15)',
-  },
-  busTerminalTitle: {
-    color: THEME_ACCENT.cyan,
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 1,
-    fontFamily: FONT_FAMILY.accent,
-  },
-  busTerminalLive: {
-    color: THEME_ACCENT.emerald,
-    fontSize: 10,
-    fontWeight: '900',
-    fontFamily: FONT_FAMILY.accent,
-  },
-  busTerminalBody: {
-    padding: 10,
-    gap: 4,
-  },
-  busTerminalLine: {
-    color: '#80DEEA',
-    fontSize: 11,
-    lineHeight: 16,
-    fontFamily: Platform.OS === 'web' ? 'Consolas, monospace' : FONT_FAMILY.accent,
-  },
-
-  developerSuiteBox: {
-    borderRadius: 20,
-    backgroundColor: '#001020',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.35)',
-    padding: 20,
-    gap: 16,
-    ...(Platform.OS === 'web' ? ({ boxShadow: '0 12px 40px rgba(0, 188, 212, 0.15)' } as any) : {}),
-  },
-  suiteHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  suiteTitle: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '900',
-    fontFamily: FONT_FAMILY.header,
-  },
-  suiteSub: {
-    color: THEME_ACCENT.textMuted,
-    fontSize: 12,
-    fontWeight: '600',
-    fontFamily: FONT_FAMILY.body,
-  },
-  suiteLiveTag: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 230, 118, 0.15)',
-    borderWidth: 1,
-    borderColor: THEME_ACCENT.emerald,
-  },
-  suiteLiveTagText: {
-    color: THEME_ACCENT.emerald,
-    fontSize: 11,
-    fontWeight: '900',
-    fontFamily: FONT_FAMILY.accent,
-  },
-  langTabBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 8,
-    paddingBottom: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.10)',
-  },
-  langTabBtn: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: 'transparent',
-    ...(Platform.OS === 'web' ? ({ transition: 'all 150ms ease', cursor: 'pointer' } as any) : {}),
-  },
-  langTabBtnActive: {
-    backgroundColor: 'rgba(0, 188, 212, 0.18)',
-    borderColor: THEME_ACCENT.cyan,
-  },
-  langTabBtnText: {
-    color: 'rgba(255, 255, 255, 0.60)',
-    fontSize: 12,
-    fontWeight: '800',
-    fontFamily: FONT_FAMILY.accent,
-  },
-  langTabBtnTextActive: {
-    color: THEME_ACCENT.cyan,
-    fontWeight: '900',
-  },
-  copyBtn: {
-    marginLeft: 'auto',
-    paddingVertical: 5,
-    paddingHorizontal: 11,
-    borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 188, 212, 0.15)',
-    borderWidth: 1,
-    borderColor: THEME_ACCENT.cyan,
-    ...(Platform.OS === 'web' ? ({ cursor: 'pointer' } as any) : {}),
-  },
-  copyBtnText: {
-    color: THEME_ACCENT.cyan,
-    fontSize: 11,
-    fontWeight: '900',
-    fontFamily: FONT_FAMILY.accent,
-  },
-  codeTerminal: {
-    backgroundColor: '#000A14',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.20)',
-    maxHeight: 280,
-  },
-  codeContent: {
-    color: '#B2EBF2',
-    fontFamily: Platform.OS === 'web' ? 'Consolas, Monaco, "Courier New", monospace' : FONT_FAMILY.accent,
-    fontSize: 12.5,
-    lineHeight: 20,
-  },
-  paramTable: {
-    gap: 8,
-    marginTop: 6,
-  },
-  paramTableTitle: {
-    color: THEME_ACCENT.cyan,
-    fontSize: 11,
-    fontWeight: '900',
-    letterSpacing: 1.1,
-    fontFamily: FONT_FAMILY.accent,
-  },
-  paramRowHeader: {
-    flexDirection: 'row',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.12)',
-  },
-  paramRow: {
-    flexDirection: 'row',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  paramCell: {
-    color: 'rgba(255, 255, 255, 0.75)',
-    fontSize: 12,
-    fontFamily: FONT_FAMILY.body,
-  },
-  paramCode: {
-    color: THEME_ACCENT.cyan,
-    fontFamily: Platform.OS === 'web' ? 'monospace' : FONT_FAMILY.accent,
-    fontWeight: '800',
-  },
-  paramReq: {
-    color: THEME_ACCENT.emerald,
-    fontWeight: '900',
-  },
-  paramOpt: {
-    color: THEME_ACCENT.amber,
-    fontWeight: '800',
-  },
-  simulatorWrapper: {
-    borderRadius: 22,
-    backgroundColor: '#001B33',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.32)',
-    padding: 20,
-    gap: 16,
-    ...(Platform.OS === 'web' ? ({ boxShadow: '0 16px 50px rgba(0, 188, 212, 0.12)' } as any) : {}),
-  },
-  simulatorHeader: {
-    gap: 6,
-  },
-  simBadge: {
-    alignSelf: 'flex-start',
-    paddingVertical: 4,
-    paddingHorizontal: 9,
-    borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 188, 212, 0.15)',
-    borderWidth: 1,
-    borderColor: THEME_ACCENT.cyan,
-  },
-  simBadgeText: {
-    color: THEME_ACCENT.cyan,
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 1.1,
-    fontFamily: FONT_FAMILY.accent,
-  },
-  simTitle: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: '900',
-    letterSpacing: -0.4,
-    fontFamily: FONT_FAMILY.header,
-  },
-  simSubtitle: {
-    color: 'rgba(255, 255, 255, 0.70)',
-    fontSize: 13,
-    lineHeight: 19,
-    fontFamily: FONT_FAMILY.body,
-  },
-  fleetSimulatorBox: {
-    gap: 12,
-  },
-  fleetTopBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    backgroundColor: '#001020',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.20)',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  fleetBarTitle: {
-    color: THEME_ACCENT.cyan,
-    fontSize: 12,
-    fontWeight: '900',
-    fontFamily: FONT_FAMILY.accent,
-  },
-  fleetBarSub: {
-    color: THEME_ACCENT.emerald,
-    fontSize: 11,
-    fontWeight: '800',
-    fontFamily: FONT_FAMILY.accent,
-  },
-  fleetSelectorHint: {
-    color: 'rgba(255, 255, 255, 0.65)',
-    fontSize: 12,
-    fontWeight: '600',
-    fontFamily: FONT_FAMILY.body,
-  },
-  stationChipsList: {
-    gap: 8,
-    paddingVertical: 4,
-  },
-  stationChip: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
-    alignItems: 'center',
-    gap: 2,
-    minWidth: 70,
-    ...(Platform.OS === 'web' ? ({ transition: 'all 150ms ease', cursor: 'pointer' } as any) : {}),
-  },
-  stationChipActive: {
-    backgroundColor: 'rgba(0, 188, 212, 0.20)',
-    borderColor: THEME_ACCENT.cyan,
-    transform: [{ translateY: -2 }],
-  },
-  stationChipId: {
-    color: 'rgba(255, 255, 255, 0.60)',
-    fontSize: 11,
-    fontWeight: '900',
-    fontFamily: FONT_FAMILY.accent,
-  },
-  stationChipIdActive: {
-    color: THEME_ACCENT.cyan,
-  },
-  stationChipName: {
-    color: 'rgba(255, 255, 255, 0.85)',
-    fontSize: 11,
-    fontWeight: '700',
-    fontFamily: FONT_FAMILY.body,
-  },
-  stationChipNameActive: {
-    color: '#FFFFFF',
-    fontWeight: '800',
-  },
-  telemetryCard: {
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: '#001224',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.25)',
-    gap: 14,
-  },
-  telemetryCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  telemetryStationTitle: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '900',
-    fontFamily: FONT_FAMILY.header,
-  },
-  telemetryStationMeta: {
-    color: THEME_ACCENT.textMuted,
-    fontSize: 12,
-    fontWeight: '600',
-    fontFamily: FONT_FAMILY.body,
-  },
-  telemetryLiveBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 230, 118, 0.15)',
-    borderWidth: 1,
-    borderColor: THEME_ACCENT.emerald,
-  },
-  telemetryLiveDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: THEME_ACCENT.emerald,
-  },
-  telemetryLiveText: {
-    color: THEME_ACCENT.emerald,
-    fontSize: 11,
-    fontWeight: '900',
-    fontFamily: FONT_FAMILY.accent,
-  },
-  telemetryMetricsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  telemetryMetricItem: {
-    flex: 1,
-    minWidth: 120,
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: '#001A33',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    gap: 4,
-  },
-  telemetryMetricVal: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '900',
-    letterSpacing: -0.5,
-    fontFamily: FONT_FAMILY.header,
-  },
-  telemetryMetricLbl: {
-    color: 'rgba(255, 255, 255, 0.60)',
-    fontSize: 11,
-    fontWeight: '600',
-    fontFamily: FONT_FAMILY.body,
-  },
-  telemetryFooter: {
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  telemetryFooterText: {
-    color: 'rgba(255, 255, 255, 0.55)',
-    fontSize: 11,
-    lineHeight: 16,
-    fontFamily: FONT_FAMILY.body,
-  },
-  checkoutSimulatorBox: {
-    borderRadius: 18,
-    backgroundColor: '#001224',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.25)',
-    overflow: 'hidden',
-  },
-  checkoutOrderSummary: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    backgroundColor: '#001A33',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 188, 212, 0.18)',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  checkoutSummaryCol: {
-    gap: 3,
-  },
-  checkoutBrandTag: {
-    color: THEME_ACCENT.cyan,
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 1,
-    fontFamily: FONT_FAMILY.accent,
-  },
-  checkoutOrderTitle: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '900',
-    fontFamily: FONT_FAMILY.header,
-  },
-  checkoutOrderItems: {
-    color: 'rgba(255, 255, 255, 0.65)',
-    fontSize: 12,
-    fontFamily: FONT_FAMILY.body,
-  },
-  checkoutPriceCol: {
-    alignItems: 'flex-end',
-  },
-  checkoutPriceTotal: {
-    color: THEME_ACCENT.cyan,
-    fontSize: 24,
-    fontWeight: '900',
-    letterSpacing: -0.5,
-    fontFamily: FONT_FAMILY.header,
-  },
-  checkoutPriceSub: {
-    color: 'rgba(255, 255, 255, 0.55)',
-    fontSize: 11,
-    fontFamily: FONT_FAMILY.accent,
-  },
-  checkoutCardBody: {
-    padding: 20,
-    alignItems: 'center',
-    gap: 16,
-  },
-  khqrFrame: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  khqrInnerBox: {
-    width: 170,
-    height: 170,
-    borderRadius: 16,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 12,
-    borderWidth: 3,
-    borderColor: '#E11D48',
-    position: 'relative',
-    overflow: 'hidden',
-    ...(Platform.OS === 'web' ? ({ boxShadow: '0 8px 30px rgba(0,0,0,0.4)' } as any) : {}),
-  },
-  khqrLaserLine: {
-    position: 'absolute',
-    left: 8,
-    right: 8,
-    height: 3,
-    backgroundColor: '#00BCD4',
-    borderRadius: 2,
-    zIndex: 10,
-    ...(Platform.OS === 'web'
-      ? ({
-          boxShadow: '0 0 10px #00BCD4, 0 0 20px #00BCD4',
-          animation: 'ct-laser-scan 2.2s ease-in-out infinite',
-        } as any)
-      : {}),
-  },
-  khqrMockQr: {
-    color: '#000000',
-    fontSize: 11,
-    fontWeight: '900',
-    textAlign: 'center',
-    fontFamily: Platform.OS === 'web' ? 'monospace' : FONT_FAMILY.accent,
-  },
-  khqrPaywayLogoRow: {
-    position: 'absolute',
-    bottom: 8,
-    backgroundColor: '#002744',
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-    borderRadius: 4,
-  },
-  khqrPaywayLogo: {
-    color: THEME_ACCENT.cyan,
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-    fontFamily: FONT_FAMILY.accent,
-  },
-  khqrScanText: {
-    color: 'rgba(255, 255, 255, 0.70)',
-    fontSize: 12,
-    fontWeight: '600',
-    fontFamily: FONT_FAMILY.body,
-  },
-  checkoutCtaWrap: {
-    width: '100%',
-    maxWidth: 380,
-    gap: 6,
-    alignItems: 'center',
-  },
-  checkoutSimNote: {
-    color: 'rgba(255, 255, 255, 0.45)',
-    fontSize: 11,
-    textAlign: 'center',
-    fontFamily: FONT_FAMILY.body,
-  },
-  checkoutProcessingBox: {
-    padding: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-  },
-  processingSpinner: {
-    fontSize: 32,
-  },
-  processingTitle: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '900',
-    fontFamily: FONT_FAMILY.header,
-  },
-  processingSub: {
-    color: THEME_ACCENT.cyan,
-    fontSize: 12,
-    fontFamily: FONT_FAMILY.body,
-  },
-  checkoutApprovedBox: {
-    padding: 24,
-    alignItems: 'center',
-    gap: 10,
-  },
-  approvedIconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(0, 230, 118, 0.20)',
-    borderWidth: 1,
-    borderColor: THEME_ACCENT.emerald,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...(Platform.OS === 'web'
-      ? ({
-          animation: 'ct-badge-pulse 1.8s ease-in-out infinite',
-        } as any)
-      : {}),
-  },
-  approvedIcon: {
-    color: THEME_ACCENT.emerald,
-    fontSize: 24,
-    fontWeight: '900',
-  },
-  approvedTitle: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '900',
-    fontFamily: FONT_FAMILY.header,
-  },
-  approvedSub: {
-    color: THEME_ACCENT.emerald,
-    fontSize: 12,
-    fontWeight: '700',
-    fontFamily: FONT_FAMILY.accent,
-  },
-  approvedLogBox: {
-    width: '100%',
-    padding: 12,
-    borderRadius: 10,
-    backgroundColor: '#000A14',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.20)',
-    gap: 4,
-    marginTop: 6,
-  },
-  approvedLogLine: {
-    color: '#80DEEA',
-    fontSize: 11,
-    fontFamily: Platform.OS === 'web' ? 'monospace' : FONT_FAMILY.accent,
-  },
-  resetSimBtn: {
-    marginTop: 10,
-    paddingVertical: 8,
+  actionSecondaryBtn: {
+    paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(255, 255, 255, 0.10)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.20)',
-    ...(Platform.OS === 'web' ? ({ cursor: 'pointer' } as any) : {}),
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    ...(Platform.OS === 'web' ? ({ transition: 'all 180ms ease', cursor: 'pointer' } as any) : {}),
   },
-  resetSimBtnText: {
-    color: '#FFFFFF',
-    fontSize: 12,
+  actionSecondaryBtnHover: {
+    backgroundColor: colors.surfaceHover,
+    borderColor: colors.borderHover,
+    transform: [{ translateY: -1 }],
+  },
+  actionSecondaryText: {
+    fontSize: 13,
     fontWeight: '800',
     fontFamily: FONT_FAMILY.accent,
   },
-  telegramSimulatorBox: {
-    borderRadius: 16,
-    backgroundColor: '#001224',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.25)',
-    overflow: 'hidden',
-  },
-  tgHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    padding: 12,
-    backgroundColor: '#001A33',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 188, 212, 0.20)',
-  },
-  tgAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0, 188, 212, 0.20)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tgAvatarText: {
-    fontSize: 18,
-  },
-  tgBotName: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '900',
-    fontFamily: FONT_FAMILY.header,
-  },
-  tgBotStatus: {
-    color: THEME_ACCENT.cyan,
-    fontSize: 11,
-    fontWeight: '600',
-    fontFamily: FONT_FAMILY.body,
-  },
-  tgChatArea: {
-    height: 190,
-  },
-  tgBubble: {
-    maxWidth: '85%',
-    padding: 10,
-    borderRadius: 12,
-    gap: 4,
-  },
-  tgBubbleBot: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#002244',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.20)',
-  },
-  tgBubbleUser: {
-    alignSelf: 'flex-end',
-    backgroundColor: THEME_ACCENT.cyan,
-  },
-  tgMsgText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    lineHeight: 18,
-    fontFamily: FONT_FAMILY.body,
-  },
-  tgMsgTime: {
-    color: 'rgba(255, 255, 255, 0.45)',
-    fontSize: 9,
-    alignSelf: 'flex-end',
-    fontFamily: FONT_FAMILY.accent,
-  },
-  tgCommandsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    padding: 10,
-    backgroundColor: '#001A33',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0, 188, 212, 0.15)',
-  },
-  tgCmdChip: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+  actionInquireBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 188, 212, 0.12)',
     borderWidth: 1,
-    borderColor: THEME_ACCENT.cyan,
-    ...(Platform.OS === 'web' ? ({ cursor: 'pointer' } as any) : {}),
+    borderColor: '#38BDF8',
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    ...(Platform.OS === 'web' ? ({ transition: 'all 180ms ease', cursor: 'pointer' } as any) : {}),
   },
-  tgCmdChipText: {
-    color: THEME_ACCENT.cyan,
-    fontSize: 11,
-    fontWeight: '800',
-    fontFamily: FONT_FAMILY.accent,
+  actionInquireBtnHover: {
+    backgroundColor: 'rgba(56, 189, 248, 0.22)',
+    transform: [{ translateY: -1 }],
   },
-  consoleSimulatorBox: {
-    borderRadius: 14,
-    backgroundColor: '#000D1A',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.22)',
-    overflow: 'hidden',
-  },
-  consoleHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 10,
-    backgroundColor: '#00162B',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 188, 212, 0.15)',
-  },
-  consoleHeaderTitle: {
-    color: THEME_ACCENT.cyan,
-    fontSize: 11,
+  actionInquireText: {
+    color: '#38BDF8',
+    fontSize: 13,
     fontWeight: '900',
     fontFamily: FONT_FAMILY.accent,
   },
-  consoleHeaderStatus: {
-    color: THEME_ACCENT.emerald,
-    fontSize: 11,
+  actionEmailBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: RADIUS.full,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    ...(Platform.OS === 'web' ? ({ transition: 'all 180ms ease', cursor: 'pointer' } as any) : {}),
+  },
+  actionEmailBtnHover: {
+    backgroundColor: colors.surfaceHover,
+    transform: [{ translateY: -1 }],
+  },
+  actionEmailText: {
+    color: colors.textSecondary,
+    fontSize: 13,
     fontWeight: '800',
     fontFamily: FONT_FAMILY.accent,
-  },
-  consoleBody: {
-    padding: 14,
-    gap: 6,
-  },
-  consoleCodeLine: {
-    color: '#80DEEA',
-    fontSize: 12,
-    lineHeight: 18,
-    fontFamily: Platform.OS === 'web' ? 'Consolas, monospace' : FONT_FAMILY.accent,
-  },
-  metricsSection: {
-    gap: 12,
   },
   sectionHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    marginBottom: 12,
   },
   sectionHeaderLabel: {
-    color: THEME_ACCENT.cyan,
+    color: colors.textDim,
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.2,
@@ -2792,7 +1122,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   sectionHeaderLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(0, 188, 212, 0.25)',
+    backgroundColor: colors.border,
   },
   metricsGrid: {
     flexDirection: 'row',
@@ -2804,9 +1134,9 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     minWidth: 160,
     padding: 16,
     borderRadius: 18,
-    backgroundColor: '#001A33',
+    backgroundColor: colors.surfaceSoft,
     borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.22)',
+    borderColor: colors.border,
     gap: 4,
   },
   metricValue: {
@@ -2817,80 +1147,71 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     fontFamily: FONT_FAMILY.header,
   },
   metricLabel: {
-    color: '#FFFFFF',
+    color: colors.textPrimary,
     fontSize: 13,
     fontWeight: '800',
     fontFamily: FONT_FAMILY.header,
   },
   metricSub: {
-    color: 'rgba(255, 255, 255, 0.60)',
+    color: colors.textDim,
     fontSize: 11,
     fontWeight: '600',
     fontFamily: FONT_FAMILY.body,
   },
-  detailTabsBar: {
+  tabBar: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
     padding: 6,
-    borderRadius: 18,
-    backgroundColor: '#001224',
+    borderRadius: 20,
+    backgroundColor: colors.surfaceSoft,
     borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.25)',
+    borderColor: colors.border,
   },
-  detailTabBtn: {
+  tabBtn: {
     flex: 1,
-    minWidth: 130,
+    minWidth: 140,
     paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
     borderWidth: 1,
     borderColor: 'transparent',
-    ...(Platform.OS === 'web' ? ({ transition: 'all 160ms ease', cursor: 'pointer' } as any) : {}),
+    ...(Platform.OS === 'web' ? ({ transition: 'all 180ms ease', cursor: 'pointer' } as any) : {}),
   },
-  detailTabBtnActive: {
-    backgroundColor: 'rgba(0, 188, 212, 0.16)',
-    borderColor: THEME_ACCENT.cyan,
+  tabBtnActive: {
+    borderWidth: 1,
   },
-  detailTabBtnLabel: {
-    color: 'rgba(255, 255, 255, 0.65)',
+  tabBtnLabel: {
+    color: colors.textSecondary,
     fontSize: 13,
     fontWeight: '800',
     fontFamily: FONT_FAMILY.header,
   },
-  detailTabBtnLabelActive: {
-    color: THEME_ACCENT.cyan,
-    fontWeight: '900',
-  },
-  detailTabBtnSub: {
-    color: 'rgba(255, 255, 255, 0.40)',
+  tabBtnSub: {
+    color: colors.textDim,
     fontSize: 10,
     fontWeight: '600',
     fontFamily: FONT_FAMILY.body,
-  },
-  detailTabBtnSubActive: {
-    color: '#FFFFFF',
   },
   comparativeContainer: {
     gap: 14,
   },
   challengeBox: {
     padding: 20,
-    borderRadius: 18,
-    backgroundColor: 'rgba(239, 68, 68, 0.08)',
+    borderRadius: 20,
+    backgroundColor: isDark ? 'rgba(239, 68, 68, 0.08)' : 'rgba(239, 68, 68, 0.05)',
     borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.25)',
+    borderColor: isDark ? 'rgba(239, 68, 68, 0.28)' : 'rgba(239, 68, 68, 0.22)',
     gap: 10,
   },
   solutionBox: {
     padding: 20,
-    borderRadius: 18,
-    backgroundColor: '#001C38',
+    borderRadius: 20,
+    backgroundColor: colors.surfaceSoft,
     borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.40)',
     gap: 10,
   },
   boxTitleRow: {
@@ -2916,7 +1237,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     fontFamily: FONT_FAMILY.header,
   },
   boxSubDanger: {
-    color: 'rgba(255, 255, 255, 0.50)',
+    color: colors.textDim,
     fontSize: 11,
     fontWeight: '700',
     fontFamily: FONT_FAMILY.accent,
@@ -2927,28 +1248,26 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0, 188, 212, 0.18)',
   },
   boxIconSuccessText: {
     fontSize: 18,
   },
   boxTitleSuccess: {
-    color: THEME_ACCENT.cyan,
     fontSize: 16,
     fontWeight: '900',
     fontFamily: FONT_FAMILY.header,
   },
   boxSubSuccess: {
-    color: 'rgba(255, 255, 255, 0.55)',
+    color: colors.textDim,
     fontSize: 11,
     fontWeight: '700',
     fontFamily: FONT_FAMILY.accent,
   },
   boxDesc: {
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: colors.textPrimary,
     fontSize: 14,
     lineHeight: 23,
-    fontWeight: '500',
+    fontWeight: '600',
     fontFamily: FONT_FAMILY.body,
   },
   featuresGrid: {
@@ -2961,9 +1280,9 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     minWidth: 260,
     padding: 18,
     borderRadius: 18,
-    backgroundColor: '#001A33',
+    backgroundColor: colors.surfaceSoft,
     borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.20)',
+    borderColor: colors.border,
     gap: 8,
   },
   featureCardTop: {
@@ -2978,9 +1297,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0, 188, 212, 0.14)',
     borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.30)',
   },
   featureIconText: {
     fontSize: 20,
@@ -2989,28 +1306,25 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 188, 212, 0.12)',
     borderWidth: 1,
-    borderColor: THEME_ACCENT.cyan,
   },
   featurePillText: {
-    color: THEME_ACCENT.cyan,
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 0.5,
     fontFamily: FONT_FAMILY.accent,
   },
   featureTitle: {
-    color: '#FFFFFF',
+    color: colors.textPrimary,
     fontSize: 15,
     fontWeight: '900',
     fontFamily: FONT_FAMILY.header,
   },
   featureDesc: {
-    color: 'rgba(255, 255, 255, 0.70)',
+    color: colors.textSecondary,
     fontSize: 13,
     lineHeight: 20,
-    fontWeight: '500',
+    fontWeight: '600',
     fontFamily: FONT_FAMILY.body,
   },
   architectureContainer: {
@@ -3026,13 +1340,12 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     minWidth: 220,
     padding: 16,
     borderRadius: 18,
-    backgroundColor: '#001A33',
+    backgroundColor: colors.surfaceSoft,
     borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.20)',
+    borderColor: colors.border,
     gap: 10,
   },
   archCategoryTitle: {
-    color: THEME_ACCENT.cyan,
     fontSize: 14,
     fontWeight: '900',
     letterSpacing: -0.2,
@@ -3050,10 +1363,9 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: THEME_ACCENT.cyan,
   },
   archItemText: {
-    color: 'rgba(255, 255, 255, 0.75)',
+    color: colors.textSecondary,
     fontSize: 12,
     fontWeight: '700',
     fontFamily: FONT_FAMILY.body,
@@ -3061,13 +1373,13 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   archTagsBlock: {
     padding: 16,
     borderRadius: 18,
-    backgroundColor: '#001A33',
+    backgroundColor: colors.surfaceSoft,
     borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.20)',
+    borderColor: colors.border,
     gap: 10,
   },
   archTagsLabel: {
-    color: THEME_ACCENT.cyan,
+    color: colors.textDim,
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.1,
@@ -3082,12 +1394,12 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 188, 212, 0.10)',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.28)',
+    borderColor: colors.border,
   },
   techPillText: {
-    color: THEME_ACCENT.textLight,
+    color: colors.textPrimary,
     fontSize: 12,
     fontWeight: '800',
     fontFamily: FONT_FAMILY.accent,
@@ -3104,9 +1416,9 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     gap: 12,
     padding: 14,
     borderRadius: 16,
-    backgroundColor: '#001A33',
+    backgroundColor: colors.surfaceSoft,
     borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.20)',
+    borderColor: colors.border,
   },
   impactCheckBadge: {
     width: 24,
@@ -3114,19 +1426,17 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0, 230, 118, 0.18)',
     marginTop: 2,
   },
   impactCheckText: {
-    color: THEME_ACCENT.emerald,
     fontSize: 14,
     fontWeight: '900',
   },
   impactPointText: {
-    color: 'rgba(255, 255, 255, 0.88)',
+    color: colors.textPrimary,
     fontSize: 14,
     lineHeight: 22,
-    fontWeight: '600',
+    fontWeight: '700',
     flex: 1,
     fontFamily: FONT_FAMILY.body,
   },
@@ -3135,59 +1445,56 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderRadius: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.04)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: colors.border,
     gap: 6,
   },
   complianceTitle: {
-    color: '#FFFFFF',
+    color: colors.textPrimary,
     fontSize: 13,
     fontWeight: '900',
     fontFamily: FONT_FAMILY.header,
   },
   complianceDesc: {
-    color: 'rgba(255, 255, 255, 0.60)',
+    color: colors.textMuted,
     fontSize: 12,
     lineHeight: 18,
-    fontWeight: '500',
+    fontWeight: '600',
     fontFamily: FONT_FAMILY.body,
   },
   ctaBanner: {
     padding: 24,
     borderRadius: 22,
-    backgroundColor: '#001830',
+    backgroundColor: colors.surfaceSoft,
     borderWidth: 1,
-    borderColor: THEME_ACCENT.cyan,
     position: 'relative',
     overflow: 'hidden',
     gap: 16,
-    ...(Platform.OS === 'web' ? ({ boxShadow: '0 16px 60px rgba(0, 188, 212, 0.20)' } as any) : {}),
   },
   ctaGlowOrb: {
     position: 'absolute',
     bottom: -60,
     right: -60,
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: 'rgba(0, 188, 212, 0.18)',
+    width: 220,
+    height: 220,
+    borderRadius: 110,
   },
   ctaTextCol: {
     gap: 8,
     zIndex: 2,
   },
   ctaHeading: {
-    color: '#FFFFFF',
-    fontSize: 22,
-    lineHeight: 28,
+    color: colors.textPrimary,
+    fontSize: 20,
+    lineHeight: 26,
     fontWeight: '900',
     letterSpacing: -0.5,
     fontFamily: FONT_FAMILY.header,
   },
   ctaSub: {
-    color: 'rgba(255, 255, 255, 0.75)',
+    color: colors.textSecondary,
     fontSize: 14,
     lineHeight: 22,
-    fontWeight: '500',
+    fontWeight: '600',
     maxWidth: 720,
     fontFamily: FONT_FAMILY.body,
   },
@@ -3197,5 +1504,37 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     flexWrap: 'wrap',
     gap: 10,
     zIndex: 2,
+  },
+  ctaMainBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: RADIUS.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...(Platform.OS === 'web' ? ({ transition: 'all 180ms ease', cursor: 'pointer' } as any) : {}),
+  },
+  ctaMainBtnText: {
+    color: '#020617',
+    fontSize: 13,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  ctaSubBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: RADIUS.full,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...(Platform.OS === 'web' ? ({ transition: 'all 180ms ease', cursor: 'pointer' } as any) : {}),
+  },
+  ctaSubBtnHover: {
+    backgroundColor: colors.surfaceHover,
+    borderColor: colors.borderHover,
+  },
+  ctaSubBtnText: {
+    fontSize: 13,
+    fontWeight: '800',
+    fontFamily: FONT_FAMILY.accent,
   },
 });
