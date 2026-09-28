@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Image, Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { RADIUS, FONT_FAMILY } from '../constants/theme';
 import { PROFILE, PROJECTS } from '../constants/data';
@@ -7,6 +7,9 @@ import AnimatedSection from './AnimatedSection';
 import { sectionPadH, sectionPadV } from '../utils/responsive';
 
 type Project = typeof PROJECTS[number];
+
+const PAYWAY_HUB_IMG = require('../assets/payway/payway_ecosystem_hub.png');
+const PAYWAY_POS_IMG = require('../assets/payway/payway_pos_counter.png');
 
 const PAYWAY = {
   navyDark: '#001424',
@@ -45,6 +48,22 @@ const STATIONS_20_DATA = [
   { id: 'ST-18', name: 'PTT Bavet SEZ Tollgate', city: 'Svay Rieng', status: 'Online', latency: '30ms', liters: '14,500 L', revenue: '$16,675', nozz: 8, qrShare: '53%' },
   { id: 'ST-19', name: 'PTT Takeo Junction Rd 2', city: 'Takeo', status: 'Online', latency: '26ms', liters: '9,800 L', revenue: '$11,270', nozz: 6, qrShare: '51%' },
   { id: 'ST-20', name: 'PTT Expressway Rest Area #1', city: 'Kandal', status: 'Online', latency: '19ms', liters: '28,400 L', revenue: '$32,660', nozz: 12, qrShare: '78%' },
+];
+
+const ECOSYSTEM_NODES_GENERAL = [
+  { id: 'hub', icon: '🏢', label: 'Central PayWay Gateway', desc: 'Central routing engine managing transactions, HMAC signatures, and database commits.', tech: 'REST API / TLS 1.3' },
+  { id: 'pos', icon: '💳', label: 'Counter POS Hub', desc: 'Sub-second in-store cashier checkout terminal with instant receipt printing.', tech: 'Local SQLite / WebSocket' },
+  { id: 'delivery', icon: '🛵', label: 'Delivery Logistics', desc: 'Dynamic dispatch service routing rider deliveries straight from warehouse to door.', tech: 'GPS / Webhook Relay' },
+  { id: 'store', icon: '💻', label: 'E-Commerce Storefront', desc: 'High-speed Next.js web catalog with real-time stock reservation and checkout.', tech: 'Next.js / Cloudflare' },
+  { id: 'bot', icon: '🤖', label: 'Telegram Alert Bot', desc: 'Automated notification engine pushing daily revenue audits and hardware warnings.', tech: 'Telegram Bot API / Long-polling' },
+];
+
+const ECOSYSTEM_NODES_FLEET = [
+  { id: 'counter', icon: '🏪', label: 'Station Cashier Counter', desc: 'Station master desk handling mixed cash and ABA KHQR transactions.', tech: 'Touch POS / RS-485' },
+  { id: 'pumps', icon: '⛽', label: 'Fuel Dispenser Nozzles', desc: 'Automatic digital meters monitoring real-time flow (E95, 92, Diesel) with cut-off sensors.', tech: 'Modbus / RS-485' },
+  { id: 'replication', icon: '🔄', label: 'MySQL Binlog Sync', desc: 'Sub-25ms continuous replication forwarding transaction logs to head office servers.', tech: 'MySQL Binary Log Replication' },
+  { id: 'khqr', icon: '📱', label: 'ABA KHQR Terminal', desc: 'PayWay dynamic QR screen allowing driver instant scan-and-go payment.', tech: 'ABA PayWay KHQR API' },
+  { id: 'bot', icon: '🤖', label: '20+ Station Fleet Bot', desc: 'Centralized Telegram monitor providing hourly flow alerts across all 20 provincial nodes.', tech: 'Telegram Bot API' },
 ];
 
 export default function ProjectsSection() {
@@ -223,6 +242,10 @@ function ProjectDetailModal({
     { sender: 'bot', text: '👋 CamTech 20+ Station Telemetry Online. Tap a command below to test live report dispatch.', time: '10:00:02 AM' },
   ]);
 
+  const isFleet = project?.simulator?.type === 'fleet';
+  const nodeOptions = isFleet ? ECOSYSTEM_NODES_FLEET : ECOSYSTEM_NODES_GENERAL;
+  const [selectedNode, setSelectedNode] = useState(nodeOptions[0]);
+
   const styles = getModalStyles(colors, isDark);
 
   useEffect(() => {
@@ -230,7 +253,8 @@ function ProjectDetailModal({
     setViewMode('production');
     setCheckoutStep('cart');
     setSelectedStationIndex(0);
-  }, [projectIndex]);
+    setSelectedNode(project?.simulator?.type === 'fleet' ? ECOSYSTEM_NODES_FLEET[0] : ECOSYSTEM_NODES_GENERAL[0]);
+  }, [projectIndex, project]);
 
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof window === 'undefined') return;
@@ -247,7 +271,6 @@ function ProjectDetailModal({
 
   const isWide = width >= 880;
   const maxHeight = Math.min(height * 0.94, 900);
-  const accent = project.color || PAYWAY.cyan;
   const isPrivate = Boolean((project as any).private);
   const note = (project as any).note as string | undefined;
 
@@ -453,6 +476,72 @@ function ProjectDetailModal({
               </View>
             </View>
 
+            {/* 3D ISOMETRIC ECOSYSTEM ANIMATION STAGE */}
+            <View style={styles.isometricStageBox}>
+              <View style={styles.isometricStageHeader}>
+                <View style={styles.isometricTagRow}>
+                  <View style={styles.isometricTag}>
+                    <Text style={styles.isometricTagText}>3D ISOMETRIC ARCHITECTURE FLOW</Text>
+                  </View>
+                  <View style={styles.livePulseTag}>
+                    <View style={styles.livePulseDot} />
+                    <Text style={styles.livePulseText}>REAL-TIME EVENT BUS</Text>
+                  </View>
+                </View>
+                <Text style={styles.isometricTitle}>
+                  {isFleet ? 'Retail Cashier & Automated Fuel Dispenser Matrix' : 'Omnichannel Microservices & Hardware Connectivity'}
+                </Text>
+                <Text style={styles.isometricSubtitle}>
+                  {isFleet
+                    ? 'Synchronizing in-store POS checkouts, fuel nozzles, and central database replication.'
+                    : 'Interconnecting delivery dispatch, physical POS counters, customer web store, and ABA PayWay KHQR.'}
+                </Text>
+              </View>
+
+              {/* Floating Animated Graphic Canvas */}
+              <View style={styles.isometricStageCanvas}>
+                <View style={styles.isometricGlowAura} pointerEvents="none" />
+
+                <View style={styles.isometricGraphicFloatWrap}>
+                  <Image
+                    source={isFleet ? PAYWAY_POS_IMG : PAYWAY_HUB_IMG}
+                    style={styles.isometricGraphicImg}
+                    resizeMode="contain"
+                  />
+                </View>
+
+                {/* Hotspot Chips / Architectural Modules */}
+                <View style={styles.hotspotsWrap}>
+                  {nodeOptions.map((node) => {
+                    const isNodeSel = selectedNode.id === node.id;
+                    return (
+                      <Pressable
+                        key={node.id}
+                        onPress={() => setSelectedNode(node)}
+                        style={[styles.hotspotBtn, isNodeSel && styles.hotspotBtnActive]}
+                      >
+                        <Text style={styles.hotspotIcon}>{node.icon}</Text>
+                        <Text style={[styles.hotspotLabel, isNodeSel && styles.hotspotLabelActive]}>
+                          {node.label}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+
+                {/* Active Node Detail Card */}
+                <View style={styles.activeNodeCard}>
+                  <View style={styles.activeNodeHeaderRow}>
+                    <Text style={styles.activeNodeTitle}>{selectedNode.icon} {selectedNode.label}</Text>
+                    <View style={styles.protocolPill}>
+                      <Text style={styles.protocolText}>{selectedNode.tech}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.activeNodeDesc}>{selectedNode.desc}</Text>
+                </View>
+              </View>
+            </View>
+
             {/* IF IN DEVELOPER SANDBOX MODE */}
             {viewMode === 'developer' ? (
               <View style={styles.developerSuiteBox}>
@@ -542,7 +631,7 @@ function ProjectDetailModal({
               </View>
 
               {/* SIMULATOR TYPE: FLEET TELEMETRY (PTT 20+ STATIONS) */}
-              {project.simulator?.type === 'fleet' ? (
+              {isFleet ? (
                 <View style={styles.fleetSimulatorBox}>
                   <View style={styles.fleetTopBar}>
                     <Text style={styles.fleetBarTitle}>CAMBODIA FLEET RADAR: 20 STATIONS ACTIVE</Text>
@@ -635,6 +724,9 @@ function ProjectDetailModal({
                     <View style={styles.checkoutCardBody}>
                       <View style={styles.khqrFrame}>
                         <View style={styles.khqrInnerBox}>
+                          {/* Animated Cyber Laser Scanner Bar */}
+                          <View style={styles.khqrLaserLine} pointerEvents="none" />
+
                           <Text style={styles.khqrMockQr}>[ KHQR CODE MATRIX ]</Text>
                           <View style={styles.khqrPaywayLogoRow}>
                             <Text style={styles.khqrPaywayLogo}>ABA PAYWAY</Text>
@@ -732,7 +824,7 @@ function ProjectDetailModal({
               ) : null}
 
               {/* SIMULATOR TYPE: CONSOLE / AUDIT / MAP */}
-              {project.simulator?.type !== 'fleet' && project.simulator?.type !== 'checkout' && project.simulator?.type !== 'bot' ? (
+              {!isFleet && project.simulator?.type !== 'checkout' && project.simulator?.type !== 'bot' ? (
                 <View style={styles.consoleSimulatorBox}>
                   <View style={styles.consoleHeader}>
                     <Text style={styles.consoleHeaderTitle}>LIVE API PIPELINE TESTER</Text>
@@ -1540,6 +1632,214 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     fontWeight: '900',
     fontFamily: FONT_FAMILY.accent,
   },
+  isometricStageBox: {
+    borderRadius: 22,
+    backgroundColor: '#00172B',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.35)',
+    padding: 22,
+    gap: 18,
+    overflow: 'hidden',
+    position: 'relative',
+    ...(Platform.OS === 'web'
+      ? ({
+          boxShadow: '0 20px 60px rgba(0, 188, 212, 0.15)',
+        } as any)
+      : {}),
+  },
+  isometricStageHeader: {
+    gap: 6,
+  },
+  isometricTagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  isometricTag: {
+    paddingVertical: 4,
+    paddingHorizontal: 9,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 188, 212, 0.16)',
+    borderWidth: 1,
+    borderColor: PAYWAY.cyan,
+  },
+  isometricTagText: {
+    color: PAYWAY.cyan,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1.1,
+    fontFamily: FONT_FAMILY.accent,
+  },
+  livePulseTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 9,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 230, 118, 0.12)',
+    borderWidth: 1,
+    borderColor: PAYWAY.emerald,
+  },
+  livePulseDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: PAYWAY.emerald,
+  },
+  livePulseText: {
+    color: PAYWAY.emerald,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+    fontFamily: FONT_FAMILY.accent,
+  },
+  isometricTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '900',
+    letterSpacing: -0.4,
+    fontFamily: FONT_FAMILY.header,
+  },
+  isometricSubtitle: {
+    color: 'rgba(255, 255, 255, 0.70)',
+    fontSize: 13,
+    lineHeight: 19,
+    fontFamily: FONT_FAMILY.body,
+  },
+  isometricStageCanvas: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#001020',
+    borderRadius: 18,
+    paddingVertical: 20,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.20)',
+    position: 'relative',
+    overflow: 'hidden',
+    gap: 16,
+  },
+  isometricGlowAura: {
+    position: 'absolute',
+    width: 320,
+    height: 220,
+    borderRadius: 160,
+    backgroundColor: 'rgba(0, 188, 212, 0.22)',
+    ...(Platform.OS === 'web'
+      ? ({
+          animation: 'ct-glow-pulse 4.5s ease-in-out infinite',
+        } as any)
+      : {}),
+  },
+  isometricGraphicFloatWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    zIndex: 2,
+    ...(Platform.OS === 'web'
+      ? ({
+          animation: 'ct-float-slow 6s ease-in-out infinite',
+        } as any)
+      : {}),
+  },
+  isometricGraphicImg: {
+    width: '100%',
+    maxWidth: 520,
+    height: 250,
+  },
+  hotspotsWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 8,
+    zIndex: 3,
+    width: '100%',
+  },
+  hotspotBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 18, 36, 0.85)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.25)',
+    ...(Platform.OS === 'web'
+      ? ({
+          transition: 'all 160ms ease',
+          cursor: 'pointer',
+        } as any)
+      : {}),
+  },
+  hotspotBtnActive: {
+    backgroundColor: 'rgba(0, 188, 212, 0.22)',
+    borderColor: PAYWAY.cyan,
+    transform: [{ translateY: -2 }],
+    ...(Platform.OS === 'web'
+      ? ({
+          boxShadow: '0 4px 14px rgba(0, 188, 212, 0.40)',
+        } as any)
+      : {}),
+  },
+  hotspotIcon: {
+    fontSize: 14,
+  },
+  hotspotLabel: {
+    color: 'rgba(255, 255, 255, 0.75)',
+    fontSize: 11,
+    fontWeight: '800',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  hotspotLabelActive: {
+    color: PAYWAY.cyan,
+    fontWeight: '900',
+  },
+  activeNodeCard: {
+    width: '100%',
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: '#00162B',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.28)',
+    gap: 6,
+    zIndex: 3,
+  },
+  activeNodeHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  activeNodeTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.header,
+  },
+  protocolPill: {
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 188, 212, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.35)',
+  },
+  protocolText: {
+    color: PAYWAY.cyan,
+    fontSize: 10,
+    fontWeight: '800',
+    fontFamily: Platform.OS === 'web' ? 'monospace' : FONT_FAMILY.accent,
+  },
+  activeNodeDesc: {
+    color: 'rgba(255, 255, 255, 0.75)',
+    fontSize: 12,
+    lineHeight: 18,
+    fontFamily: FONT_FAMILY.body,
+  },
   developerSuiteBox: {
     borderRadius: 20,
     backgroundColor: '#001020',
@@ -1961,7 +2261,24 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     padding: 12,
     borderWidth: 3,
     borderColor: '#E11D48',
+    position: 'relative',
+    overflow: 'hidden',
     ...(Platform.OS === 'web' ? ({ boxShadow: '0 8px 30px rgba(0,0,0,0.4)' } as any) : {}),
+  },
+  khqrLaserLine: {
+    position: 'absolute',
+    left: 8,
+    right: 8,
+    height: 3,
+    backgroundColor: '#00BCD4',
+    borderRadius: 2,
+    zIndex: 10,
+    ...(Platform.OS === 'web'
+      ? ({
+          boxShadow: '0 0 10px #00BCD4, 0 0 20px #00BCD4',
+          animation: 'ct-laser-scan 2.2s ease-in-out infinite',
+        } as any)
+      : {}),
   },
   khqrMockQr: {
     color: '#000000',
@@ -2037,6 +2354,11 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderColor: PAYWAY.emerald,
     alignItems: 'center',
     justifyContent: 'center',
+    ...(Platform.OS === 'web'
+      ? ({
+          animation: 'ct-badge-pulse 1.8s ease-in-out infinite',
+        } as any)
+      : {}),
   },
   approvedIcon: {
     color: PAYWAY.emerald,

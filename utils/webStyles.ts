@@ -256,6 +256,32 @@ export function injectGlobalStyles() {
       100% { left: 220%; }
     }
 
+    @keyframes ct-float-slow {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(0.8deg); }
+    }
+
+    @keyframes ct-float-reverse {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(9px) rotate(-0.8deg); }
+    }
+
+    @keyframes ct-glow-pulse {
+      0%, 100% { opacity: 0.45; filter: blur(28px); transform: scale(0.96); }
+      50% { opacity: 0.85; filter: blur(42px); transform: scale(1.06); }
+    }
+
+    @keyframes ct-laser-scan {
+      0% { top: 6%; opacity: 0.7; }
+      50% { top: 88%; opacity: 1; }
+      100% { top: 6%; opacity: 0.7; }
+    }
+
+    @keyframes ct-shimmer-sheen {
+      0% { transform: translateX(-150%) skewX(-20deg); }
+      100% { transform: translateX(250%) skewX(-20deg); }
+    }
+
     /* ═══════ UTILITY CLASSES ═══════ */
 
     .ct-outlined-indigo {
