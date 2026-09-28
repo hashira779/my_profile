@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Image, Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { RADIUS, FONT_FAMILY } from '../constants/theme';
 import { PROFILE, PROJECTS } from '../constants/data';
@@ -8,13 +8,10 @@ import { sectionPadH, sectionPadV } from '../utils/responsive';
 
 type Project = typeof PROJECTS[number];
 
-const PAYWAY_HUB_IMG = require('../assets/payway/payway_ecosystem_hub.png');
-const PAYWAY_POS_IMG = require('../assets/payway/payway_pos_counter.png');
-
-const PAYWAY = {
-  navyDark: '#001424',
-  navyCard: '#001F38',
-  navySurface: '#032B4D',
+const THEME_ACCENT = {
+  navyDark: '#001122',
+  navyCard: '#001830',
+  navySurface: '#002244',
   navyBorder: 'rgba(0, 188, 212, 0.28)',
   cyan: '#00BCD4',
   cyanLight: '#4DD0E1',
@@ -50,22 +47,6 @@ const STATIONS_20_DATA = [
   { id: 'ST-20', name: 'PTT Expressway Rest Area #1', city: 'Kandal', status: 'Online', latency: '19ms', liters: '28,400 L', revenue: '$32,660', nozz: 12, qrShare: '78%' },
 ];
 
-const ECOSYSTEM_NODES_GENERAL = [
-  { id: 'hub', icon: '🏢', label: 'Central PayWay Gateway', desc: 'Central routing engine managing transactions, HMAC signatures, and database commits.', tech: 'REST API / TLS 1.3' },
-  { id: 'pos', icon: '💳', label: 'Counter POS Hub', desc: 'Sub-second in-store cashier checkout terminal with instant receipt printing.', tech: 'Local SQLite / WebSocket' },
-  { id: 'delivery', icon: '🛵', label: 'Delivery Logistics', desc: 'Dynamic dispatch service routing rider deliveries straight from warehouse to door.', tech: 'GPS / Webhook Relay' },
-  { id: 'store', icon: '💻', label: 'E-Commerce Storefront', desc: 'High-speed Next.js web catalog with real-time stock reservation and checkout.', tech: 'Next.js / Cloudflare' },
-  { id: 'bot', icon: '🤖', label: 'Telegram Alert Bot', desc: 'Automated notification engine pushing daily revenue audits and hardware warnings.', tech: 'Telegram Bot API / Long-polling' },
-];
-
-const ECOSYSTEM_NODES_FLEET = [
-  { id: 'counter', icon: '🏪', label: 'Station Cashier Counter', desc: 'Station master desk handling mixed cash and ABA KHQR transactions.', tech: 'Touch POS / RS-485' },
-  { id: 'pumps', icon: '⛽', label: 'Fuel Dispenser Nozzles', desc: 'Automatic digital meters monitoring real-time flow (E95, 92, Diesel) with cut-off sensors.', tech: 'Modbus / RS-485' },
-  { id: 'replication', icon: '🔄', label: 'MySQL Binlog Sync', desc: 'Sub-25ms continuous replication forwarding transaction logs to head office servers.', tech: 'MySQL Binary Log Replication' },
-  { id: 'khqr', icon: '📱', label: 'ABA KHQR Terminal', desc: 'PayWay dynamic QR screen allowing driver instant scan-and-go payment.', tech: 'ABA PayWay KHQR API' },
-  { id: 'bot', icon: '🤖', label: '20+ Station Fleet Bot', desc: 'Centralized Telegram monitor providing hourly flow alerts across all 20 provincial nodes.', tech: 'Telegram Bot API' },
-];
-
 export default function ProjectsSection() {
   const { colors, isDark } = useTheme();
   const { width } = useWindowDimensions();
@@ -91,7 +72,7 @@ export default function ProjectsSection() {
               <Text style={styles.headerIconText}>{'</>'}</Text>
             </View>
             <Text style={styles.title}>Projects <Text style={styles.titleAccent}>Made</Text></Text>
-            <Text style={styles.subtitle}>Enterprise software, automated retail fleets, database sync, and PayWay fintech integrations.</Text>
+            <Text style={styles.subtitle}>Enterprise software, automated retail fleets, database sync, and high-performance system architectures.</Text>
           </View>
 
           <View style={[styles.projectGrid, cols > 1 && styles.projectGridWrap]}>
@@ -135,7 +116,7 @@ export default function ProjectsSection() {
 
 function ProjectCard({ project, index, onPress, styles }: { project: Project; index: number; onPress: () => void; styles: any }) {
   const [hovered, setHovered] = useState(false);
-  const accent = project.color || PAYWAY.cyan;
+  const accent = project.color || THEME_ACCENT.cyan;
   const initials = project.title
     .split(' ')
     .filter(Boolean)
@@ -157,7 +138,7 @@ function ProjectCard({ project, index, onPress, styles }: { project: Project; in
         styles.projectCard,
         Platform.OS === 'web' && {
           transform: [{ translateY: hovered ? -8 : 0 }, { scale: hovered ? 1.012 : 1 }],
-          borderColor: hovered ? PAYWAY.cyan : 'rgba(0, 188, 212, 0.22)',
+          borderColor: hovered ? THEME_ACCENT.cyan : 'rgba(0, 188, 212, 0.22)',
           boxShadow: hovered ? `0 24px 60px rgba(0, 188, 212, 0.32)` : '0 12px 32px rgba(0, 15, 30, 0.45)',
           transition: 'all 230ms cubic-bezier(0.22, 1, 0.36, 1)',
           cursor: 'pointer',
@@ -170,7 +151,6 @@ function ProjectCard({ project, index, onPress, styles }: { project: Project; in
         <View style={[styles.previewOrbB, { backgroundColor: `${accent}16` }]} />
 
         <View style={styles.previewTopRow}>
-          <Text style={styles.projectNumber}>{String(index + 1).padStart(2, '0')}</Text>
           <View style={[styles.statusPill, { borderColor: `${accent}55`, backgroundColor: `${accent}18` }]}>
             <View style={[styles.statusDot, { backgroundColor: accent }]} />
             <Text style={[styles.statusText, { color: accent }]}>{project.status}</Text>
@@ -199,10 +179,10 @@ function ProjectCard({ project, index, onPress, styles }: { project: Project; in
         </View>
       </View>
 
-      <View style={[styles.projectStrip, { backgroundColor: PAYWAY.cyan }]}>
+      <View style={[styles.projectStrip, { backgroundColor: THEME_ACCENT.cyan }]}>
         <Text style={styles.projectTitle} numberOfLines={1}>{project.title}</Text>
         <View style={styles.exploreBadge}>
-          <Text style={styles.exploreText}>View Spec</Text>
+          <Text style={styles.exploreText}>View Architecture</Text>
           <Text style={styles.projectArrow}>{'->'}</Text>
         </View>
       </View>
@@ -235,7 +215,8 @@ function ProjectDetailModal({
   const [activeCodeLang, setActiveCodeLang] = useState<'curl' | 'js' | 'python' | 'response'>('curl');
   const [copied, setCopied] = useState(false);
 
-  // Simulator specific states
+  // Architecture Simulation States
+  const [isHighTraffic, setIsHighTraffic] = useState(false);
   const [selectedStationIndex, setSelectedStationIndex] = useState(0);
   const [checkoutStep, setCheckoutStep] = useState<'cart' | 'scanning' | 'approved'>('cart');
   const [botChatMessages, setBotChatMessages] = useState<Array<{ sender: 'user' | 'bot'; text: string; time: string }>>([
@@ -243,41 +224,67 @@ function ProjectDetailModal({
   ]);
 
   const isFleet = project?.simulator?.type === 'fleet';
-  const nodeOptions = isFleet ? ECOSYSTEM_NODES_FLEET : ECOSYSTEM_NODES_GENERAL;
-  const [selectedNode, setSelectedNode] = useState(nodeOptions[0]);
-  const [isHighTraffic, setIsHighTraffic] = useState(false);
 
-  const generalHotspots = [
-    { id: 'hub', label: 'PW HUB', top: '46%', left: '50%', icon: '🏢' },
-    { id: 'delivery', label: 'DISPATCH', top: '38%', left: '31%', icon: '🛵' },
-    { id: 'pos', label: 'POS TERMINAL', top: '28%', left: '75%', icon: '💳' },
-    { id: 'store', label: 'WEB STORE', top: '74%', left: '68%', icon: '💻' },
-    { id: 'bot', label: 'TG BOT', top: '22%', left: '46%', icon: '🤖' },
-  ];
+  // 100% Code-Drawn Pipeline Stages
+  const pipelineStages = isFleet
+    ? [
+        {
+          stage: '1. HARDWARE EDGE',
+          nodes: [
+            { id: 'dispensers', icon: '⛽', name: '20+ Station Fuel Dispensers', metric: '160 Nozzles Active', tech: 'RS-485 Modbus Protocol', desc: 'Hardware flowmeters monitoring real-time liter pulses with digital cut-off valves.' },
+            { id: 'counter', icon: '🏪', name: 'Station Cashier Touch POS', metric: '< 8ms Response', tech: 'Offline SQLite Buffer', desc: 'In-store cashier terminals logging cash & ABA KHQR transactions even during ISP outage.' },
+          ],
+        },
+        {
+          stage: '2. REPLICATION STREAM',
+          nodes: [
+            { id: 'binlog', icon: '🔄', name: 'MySQL Binlog Sync Stream', metric: '< 22ms Delta Lag', tech: 'Binlog Streamer / TCP', desc: 'Event-driven row replication pushing verified station transactions to HQ cluster.' },
+          ],
+        },
+        {
+          stage: '3. CONSOLIDATED CORE',
+          nodes: [
+            { id: 'db', icon: '🗄️', name: 'Corporate Master Database', metric: 'ACID Consolidated', tech: 'MySQL Master Cluster', desc: 'Central corporate ledger aggregating revenue, fuel volumes, and stock audits.' },
+          ],
+        },
+        {
+          stage: '4. OBSERVABILITY & BOTS',
+          nodes: [
+            { id: 'telegram', icon: '🤖', name: 'Telegram Fleet Alert Bot', metric: '20/20 Stations Live', tech: 'Telegram Bot API / Webhook', desc: 'Automated executive channel sending hourly volume summaries and disconnection warnings.' },
+          ],
+        },
+      ]
+    : [
+        {
+          stage: '1. CLIENT CHANNELS',
+          nodes: [
+            { id: 'web', icon: '🛍️', name: 'Next.js E-Commerce Store', metric: '< 50ms Catalog SSR', tech: 'Next.js 14 / React', desc: 'High-speed B2B/B2C storefront handling customer traffic, cart reservations, and search.' },
+            { id: 'pos', icon: '💳', name: 'Real-Time POS Counter', metric: 'Sub-second Checkout', tech: 'Local Hardware Hub', desc: 'Physical store cashier counter terminal syncing receipts and stock in real time.' },
+          ],
+        },
+        {
+          stage: '2. ZERO TRUST PERIMETER',
+          nodes: [
+            { id: 'gateway', icon: '🛡️', name: 'Cloudflare Zero Trust Gateway', metric: '100% Closed Ports', tech: 'Cloudflare Tunnel / JWT', desc: 'Perimeter gateway enforcing strict authentication without exposing public IP addresses.' },
+          ],
+        },
+        {
+          stage: '3. MICROSERVICES & DATA',
+          nodes: [
+            { id: 'db', icon: '🗄️', name: 'Master DB & Redis Cache Layer', metric: 'Zero Stock Mismatch', tech: 'PostgreSQL / Redis ACID', desc: 'Atomic transaction locks guaranteeing instant stock reservations across web and POS.' },
+          ],
+        },
+        {
+          stage: '4. DISPATCH & ALERTS',
+          nodes: [
+            { id: 'dispatch', icon: '🚚', name: 'Automated Logistics Dispatch', metric: 'Live Rider Routing', tech: 'Dynamic GPS Dispatch', desc: 'Automated warehouse-to-doorstep parcel routing with live rider telemetry.' },
+            { id: 'bot', icon: '🤖', name: 'Telegram Management Bot', metric: 'Hourly Audit Push', tech: 'Telegram Bot API', desc: 'Automated daily revenue reconciliation and critical inventory depletion alerts.' },
+          ],
+        },
+      ];
 
-  const generalLines = [
-    { x1: '50%', y1: '46%', x2: '31%', y2: '38%' },
-    { x1: '50%', y1: '46%', x2: '75%', y2: '28%' },
-    { x1: '50%', y1: '46%', x2: '68%', y2: '74%' },
-    { x1: '50%', y1: '46%', x2: '30%', y2: '68%' },
-    { x1: '50%', y1: '46%', x2: '46%', y2: '22%' },
-  ];
-
-  const fleetHotspots = [
-    { id: 'counter', label: 'CASHIER DESK', top: '38%', left: '50%', icon: '🏪' },
-    { id: 'pumps', label: 'CARD PUMP', top: '60%', left: '24%', icon: '⛽' },
-    { id: 'khqr', label: 'KHQR SCANNER', top: '72%', left: '54%', icon: '📱' },
-    { id: 'replication', label: 'BINLOG SYNC', top: '52%', left: '74%', icon: '🔄' },
-  ];
-
-  const fleetLines = [
-    { x1: '50%', y1: '38%', x2: '24%', y2: '60%' },
-    { x1: '50%', y1: '38%', x2: '54%', y2: '72%' },
-    { x1: '50%', y1: '38%', x2: '74%', y2: '52%' },
-  ];
-
-  const activeHotspots = isFleet ? fleetHotspots : generalHotspots;
-  const activeLines = isFleet ? fleetLines : generalLines;
+  const allNodesList = pipelineStages.flatMap((s) => s.nodes);
+  const [selectedNode, setSelectedNode] = useState(allNodesList[0]);
 
   const styles = getModalStyles(colors, isDark);
 
@@ -286,7 +293,7 @@ function ProjectDetailModal({
     setViewMode('production');
     setCheckoutStep('cart');
     setSelectedStationIndex(0);
-    setSelectedNode(project?.simulator?.type === 'fleet' ? ECOSYSTEM_NODES_FLEET[0] : ECOSYSTEM_NODES_GENERAL[0]);
+    setSelectedNode(allNodesList[0]);
   }, [projectIndex, project]);
 
   useEffect(() => {
@@ -371,20 +378,17 @@ function ProjectDetailModal({
               } as any),
           ]}
         >
-          {/* Ambient luminous PayWay cyan orbs */}
+          {/* Ambient luminous energy orbs */}
           <View style={styles.modalAmbientOrbA} pointerEvents="none" />
           <View style={styles.modalAmbientOrbB} pointerEvents="none" />
 
-          {/* PayWay Signature Header Navigation Bar */}
+          {/* Top Control Navigation Bar */}
           <View style={styles.paywayHeader}>
             <View style={styles.paywayBrandCol}>
               <View style={styles.paywayLogoBadge}>
                 <View style={styles.paywayLogoDot} />
-                <Text style={styles.paywayLogoText}>ABA PAYWAY ARCHITECTURE</Text>
+                <Text style={styles.paywayLogoText}>SYSTEM ARCHITECTURE</Text>
               </View>
-              <Text style={styles.paywayProjectCounter}>
-                SYSTEM {String(projectIndex + 1).padStart(2, '0')} / {String(totalProjects).padStart(2, '0')}
-              </Text>
             </View>
 
             {/* Mode Switcher: Production vs Developer Sandbox */}
@@ -397,7 +401,7 @@ function ProjectDetailModal({
                 ]}
               >
                 <Text style={[styles.modeSwitchText, viewMode === 'production' && styles.modeSwitchTextActive]}>
-                  ● Production Spec
+                  ● Production Architecture
                 </Text>
               </Pressable>
               <Pressable
@@ -461,7 +465,7 @@ function ProjectDetailModal({
               <Text style={styles.heroHeadline}>{project.headline}</Text>
               <Text style={styles.heroDescription}>{project.description}</Text>
 
-              {/* PayWay Action Bar */}
+              {/* Action Bar */}
               <View style={styles.heroActionRow}>
                 {project.live ? (
                   <Pressable
@@ -509,156 +513,158 @@ function ProjectDetailModal({
               </View>
             </View>
 
-            {/* 3D ISOMETRIC ECOSYSTEM ANIMATION STAGE */}
-            <View style={styles.isometricStageBox}>
-              <View style={styles.isometricStageHeader}>
-                <View style={styles.isometricTagRow}>
-                  <View style={styles.isometricTag}>
-                    <Text style={styles.isometricTagText}>3D ISOMETRIC ARCHITECTURE FLOW</Text>
+            {/* 100% CODE-DRAWN ANIMATED ARCHITECTURE PIPELINE */}
+            <View style={styles.codeArchStageBox}>
+              <View style={styles.codeArchHeader}>
+                <View style={styles.codeArchTagRow}>
+                  <View style={styles.codeArchTag}>
+                    <Text style={styles.codeArchTagText}>100% CODE-DRAWN SYSTEM ARCHITECTURE</Text>
                   </View>
                   <View style={styles.livePulseTag}>
                     <View style={styles.livePulseDot} />
-                    <Text style={styles.livePulseText}>REAL-TIME EVENT BUS</Text>
+                    <Text style={styles.livePulseText}>
+                      {isHighTraffic ? '⚡ HIGH-THROUGHPUT BUS (500 REQ/S)' : '🟢 EVENT BUS: REAL-TIME STREAMING'}
+                    </Text>
                   </View>
                 </View>
-                <Text style={styles.isometricTitle}>
-                  {isFleet ? 'Retail Cashier & Automated Fuel Dispenser Matrix' : 'Omnichannel Microservices & Hardware Connectivity'}
+                <Text style={styles.codeArchTitle}>
+                  {isFleet ? 'PTT 20+ Station Telemetry & Binlog Replication Pipeline' : 'CamTech Omnichannel Microservices & Hardware Bus'}
                 </Text>
-                <Text style={styles.isometricSubtitle}>
+                <Text style={styles.codeArchSubtitle}>
                   {isFleet
-                    ? 'Synchronizing in-store POS checkouts, fuel nozzles, and central database replication.'
-                    : 'Interconnecting delivery dispatch, physical POS counters, customer web store, and ABA PayWay KHQR.'}
+                    ? 'Pure code-drawn topology mapping physical pump dispensers, local POS cache, real-time MySQL binary log streams, and Telegram fleet alerts.'
+                    : 'Pure code-drawn architecture coordinating client web storefronts, retail POS counters, Zero-Trust tunnels, ACID databases, and automated delivery dispatch.'}
                 </Text>
               </View>
 
-              {/* Floating Animated Graphic Canvas with Real-Time Flowing Circuit Lines */}
-              <View style={styles.isometricStageCanvas}>
-                <View style={styles.isometricGlowAura} pointerEvents="none" />
-
-                {/* Interactive Circuit Canvas with Overlaid SVG Lines and Hotspot Pins */}
-                <View style={styles.isometricCanvasFrame}>
-                  <View style={styles.isometricGraphicFloatWrap}>
-                    <Image
-                      source={isFleet ? PAYWAY_POS_IMG : PAYWAY_HUB_IMG}
-                      style={styles.isometricGraphicImg}
-                      resizeMode="contain"
-                    />
-                  </View>
-
-                  {/* SVG Circuit Lines with Flowing Animated Dashes & Pulsing Photons */}
-                  {Platform.OS === 'web' &&
-                    React.createElement(
-                      'svg',
-                      {
-                        style: {
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          pointerEvents: 'none',
-                          zIndex: 3,
-                        },
-                      },
-                      activeLines.map((line, i) =>
-                        React.createElement(
-                          'g',
-                          { key: i },
-                          React.createElement('line', {
-                            x1: line.x1,
-                            y1: line.y1,
-                            x2: line.x2,
-                            y2: line.y2,
-                            stroke: '#00BCD4',
-                            strokeWidth: isHighTraffic ? '2.5' : '1.8',
-                            strokeDasharray: '6,6',
-                            style: {
-                              animation: `ct-dash-flow ${isHighTraffic ? '0.45s' : '1.1s'} linear infinite`,
-                              filter: 'drop-shadow(0 0 4px #00BCD4)',
-                            },
-                          }),
-                          React.createElement('circle', {
-                            cx: line.x2,
-                            cy: line.y2,
-                            r: isHighTraffic ? '4' : '3',
-                            fill: '#00E676',
-                            style: {
-                              animation: `ct-pulse-dot ${isHighTraffic ? '0.6s' : '1.4s'} ease-in-out infinite`,
-                            },
-                          })
-                        )
-                      )
-                    )}
-
-                  {/* Interactive Glowing Hotspot Beacon Pins Overlaid directly on Nodes */}
-                  {activeHotspots.map((spot) => {
-                    const isSpotSel = selectedNode.id === spot.id;
-                    return (
-                      <Pressable
-                        key={spot.id}
-                        onPress={() => setSelectedNode(nodeOptions.find((n) => n.id === spot.id) || nodeOptions[0])}
-                        style={[
-                          styles.beaconPin,
-                          { top: spot.top as any, left: spot.left as any },
-                          isSpotSel && styles.beaconPinSelected,
-                        ]}
-                      >
-                        <View style={styles.beaconRing} />
-                        <View style={[styles.beaconCoreDot, isSpotSel && styles.beaconCoreDotActive]} />
-                        <View style={[styles.beaconPill, isSpotSel && styles.beaconPillActive]}>
-                          <Text style={[styles.beaconPillText, isSpotSel && styles.beaconPillTextActive]}>
-                            {spot.icon} {spot.label}
-                          </Text>
-                        </View>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-
-                {/* Simulation Control Bar */}
-                <View style={styles.simControlRow}>
-                  <Pressable
-                    onPress={() => setIsHighTraffic(!isHighTraffic)}
-                    style={[styles.trafficToggleBtn, isHighTraffic && styles.trafficToggleBtnActive]}
-                  >
-                    <Text style={styles.trafficToggleIcon}>{isHighTraffic ? '⚡' : '🚀'}</Text>
-                    <Text style={[styles.trafficToggleText, isHighTraffic && styles.trafficToggleTextActive]}>
-                      {isHighTraffic ? 'Live Stress Test: 500 req/s Active' : 'Simulate High-Load Event Traffic (Click)'}
-                    </Text>
-                  </Pressable>
-                  <Text style={styles.trafficHint}>
-                    {isHighTraffic ? 'Dashes & beacons pulsing at 2.5x speed' : 'Tap any hotspot node to inspect real-time bus telemetry'}
+              {/* Traffic Speed Toggle */}
+              <View style={styles.codeArchControlBar}>
+                <Pressable
+                  onPress={() => setIsHighTraffic(!isHighTraffic)}
+                  style={[styles.codeArchTrafficBtn, isHighTraffic && styles.codeArchTrafficBtnActive]}
+                >
+                  <Text style={styles.codeArchTrafficIcon}>{isHighTraffic ? '⚡' : '🚀'}</Text>
+                  <Text style={[styles.codeArchTrafficText, isHighTraffic && styles.codeArchTrafficTextActive]}>
+                    {isHighTraffic ? 'Stress Test: 500 req/s Active (Speed 2.5x)' : 'Simulate High-Load Event Traffic (Click)'}
                   </Text>
-                </View>
+                </Pressable>
+                <Text style={styles.codeArchHint}>Tap any architecture block to inspect live protocol, hardware interfaces, and failover mechanics.</Text>
+              </View>
 
-                {/* Hotspot Chips / Architectural Modules */}
-                <View style={styles.hotspotsWrap}>
-                  {nodeOptions.map((node) => {
-                    const isNodeSel = selectedNode.id === node.id;
-                    return (
-                      <Pressable
-                        key={node.id}
-                        onPress={() => setSelectedNode(node)}
-                        style={[styles.hotspotBtn, isNodeSel && styles.hotspotBtnActive]}
-                      >
-                        <Text style={styles.hotspotIcon}>{node.icon}</Text>
-                        <Text style={[styles.hotspotLabel, isNodeSel && styles.hotspotLabelActive]}>
-                          {node.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
+              {/* The Pipeline Canvas */}
+              <ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={styles.pipelineFlowScroll}>
+                <View style={styles.pipelineFlowContainer}>
+                  {pipelineStages.map((stg, stgIdx) => (
+                    <React.Fragment key={stg.stage}>
+                      <View style={styles.pipelineStageCol}>
+                        <View style={styles.pipelineStageHeaderPill}>
+                          <Text style={styles.pipelineStageHeaderText}>{stg.stage}</Text>
+                        </View>
 
-                {/* Active Node Detail Card */}
-                <View style={styles.activeNodeCard}>
-                  <View style={styles.activeNodeHeaderRow}>
-                    <Text style={styles.activeNodeTitle}>{selectedNode.icon} {selectedNode.label}</Text>
-                    <View style={styles.protocolPill}>
-                      <Text style={styles.protocolText}>{selectedNode.tech}</Text>
+                        <View style={styles.pipelineNodesCol}>
+                          {stg.nodes.map((node) => {
+                            const isNodeActive = selectedNode.id === node.id;
+                            return (
+                              <Pressable
+                                key={node.id}
+                                onPress={() => setSelectedNode(node)}
+                                style={[
+                                  styles.codeNodeCard,
+                                  isNodeActive && styles.codeNodeCardActive,
+                                ]}
+                              >
+                                <View style={styles.codeNodeTopRow}>
+                                  <View style={[styles.codeNodeIconBox, isNodeActive && styles.codeNodeIconBoxActive]}>
+                                    <Text style={styles.codeNodeIconText}>{node.icon}</Text>
+                                  </View>
+                                  <View style={styles.codeNodeStatusPill}>
+                                    <View style={[styles.codeNodeStatusDot, { backgroundColor: isNodeActive ? THEME_ACCENT.emerald : THEME_ACCENT.cyan }]} />
+                                    <Text style={styles.codeNodeStatusText}>{node.metric}</Text>
+                                  </View>
+                                </View>
+
+                                <Text style={styles.codeNodeName}>{node.name}</Text>
+                                <Text style={styles.codeNodeTech}>{node.tech}</Text>
+                              </Pressable>
+                            );
+                          })}
+                        </View>
+                      </View>
+
+                      {/* Animated Connector Arrow between stages */}
+                      {stgIdx < pipelineStages.length - 1 && (
+                        <View style={styles.pipelineConnectorCol}>
+                          {Platform.OS === 'web' &&
+                            React.createElement(
+                              'svg',
+                              {
+                                width: 48,
+                                height: 80,
+                                style: { overflow: 'visible' },
+                              },
+                              React.createElement('line', {
+                                x1: 0,
+                                y1: 40,
+                                x2: 48,
+                                y2: 40,
+                                stroke: THEME_ACCENT.cyan,
+                                strokeWidth: isHighTraffic ? 2.5 : 1.8,
+                                strokeDasharray: '5,5',
+                                style: {
+                                  animation: `ct-dash-flow ${isHighTraffic ? '0.4s' : '1.1s'} linear infinite`,
+                                  filter: 'drop-shadow(0 0 4px #00BCD4)',
+                                },
+                              }),
+                              React.createElement('circle', {
+                                cx: 24,
+                                cy: 40,
+                                r: isHighTraffic ? 4 : 3,
+                                fill: THEME_ACCENT.emerald,
+                                style: {
+                                  animation: `ct-pulse-dot ${isHighTraffic ? '0.6s' : '1.4s'} ease-in-out infinite`,
+                                },
+                              })
+                            )}
+                        </View>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </View>
+              </ScrollView>
+
+              {/* Active Node Architectural Inspector Card */}
+              <View style={styles.codeInspectorCard}>
+                <View style={styles.codeInspectorHeader}>
+                  <View style={styles.codeInspectorTitleRow}>
+                    <Text style={styles.codeInspectorIcon}>{selectedNode.icon}</Text>
+                    <View>
+                      <Text style={styles.codeInspectorName}>{selectedNode.name}</Text>
+                      <Text style={styles.codeInspectorProtocol}>Protocol: {selectedNode.tech}</Text>
                     </View>
                   </View>
-                  <Text style={styles.activeNodeDesc}>{selectedNode.desc}</Text>
+                  <View style={styles.codeInspectorMetricBadge}>
+                    <Text style={styles.codeInspectorMetricText}>Status: {selectedNode.metric} (Operational)</Text>
+                  </View>
+                </View>
+                <Text style={styles.codeInspectorDesc}>{selectedNode.desc}</Text>
+              </View>
+
+              {/* Real-Time Live Bus Log Stream Ticker */}
+              <View style={styles.busTerminalBox}>
+                <View style={styles.busTerminalHeader}>
+                  <Text style={styles.busTerminalTitle}>LIVE EVENT BUS TELEMETRY STREAM</Text>
+                  <Text style={styles.busTerminalLive}>● LOGGING ACTIVE</Text>
+                </View>
+                <View style={styles.busTerminalBody}>
+                  <Text style={styles.busTerminalLine}>
+                    [10:18:02] <Text style={{ color: THEME_ACCENT.cyan }}>[GATEWAY]</Text> ACK heartbeat from 20 station nodes • Delta lag: 14ms
+                  </Text>
+                  <Text style={styles.busTerminalLine}>
+                    [10:18:05] <Text style={{ color: THEME_ACCENT.emerald }}>[POS_SYNC]</Text> Binlog transaction #8812 committed to master cluster
+                  </Text>
+                  <Text style={styles.busTerminalLine}>
+                    [10:18:08] <Text style={{ color: THEME_ACCENT.amber }}>[TELEGRAM]</Text> Hourly consolidated ledger push dispatched to management
+                  </Text>
                 </View>
               </View>
             </View>
@@ -668,7 +674,7 @@ function ProjectDetailModal({
               <View style={styles.developerSuiteBox}>
                 <View style={styles.suiteHeader}>
                   <View>
-                    <Text style={styles.suiteTitle}>PayWay Developer Code Suite</Text>
+                    <Text style={styles.suiteTitle}>Developer Code Suite</Text>
                     <Text style={styles.suiteSub}>Production REST API payload specifications, headers, and verified responses</Text>
                   </View>
                   <View style={styles.suiteLiveTag}>
@@ -741,7 +747,7 @@ function ProjectDetailModal({
               </View>
             ) : null}
 
-            {/* INTERACTIVE SIMULATOR WIDGET (Always prominent) */}
+            {/* INTERACTIVE SIMULATOR WIDGET */}
             <View style={styles.simulatorWrapper}>
               <View style={styles.simulatorHeader}>
                 <View style={styles.simBadge}>
@@ -801,11 +807,11 @@ function ProjectDetailModal({
                             <Text style={styles.telemetryMetricLbl}>Today's Fuel Flow</Text>
                           </View>
                           <View style={styles.telemetryMetricItem}>
-                            <Text style={[styles.telemetryMetricVal, { color: PAYWAY.cyan }]}>{activeSt.revenue}</Text>
+                            <Text style={[styles.telemetryMetricVal, { color: THEME_ACCENT.cyan }]}>{activeSt.revenue}</Text>
                             <Text style={styles.telemetryMetricLbl}>Gross Station Revenue</Text>
                           </View>
                           <View style={styles.telemetryMetricItem}>
-                            <Text style={[styles.telemetryMetricVal, { color: PAYWAY.emerald }]}>{activeSt.qrShare}</Text>
+                            <Text style={[styles.telemetryMetricVal, { color: THEME_ACCENT.emerald }]}>{activeSt.qrShare}</Text>
                             <Text style={styles.telemetryMetricLbl}>ABA KHQR Penetration</Text>
                           </View>
                           <View style={styles.telemetryMetricItem}>
@@ -836,7 +842,7 @@ function ProjectDetailModal({
                     </View>
                     <View style={styles.checkoutPriceCol}>
                       <Text style={styles.checkoutPriceTotal}>$149.00</Text>
-                      <Text style={styles.checkoutPriceSub}>USD (ABA PayWay)</Text>
+                      <Text style={styles.checkoutPriceSub}>USD</Text>
                     </View>
                   </View>
 
@@ -845,12 +851,10 @@ function ProjectDetailModal({
                     <View style={styles.checkoutCardBody}>
                       <View style={styles.khqrFrame}>
                         <View style={styles.khqrInnerBox}>
-                          {/* Animated Cyber Laser Scanner Bar */}
                           <View style={styles.khqrLaserLine} pointerEvents="none" />
-
                           <Text style={styles.khqrMockQr}>[ KHQR CODE MATRIX ]</Text>
                           <View style={styles.khqrPaywayLogoRow}>
-                            <Text style={styles.khqrPaywayLogo}>ABA PAYWAY</Text>
+                            <Text style={styles.khqrPaywayLogo}>PAYWAY KHQR</Text>
                           </View>
                         </View>
                         <Text style={styles.khqrScanText}>Scan with ABA Mobile or any Bakong App</Text>
@@ -877,7 +881,7 @@ function ProjectDetailModal({
                   {checkoutStep === 'scanning' && (
                     <View style={styles.checkoutProcessingBox}>
                       <Text style={styles.processingSpinner}>⚡</Text>
-                      <Text style={styles.processingTitle}>Authorizing with ABA PayWay API...</Text>
+                      <Text style={styles.processingTitle}>Authorizing Transaction API...</Text>
                       <Text style={styles.processingSub}>Validating cryptographic signature & reserving inventory</Text>
                     </View>
                   )}
@@ -888,9 +892,9 @@ function ProjectDetailModal({
                         <Text style={styles.approvedIcon}>✓</Text>
                       </View>
                       <Text style={styles.approvedTitle}>Payment Approved via ABA PayWay!</Text>
-                      <Text style={styles.approvedSub}>Transaction Ref: ABA-PW-20260928-847291 • Status: COMPLETED</Text>
+                      <Text style={styles.approvedSub}>Transaction Ref: PW-20260928-847291 • Status: COMPLETED</Text>
                       <View style={styles.approvedLogBox}>
-                        <Text style={styles.approvedLogLine}>[Webhook] Received payment verification from api.payway.com.kh</Text>
+                        <Text style={styles.approvedLogLine}>[Webhook] Received payment verification from gateway</Text>
                         <Text style={styles.approvedLogLine}>[POS Hub] Deducted stock in warehouse #1 • Receipt printed in 42ms</Text>
                       </View>
                       <Pressable onPress={() => setCheckoutStep('cart')} style={styles.resetSimBtn}>
@@ -955,8 +959,8 @@ function ProjectDetailModal({
                     <Text style={styles.consoleCodeLine}>&gt; POST /v1/telemetry/event HTTP/1.1</Text>
                     <Text style={styles.consoleCodeLine}>&gt; Host: api.camtech.cam</Text>
                     <Text style={styles.consoleCodeLine}>&gt; Authorization: Bearer ct_live_token</Text>
-                    <Text style={[styles.consoleCodeLine, { color: PAYWAY.emerald }]}>&lt; HTTP/1.1 200 OK</Text>
-                    <Text style={[styles.consoleCodeLine, { color: PAYWAY.textMuted }]}>
+                    <Text style={[styles.consoleCodeLine, { color: THEME_ACCENT.emerald }]}>&lt; HTTP/1.1 200 OK</Text>
+                    <Text style={[styles.consoleCodeLine, { color: THEME_ACCENT.textMuted }]}>
                       &lt; {`{"status": "ACK", "station_nodes_synced": 20, "binlog_delta": 0, "hash": "sha256:8f4a2"}`}
                     </Text>
                   </View>
@@ -975,7 +979,7 @@ function ProjectDetailModal({
                 <View style={styles.metricsGrid}>
                   {project.metrics.map((metric) => (
                     <View key={metric.label} style={styles.metricCard}>
-                      <Text style={[styles.metricValue, { color: PAYWAY.cyan }]}>{metric.value}</Text>
+                      <Text style={[styles.metricValue, { color: THEME_ACCENT.cyan }]}>{metric.value}</Text>
                       <Text style={styles.metricLabel}>{metric.label}</Text>
                       {metric.sub && <Text style={styles.metricSub}>{metric.sub}</Text>}
                     </View>
@@ -984,7 +988,7 @@ function ProjectDetailModal({
               </View>
             )}
 
-            {/* TAB SELECTOR: The Solution / Capabilities / Architecture / Impact */}
+            {/* TAB SELECTOR */}
             <View style={styles.detailTabsBar}>
               {[
                 { key: 'overview', label: '🎯 The Solution', sub: 'Problem vs Fix' },
@@ -1035,7 +1039,7 @@ function ProjectDetailModal({
                     </View>
                     <View>
                       <Text style={styles.boxTitleSuccess}>The Engineering Breakthrough</Text>
-                      <Text style={styles.boxSubSuccess}>Engineered by Chhoy Too • PayWay-Grade Standards</Text>
+                      <Text style={styles.boxSubSuccess}>Engineered by Chhoy Too</Text>
                     </View>
                   </View>
                   <Text style={styles.boxDesc}>{project.solution}</Text>
@@ -1119,11 +1123,11 @@ function ProjectDetailModal({
               </View>
             )}
 
-            {/* PAYWAY ENTERPRISE INTEGRATION BANNER */}
+            {/* ENTERPRISE CALL TO ACTION */}
             <View style={styles.ctaBanner}>
               <View style={styles.ctaGlowOrb} pointerEvents="none" />
               <View style={styles.ctaTextCol}>
-                <Text style={styles.ctaHeading}>Deploy PayWay-Grade Architecture for Your Business</Text>
+                <Text style={styles.ctaHeading}>Deploy Resilient Systems Engineered for Your Business</Text>
                 <Text style={styles.ctaSub}>
                   From 20+ station POS hardware telemetry and automated database replication to omnichannel e-commerce microservices, I design and build mission-critical systems that never go down.
                 </Text>
@@ -1196,7 +1200,7 @@ const getStyles = (colors: any, isDark: boolean) => {
       borderColor: 'rgba(0, 188, 212, 0.35)',
     },
     headerIconText: {
-      color: PAYWAY.cyan,
+      color: THEME_ACCENT.cyan,
       fontSize: 16,
       fontWeight: '900',
       fontFamily: FONT_FAMILY.accent,
@@ -1210,7 +1214,7 @@ const getStyles = (colors: any, isDark: boolean) => {
       fontFamily: FONT_FAMILY.header,
     },
     titleAccent: {
-      color: PAYWAY.cyan,
+      color: THEME_ACCENT.cyan,
     },
     subtitle: {
       color: 'rgba(255,255,255,0.72)',
@@ -1236,7 +1240,7 @@ const getStyles = (colors: any, isDark: boolean) => {
       overflow: 'hidden',
     },
     preview: {
-      minHeight: 250,
+      minHeight: 240,
       padding: 18,
       justifyContent: 'space-between',
       position: 'relative',
@@ -1273,15 +1277,8 @@ const getStyles = (colors: any, isDark: boolean) => {
     previewTopRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
+      justifyContent: 'flex-end',
       zIndex: 2,
-    },
-    projectNumber: {
-      color: 'rgba(255,255,255,0.45)',
-      fontSize: 13,
-      fontWeight: '900',
-      letterSpacing: 1.2,
-      fontFamily: FONT_FAMILY.accent,
     },
     statusPill: {
       flexDirection: 'row',
@@ -1319,7 +1316,7 @@ const getStyles = (colors: any, isDark: boolean) => {
       fontFamily: FONT_FAMILY.header,
     },
     previewMeta: {
-      color: PAYWAY.cyan,
+      color: THEME_ACCENT.cyan,
       fontSize: 11,
       fontWeight: '900',
       letterSpacing: 1.4,
@@ -1375,7 +1372,7 @@ const getStyles = (colors: any, isDark: boolean) => {
       borderColor: 'rgba(0, 188, 212, 0.24)',
     },
     previewTagText: {
-      color: PAYWAY.textLight,
+      color: THEME_ACCENT.textLight,
       fontSize: 10,
       fontWeight: '800',
       fontFamily: FONT_FAMILY.accent,
@@ -1421,7 +1418,7 @@ const getStyles = (colors: any, isDark: boolean) => {
       paddingHorizontal: 24,
       borderRadius: 10,
       borderWidth: 1,
-      borderColor: PAYWAY.cyan,
+      borderColor: THEME_ACCENT.cyan,
       backgroundColor: 'rgba(0, 188, 212, 0.08)',
       ...(Platform.OS === 'web' ? ({ transition: 'all 180ms ease' } as any) : {}),
     },
@@ -1430,7 +1427,7 @@ const getStyles = (colors: any, isDark: boolean) => {
       transform: [{ translateY: -2 }],
     },
     viewAllText: {
-      color: PAYWAY.cyan,
+      color: THEME_ACCENT.cyan,
       fontSize: 14,
       fontWeight: '900',
       fontFamily: FONT_FAMILY.accent,
@@ -1441,7 +1438,7 @@ const getStyles = (colors: any, isDark: boolean) => {
 const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   modalRoot: {
     flex: 1,
-    backgroundColor: 'rgba(0, 12, 22, 0.85)',
+    backgroundColor: 'rgba(0, 12, 22, 0.88)',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
@@ -1453,7 +1450,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#00162B',
     borderWidth: 1,
-    borderColor: PAYWAY.navyBorder,
+    borderColor: THEME_ACCENT.navyBorder,
     position: 'relative',
     ...(Platform.OS === 'web'
       ? ({
@@ -1517,19 +1514,13 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: PAYWAY.cyan,
+    backgroundColor: THEME_ACCENT.cyan,
   },
   paywayLogoText: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.1,
-    fontFamily: FONT_FAMILY.accent,
-  },
-  paywayProjectCounter: {
-    color: 'rgba(255, 255, 255, 0.55)',
-    fontSize: 11,
-    fontWeight: '800',
     fontFamily: FONT_FAMILY.accent,
   },
   modeSwitchWrap: {
@@ -1548,7 +1539,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     ...(Platform.OS === 'web' ? ({ transition: 'all 160ms ease', cursor: 'pointer' } as any) : {}),
   },
   modeSwitchBtnActive: {
-    backgroundColor: PAYWAY.cyan,
+    backgroundColor: THEME_ACCENT.cyan,
   },
   modeSwitchText: {
     color: 'rgba(255, 255, 255, 0.65)',
@@ -1576,7 +1567,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   headerNavBtnHover: {
     backgroundColor: 'rgba(0, 188, 212, 0.20)',
-    borderColor: PAYWAY.cyan,
+    borderColor: THEME_ACCENT.cyan,
   },
   headerNavBtnText: {
     color: '#FFFFFF',
@@ -1633,10 +1624,10 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: PAYWAY.emerald,
+    backgroundColor: THEME_ACCENT.emerald,
   },
   heroStatusLabel: {
-    color: PAYWAY.emerald,
+    color: THEME_ACCENT.emerald,
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 0.8,
@@ -1651,7 +1642,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderColor: 'rgba(0, 188, 212, 0.35)',
   },
   heroMetricPillText: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 11,
     fontWeight: '900',
     fontFamily: FONT_FAMILY.accent,
@@ -1665,7 +1656,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     fontFamily: FONT_FAMILY.header,
   },
   heroHeadline: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 16,
     lineHeight: 24,
     fontWeight: '800',
@@ -1689,7 +1680,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     paddingVertical: 11,
     paddingHorizontal: 20,
     borderRadius: RADIUS.full,
-    backgroundColor: PAYWAY.cyan,
+    backgroundColor: THEME_ACCENT.cyan,
     alignItems: 'center',
     justifyContent: 'center',
     ...(Platform.OS === 'web'
@@ -1701,7 +1692,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
       : {}),
   },
   btnPaywayPrimaryHover: {
-    backgroundColor: PAYWAY.cyanLight,
+    backgroundColor: THEME_ACCENT.cyanLight,
     transform: [{ translateY: -2 }],
   },
   btnPaywayPrimaryText: {
@@ -1738,7 +1729,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderRadius: RADIUS.full,
     backgroundColor: 'rgba(0, 188, 212, 0.10)',
     borderWidth: 1,
-    borderColor: PAYWAY.cyan,
+    borderColor: THEME_ACCENT.cyan,
     alignItems: 'center',
     justifyContent: 'center',
     ...(Platform.OS === 'web' ? ({ transition: 'all 180ms ease', cursor: 'pointer' } as any) : {}),
@@ -1748,45 +1739,47 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     transform: [{ translateY: -1 }],
   },
   btnPaywayCyanOutlineText: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 13,
     fontWeight: '900',
     fontFamily: FONT_FAMILY.accent,
   },
-  isometricStageBox: {
+
+  // 100% Code-Drawn Architecture Matrix Styles
+  codeArchStageBox: {
     borderRadius: 22,
-    backgroundColor: '#00172B',
+    backgroundColor: '#00152B',
     borderWidth: 1,
     borderColor: 'rgba(0, 188, 212, 0.35)',
     padding: 22,
     gap: 18,
-    overflow: 'hidden',
     position: 'relative',
+    overflow: 'hidden',
     ...(Platform.OS === 'web'
       ? ({
-          boxShadow: '0 20px 60px rgba(0, 188, 212, 0.15)',
+          boxShadow: '0 20px 60px rgba(0, 188, 212, 0.12)',
         } as any)
       : {}),
   },
-  isometricStageHeader: {
+  codeArchHeader: {
     gap: 6,
   },
-  isometricTagRow: {
+  codeArchTagRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: 8,
   },
-  isometricTag: {
+  codeArchTag: {
     paddingVertical: 4,
-    paddingHorizontal: 9,
+    paddingHorizontal: 10,
     borderRadius: RADIUS.full,
     backgroundColor: 'rgba(0, 188, 212, 0.16)',
     borderWidth: 1,
-    borderColor: PAYWAY.cyan,
+    borderColor: THEME_ACCENT.cyan,
   },
-  isometricTagText: {
-    color: PAYWAY.cyan,
+  codeArchTagText: {
+    color: THEME_ACCENT.cyan,
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1.1,
@@ -1797,168 +1790,47 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     paddingVertical: 4,
-    paddingHorizontal: 9,
+    paddingHorizontal: 10,
     borderRadius: RADIUS.full,
     backgroundColor: 'rgba(0, 230, 118, 0.12)',
     borderWidth: 1,
-    borderColor: PAYWAY.emerald,
+    borderColor: THEME_ACCENT.emerald,
   },
   livePulseDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: PAYWAY.emerald,
+    backgroundColor: THEME_ACCENT.emerald,
   },
   livePulseText: {
-    color: PAYWAY.emerald,
+    color: THEME_ACCENT.emerald,
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 0.8,
     fontFamily: FONT_FAMILY.accent,
   },
-  isometricTitle: {
+  codeArchTitle: {
     color: '#FFFFFF',
     fontSize: 20,
     fontWeight: '900',
     letterSpacing: -0.4,
     fontFamily: FONT_FAMILY.header,
   },
-  isometricSubtitle: {
+  codeArchSubtitle: {
     color: 'rgba(255, 255, 255, 0.70)',
     fontSize: 13,
     lineHeight: 19,
     fontFamily: FONT_FAMILY.body,
   },
-  isometricStageCanvas: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#001020',
-    borderRadius: 18,
-    paddingVertical: 20,
-    paddingHorizontal: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.20)',
-    position: 'relative',
-    overflow: 'hidden',
-    gap: 16,
-  },
-  isometricGlowAura: {
-    position: 'absolute',
-    width: 320,
-    height: 220,
-    borderRadius: 160,
-    backgroundColor: 'rgba(0, 188, 212, 0.22)',
-    ...(Platform.OS === 'web'
-      ? ({
-          animation: 'ct-glow-pulse 4.5s ease-in-out infinite',
-        } as any)
-      : {}),
-  },
-  isometricGraphicFloatWrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    zIndex: 2,
-    ...(Platform.OS === 'web'
-      ? ({
-          animation: 'ct-float-slow 6s ease-in-out infinite',
-        } as any)
-      : {}),
-  },
-  isometricGraphicImg: {
-    width: '100%',
-    maxWidth: 520,
-    height: 250,
-  },
-  isometricCanvasFrame: {
-    width: '100%',
-    maxWidth: 580,
-    height: 270,
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 2,
-  },
-  beaconPin: {
-    position: 'absolute',
-    transform: [{ translateX: -12 }, { translateY: -12 }],
-    zIndex: 10,
-    alignItems: 'center',
-    ...(Platform.OS === 'web' ? ({ cursor: 'pointer' } as any) : {}),
-  },
-  beaconPinSelected: {
-    zIndex: 20,
-    transform: [{ translateX: -12 }, { translateY: -15 }, { scale: 1.1 }],
-  },
-  beaconRing: {
-    position: 'absolute',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#00BCD4',
-    ...(Platform.OS === 'web'
-      ? ({
-          animation: 'ct-beacon-ring 2.2s cubic-bezier(0, 0.2, 0.8, 1) infinite',
-        } as any)
-      : {}),
-  },
-  beaconCoreDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#00BCD4',
-    borderWidth: 1.5,
-    borderColor: '#FFFFFF',
-    ...(Platform.OS === 'web'
-      ? ({
-          boxShadow: '0 0 10px #00BCD4',
-        } as any)
-      : {}),
-  },
-  beaconCoreDotActive: {
-    backgroundColor: PAYWAY.emerald,
-    borderColor: '#FFFFFF',
-  },
-  beaconPill: {
-    marginTop: 4,
-    paddingVertical: 2,
-    paddingHorizontal: 7,
-    borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 20, 36, 0.92)',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.45)',
-    ...(Platform.OS === 'web'
-      ? ({
-          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.6)',
-        } as any)
-      : {}),
-  },
-  beaconPillActive: {
-    backgroundColor: 'rgba(0, 188, 212, 0.30)',
-    borderColor: PAYWAY.cyan,
-  },
-  beaconPillText: {
-    color: '#E0F7FA',
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-    fontFamily: FONT_FAMILY.accent,
-  },
-  beaconPillTextActive: {
-    color: '#FFFFFF',
-  },
-  simControlRow: {
+  codeArchControlBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '100%',
     flexWrap: 'wrap',
     gap: 8,
-    paddingHorizontal: 4,
-    zIndex: 5,
+    paddingVertical: 4,
   },
-  trafficToggleBtn: {
+  codeArchTrafficBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -1967,53 +1839,73 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderRadius: RADIUS.full,
     backgroundColor: 'rgba(0, 188, 212, 0.12)',
     borderWidth: 1,
-    borderColor: PAYWAY.cyan,
-    ...(Platform.OS === 'web'
-      ? ({
-          transition: 'all 160ms ease',
-          cursor: 'pointer',
-        } as any)
-      : {}),
+    borderColor: THEME_ACCENT.cyan,
+    ...(Platform.OS === 'web' ? ({ cursor: 'pointer' } as any) : {}),
   },
-  trafficToggleBtnActive: {
-    backgroundColor: 'rgba(0, 230, 118, 0.20)',
-    borderColor: PAYWAY.emerald,
+  codeArchTrafficBtnActive: {
+    backgroundColor: 'rgba(0, 230, 118, 0.18)',
+    borderColor: THEME_ACCENT.emerald,
   },
-  trafficToggleIcon: {
+  codeArchTrafficIcon: {
     fontSize: 12,
   },
-  trafficToggleText: {
-    color: PAYWAY.cyan,
+  codeArchTrafficText: {
+    color: THEME_ACCENT.cyan,
     fontSize: 11,
     fontWeight: '900',
     fontFamily: FONT_FAMILY.accent,
   },
-  trafficToggleTextActive: {
-    color: PAYWAY.emerald,
+  codeArchTrafficTextActive: {
+    color: THEME_ACCENT.emerald,
   },
-  trafficHint: {
-    color: 'rgba(255, 255, 255, 0.55)',
+  codeArchHint: {
+    color: 'rgba(255, 255, 255, 0.50)',
     fontSize: 11,
     fontFamily: FONT_FAMILY.body,
   },
-  hotspotsWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 8,
-    zIndex: 3,
-    width: '100%',
+  pipelineFlowScroll: {
+    paddingVertical: 10,
   },
-  hotspotBtn: {
+  pipelineFlowContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingVertical: 7,
-    paddingHorizontal: 12,
+    gap: 8,
+  },
+  pipelineStageCol: {
+    gap: 10,
+    minWidth: 200,
+  },
+  pipelineStageHeaderPill: {
+    alignSelf: 'flex-start',
+    paddingVertical: 3,
+    paddingHorizontal: 8,
     borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 18, 36, 0.85)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.25)',
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  pipelineStageHeaderText: {
+    color: 'rgba(255, 255, 255, 0.60)',
+    fontSize: 9.5,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+    fontFamily: FONT_FAMILY.accent,
+  },
+  pipelineNodesCol: {
+    gap: 10,
+  },
+  pipelineConnectorCol: {
+    width: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  codeNodeCard: {
+    padding: 14,
+    borderRadius: 16,
+    backgroundColor: '#001D38',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.22)',
+    gap: 6,
     ...(Platform.OS === 'web'
       ? ({
           transition: 'all 160ms ease',
@@ -2021,72 +1913,167 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
         } as any)
       : {}),
   },
-  hotspotBtnActive: {
-    backgroundColor: 'rgba(0, 188, 212, 0.22)',
-    borderColor: PAYWAY.cyan,
+  codeNodeCardActive: {
+    backgroundColor: '#00254A',
+    borderColor: THEME_ACCENT.cyan,
     transform: [{ translateY: -2 }],
     ...(Platform.OS === 'web'
       ? ({
-          boxShadow: '0 4px 14px rgba(0, 188, 212, 0.40)',
+          boxShadow: '0 6px 20px rgba(0, 188, 212, 0.35)',
         } as any)
       : {}),
   },
-  hotspotIcon: {
-    fontSize: 14,
+  codeNodeTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 6,
   },
-  hotspotLabel: {
-    color: 'rgba(255, 255, 255, 0.75)',
-    fontSize: 11,
+  codeNodeIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    backgroundColor: 'rgba(0, 188, 212, 0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.30)',
+  },
+  codeNodeIconBoxActive: {
+    backgroundColor: 'rgba(0, 188, 212, 0.30)',
+    borderColor: THEME_ACCENT.cyan,
+  },
+  codeNodeIconText: {
+    fontSize: 16,
+  },
+  codeNodeStatusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 0, 0, 0.40)',
+  },
+  codeNodeStatusDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+  },
+  codeNodeStatusText: {
+    color: '#FFFFFF',
+    fontSize: 9.5,
     fontWeight: '800',
     fontFamily: FONT_FAMILY.accent,
   },
-  hotspotLabelActive: {
-    color: PAYWAY.cyan,
+  codeNodeName: {
+    color: '#FFFFFF',
+    fontSize: 13,
     fontWeight: '900',
+    fontFamily: FONT_FAMILY.header,
   },
-  activeNodeCard: {
-    width: '100%',
-    padding: 14,
-    borderRadius: 14,
-    backgroundColor: '#00162B',
+  codeNodeTech: {
+    color: THEME_ACCENT.cyan,
+    fontSize: 10.5,
+    fontWeight: '700',
+    fontFamily: Platform.OS === 'web' ? 'monospace' : FONT_FAMILY.accent,
+  },
+  codeInspectorCard: {
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: '#001A33',
     borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.28)',
-    gap: 6,
-    zIndex: 3,
+    borderColor: 'rgba(0, 188, 212, 0.32)',
+    gap: 8,
   },
-  activeNodeHeaderRow: {
+  codeInspectorHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     flexWrap: 'wrap',
     gap: 8,
   },
-  activeNodeTitle: {
+  codeInspectorTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  codeInspectorIcon: {
+    fontSize: 22,
+  },
+  codeInspectorName: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '900',
     fontFamily: FONT_FAMILY.header,
   },
-  protocolPill: {
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-    borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(0, 188, 212, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 188, 212, 0.35)',
-  },
-  protocolText: {
-    color: PAYWAY.cyan,
-    fontSize: 10,
-    fontWeight: '800',
+  codeInspectorProtocol: {
+    color: THEME_ACCENT.cyan,
+    fontSize: 11,
+    fontWeight: '700',
     fontFamily: Platform.OS === 'web' ? 'monospace' : FONT_FAMILY.accent,
   },
-  activeNodeDesc: {
-    color: 'rgba(255, 255, 255, 0.75)',
-    fontSize: 12,
-    lineHeight: 18,
+  codeInspectorMetricBadge: {
+    paddingVertical: 4,
+    paddingHorizontal: 9,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 230, 118, 0.15)',
+    borderWidth: 1,
+    borderColor: THEME_ACCENT.emerald,
+  },
+  codeInspectorMetricText: {
+    color: THEME_ACCENT.emerald,
+    fontSize: 10.5,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  codeInspectorDesc: {
+    color: 'rgba(255, 255, 255, 0.78)',
+    fontSize: 12.5,
+    lineHeight: 19,
     fontFamily: FONT_FAMILY.body,
   },
+  busTerminalBox: {
+    borderRadius: 14,
+    backgroundColor: '#000A14',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.20)',
+    overflow: 'hidden',
+  },
+  busTerminalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    backgroundColor: '#001224',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 188, 212, 0.15)',
+  },
+  busTerminalTitle: {
+    color: THEME_ACCENT.cyan,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1,
+    fontFamily: FONT_FAMILY.accent,
+  },
+  busTerminalLive: {
+    color: THEME_ACCENT.emerald,
+    fontSize: 10,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  busTerminalBody: {
+    padding: 10,
+    gap: 4,
+  },
+  busTerminalLine: {
+    color: '#80DEEA',
+    fontSize: 11,
+    lineHeight: 16,
+    fontFamily: Platform.OS === 'web' ? 'Consolas, monospace' : FONT_FAMILY.accent,
+  },
+
   developerSuiteBox: {
     borderRadius: 20,
     backgroundColor: '#001020',
@@ -2110,7 +2097,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     fontFamily: FONT_FAMILY.header,
   },
   suiteSub: {
-    color: PAYWAY.textMuted,
+    color: THEME_ACCENT.textMuted,
     fontSize: 12,
     fontWeight: '600',
     fontFamily: FONT_FAMILY.body,
@@ -2121,10 +2108,10 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderRadius: RADIUS.full,
     backgroundColor: 'rgba(0, 230, 118, 0.15)',
     borderWidth: 1,
-    borderColor: PAYWAY.emerald,
+    borderColor: THEME_ACCENT.emerald,
   },
   suiteLiveTagText: {
-    color: PAYWAY.emerald,
+    color: THEME_ACCENT.emerald,
     fontSize: 11,
     fontWeight: '900',
     fontFamily: FONT_FAMILY.accent,
@@ -2149,7 +2136,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   langTabBtnActive: {
     backgroundColor: 'rgba(0, 188, 212, 0.18)',
-    borderColor: PAYWAY.cyan,
+    borderColor: THEME_ACCENT.cyan,
   },
   langTabBtnText: {
     color: 'rgba(255, 255, 255, 0.60)',
@@ -2158,7 +2145,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     fontFamily: FONT_FAMILY.accent,
   },
   langTabBtnTextActive: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontWeight: '900',
   },
   copyBtn: {
@@ -2168,11 +2155,11 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderRadius: RADIUS.full,
     backgroundColor: 'rgba(0, 188, 212, 0.15)',
     borderWidth: 1,
-    borderColor: PAYWAY.cyan,
+    borderColor: THEME_ACCENT.cyan,
     ...(Platform.OS === 'web' ? ({ cursor: 'pointer' } as any) : {}),
   },
   copyBtnText: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 11,
     fontWeight: '900',
     fontFamily: FONT_FAMILY.accent,
@@ -2195,7 +2182,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     marginTop: 6,
   },
   paramTableTitle: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.1,
@@ -2219,16 +2206,16 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     fontFamily: FONT_FAMILY.body,
   },
   paramCode: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontFamily: Platform.OS === 'web' ? 'monospace' : FONT_FAMILY.accent,
     fontWeight: '800',
   },
   paramReq: {
-    color: PAYWAY.emerald,
+    color: THEME_ACCENT.emerald,
     fontWeight: '900',
   },
   paramOpt: {
-    color: PAYWAY.amber,
+    color: THEME_ACCENT.amber,
     fontWeight: '800',
   },
   simulatorWrapper: {
@@ -2250,10 +2237,10 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderRadius: RADIUS.full,
     backgroundColor: 'rgba(0, 188, 212, 0.15)',
     borderWidth: 1,
-    borderColor: PAYWAY.cyan,
+    borderColor: THEME_ACCENT.cyan,
   },
   simBadgeText: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1.1,
@@ -2289,13 +2276,13 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     gap: 6,
   },
   fleetBarTitle: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 12,
     fontWeight: '900',
     fontFamily: FONT_FAMILY.accent,
   },
   fleetBarSub: {
-    color: PAYWAY.emerald,
+    color: THEME_ACCENT.emerald,
     fontSize: 11,
     fontWeight: '800',
     fontFamily: FONT_FAMILY.accent,
@@ -2324,7 +2311,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   stationChipActive: {
     backgroundColor: 'rgba(0, 188, 212, 0.20)',
-    borderColor: PAYWAY.cyan,
+    borderColor: THEME_ACCENT.cyan,
     transform: [{ translateY: -2 }],
   },
   stationChipId: {
@@ -2334,7 +2321,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     fontFamily: FONT_FAMILY.accent,
   },
   stationChipIdActive: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
   },
   stationChipName: {
     color: 'rgba(255, 255, 255, 0.85)',
@@ -2368,7 +2355,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     fontFamily: FONT_FAMILY.header,
   },
   telemetryStationMeta: {
-    color: PAYWAY.textMuted,
+    color: THEME_ACCENT.textMuted,
     fontSize: 12,
     fontWeight: '600',
     fontFamily: FONT_FAMILY.body,
@@ -2382,16 +2369,16 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderRadius: RADIUS.full,
     backgroundColor: 'rgba(0, 230, 118, 0.15)',
     borderWidth: 1,
-    borderColor: PAYWAY.emerald,
+    borderColor: THEME_ACCENT.emerald,
   },
   telemetryLiveDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: PAYWAY.emerald,
+    backgroundColor: THEME_ACCENT.emerald,
   },
   telemetryLiveText: {
-    color: PAYWAY.emerald,
+    color: THEME_ACCENT.emerald,
     fontSize: 11,
     fontWeight: '900',
     fontFamily: FONT_FAMILY.accent,
@@ -2457,7 +2444,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     gap: 3,
   },
   checkoutBrandTag: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1,
@@ -2478,7 +2465,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     alignItems: 'flex-end',
   },
   checkoutPriceTotal: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 24,
     fontWeight: '900',
     letterSpacing: -0.5,
@@ -2543,7 +2530,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderRadius: 4,
   },
   khqrPaywayLogo: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 9,
     fontWeight: '900',
     letterSpacing: 0.5,
@@ -2583,7 +2570,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     fontFamily: FONT_FAMILY.header,
   },
   processingSub: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 12,
     fontFamily: FONT_FAMILY.body,
   },
@@ -2598,7 +2585,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderRadius: 24,
     backgroundColor: 'rgba(0, 230, 118, 0.20)',
     borderWidth: 1,
-    borderColor: PAYWAY.emerald,
+    borderColor: THEME_ACCENT.emerald,
     alignItems: 'center',
     justifyContent: 'center',
     ...(Platform.OS === 'web'
@@ -2608,7 +2595,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
       : {}),
   },
   approvedIcon: {
-    color: PAYWAY.emerald,
+    color: THEME_ACCENT.emerald,
     fontSize: 24,
     fontWeight: '900',
   },
@@ -2619,7 +2606,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     fontFamily: FONT_FAMILY.header,
   },
   approvedSub: {
-    color: PAYWAY.emerald,
+    color: THEME_ACCENT.emerald,
     fontSize: 12,
     fontWeight: '700',
     fontFamily: FONT_FAMILY.accent,
@@ -2689,7 +2676,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     fontFamily: FONT_FAMILY.header,
   },
   tgBotStatus: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 11,
     fontWeight: '600',
     fontFamily: FONT_FAMILY.body,
@@ -2711,7 +2698,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   tgBubbleUser: {
     alignSelf: 'flex-end',
-    backgroundColor: PAYWAY.cyan,
+    backgroundColor: THEME_ACCENT.cyan,
   },
   tgMsgText: {
     color: '#FFFFFF',
@@ -2740,11 +2727,11 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderRadius: RADIUS.full,
     backgroundColor: 'rgba(0, 188, 212, 0.12)',
     borderWidth: 1,
-    borderColor: PAYWAY.cyan,
+    borderColor: THEME_ACCENT.cyan,
     ...(Platform.OS === 'web' ? ({ cursor: 'pointer' } as any) : {}),
   },
   tgCmdChipText: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 11,
     fontWeight: '800',
     fontFamily: FONT_FAMILY.accent,
@@ -2766,13 +2753,13 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderBottomColor: 'rgba(0, 188, 212, 0.15)',
   },
   consoleHeaderTitle: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 11,
     fontWeight: '900',
     fontFamily: FONT_FAMILY.accent,
   },
   consoleHeaderStatus: {
-    color: PAYWAY.emerald,
+    color: THEME_ACCENT.emerald,
     fontSize: 11,
     fontWeight: '800',
     fontFamily: FONT_FAMILY.accent,
@@ -2796,7 +2783,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     gap: 12,
   },
   sectionHeaderLabel: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.2,
@@ -2866,7 +2853,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   detailTabBtnActive: {
     backgroundColor: 'rgba(0, 188, 212, 0.16)',
-    borderColor: PAYWAY.cyan,
+    borderColor: THEME_ACCENT.cyan,
   },
   detailTabBtnLabel: {
     color: 'rgba(255, 255, 255, 0.65)',
@@ -2875,7 +2862,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     fontFamily: FONT_FAMILY.header,
   },
   detailTabBtnLabelActive: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontWeight: '900',
   },
   detailTabBtnSub: {
@@ -2946,7 +2933,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     fontSize: 18,
   },
   boxTitleSuccess: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 16,
     fontWeight: '900',
     fontFamily: FONT_FAMILY.header,
@@ -3004,10 +2991,10 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderRadius: RADIUS.full,
     backgroundColor: 'rgba(0, 188, 212, 0.12)',
     borderWidth: 1,
-    borderColor: PAYWAY.cyan,
+    borderColor: THEME_ACCENT.cyan,
   },
   featurePillText: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 0.5,
@@ -3045,7 +3032,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     gap: 10,
   },
   archCategoryTitle: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 14,
     fontWeight: '900',
     letterSpacing: -0.2,
@@ -3063,7 +3050,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: PAYWAY.cyan,
+    backgroundColor: THEME_ACCENT.cyan,
   },
   archItemText: {
     color: 'rgba(255, 255, 255, 0.75)',
@@ -3080,7 +3067,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     gap: 10,
   },
   archTagsLabel: {
-    color: PAYWAY.cyan,
+    color: THEME_ACCENT.cyan,
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.1,
@@ -3100,7 +3087,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderColor: 'rgba(0, 188, 212, 0.28)',
   },
   techPillText: {
-    color: PAYWAY.textLight,
+    color: THEME_ACCENT.textLight,
     fontSize: 12,
     fontWeight: '800',
     fontFamily: FONT_FAMILY.accent,
@@ -3131,7 +3118,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     marginTop: 2,
   },
   impactCheckText: {
-    color: PAYWAY.emerald,
+    color: THEME_ACCENT.emerald,
     fontSize: 14,
     fontWeight: '900',
   },
@@ -3169,7 +3156,7 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderRadius: 22,
     backgroundColor: '#001830',
     borderWidth: 1,
-    borderColor: PAYWAY.cyan,
+    borderColor: THEME_ACCENT.cyan,
     position: 'relative',
     overflow: 'hidden',
     gap: 16,
