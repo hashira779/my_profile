@@ -7,6 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 import { RADIUS, FONT_FAMILY } from '../constants/theme';
 import { CONTACT, PROFILE, PROFILE_STATS, SOCIAL } from '../constants/data';
 import TypeWriter from './TypeWriter';
+import AnimatedCounter from './AnimatedCounter';
 import { MOTION, usePrefersReducedMotion } from '../utils/motion';
 import { heroAnimStyle, webAnim } from '../utils/webAnimKeyframes';
 
@@ -45,10 +46,24 @@ export default function HeroSection() {
 
   const styles = getStyles(colors, isDark);
 
+  // Web gradient text style for the hero title
+  const gradientTextStyle: any = Platform.OS === 'web' ? {
+    backgroundImage: isDark
+      ? 'linear-gradient(135deg, #F5F5F7 0%, #06B6D4 40%, #34D399 60%, #F5F5F7 100%)'
+      : 'linear-gradient(135deg, #1D1D1F 0%, #2563EB 40%, #059669 60%, #1D1D1F 100%)',
+    WebkitBackgroundClip: 'text',
+    backgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundSize: '200% 200%',
+    animation: 'ct-gradient-flow 7s ease infinite',
+  } : {};
+
   return (
     <View style={styles.wrapper}>
       <View style={[styles.glowA, Platform.OS === 'web' && !reduceMotion ? webAnim.float('9s', '0s') : null]} />
       <View style={[styles.glowB, Platform.OS === 'web' && !reduceMotion ? webAnim.float('11s', '1s') : null]} />
+      {/* Extra decorative glow */}
+      <View style={[styles.glowC, Platform.OS === 'web' && !reduceMotion ? webAnim.float('13s', '2s') : null]} />
 
       <Animated.View
         style={[
@@ -68,7 +83,7 @@ export default function HeroSection() {
         {/* Main title */}
         <View style={[styles.copyBlock, heroAnim(90)]}>
           <Text style={[styles.kicker, { fontSize: subtitleSize }]}>Portfolio of</Text>
-          <Text style={[styles.title, { fontSize: titleSize, lineHeight: titleLine }]}>
+          <Text style={[styles.title, { fontSize: titleSize, lineHeight: titleLine }, gradientTextStyle]}>
             {PROFILE.name}
           </Text>
           <View style={styles.roleRow}>
@@ -114,12 +129,16 @@ export default function HeroSection() {
           ))}
         </View>
 
-        {/* Trust stats */}
+        {/* Trust stats with animated counters */}
         <View style={[styles.trustRow, heroAnim(270)]}>
           {PROFILE_STATS.map((stat, i) => (
             <View key={stat.label} style={styles.trustItem}>
               {i > 0 && <View style={styles.trustDivider} />}
-              <Text style={styles.trustValue}>{stat.value}</Text>
+              <AnimatedCounter
+                targetValue={stat.value}
+                duration={1800}
+                style={styles.trustValue}
+              />
               <Text style={styles.trustLabel}>{stat.label}</Text>
             </View>
           ))}
@@ -130,6 +149,7 @@ export default function HeroSection() {
       <View style={[styles.scrollCue, { pointerEvents: 'none' } as any]}>
         <Text style={styles.scrollText}>Scroll</Text>
         <View style={styles.scrollLine} />
+        <View style={[styles.scrollDot, Platform.OS === 'web' && !reduceMotion ? webAnim.scrollCue() : null]} />
       </View>
     </View>
   );
@@ -167,6 +187,16 @@ const getStyles = (colors: any, isDark: boolean) => {
       borderRadius: 190,
       backgroundColor: isDark ? 'rgba(139,92,246,0.04)' : 'rgba(124,58,237,0.04)',
       ...(Platform.OS === 'web' ? ({ filter: 'blur(80px)' } as any) : {}),
+    },
+    glowC: {
+      position: 'absolute',
+      top: '40%',
+      right: '30%',
+      width: 280,
+      height: 280,
+      borderRadius: 140,
+      backgroundColor: isDark ? 'rgba(52,211,153,0.04)' : 'rgba(5,150,105,0.04)',
+      ...(Platform.OS === 'web' ? ({ filter: 'blur(90px)' } as any) : {}),
     },
     content: { width: '100%', maxWidth: 1180, alignItems: 'center', zIndex: 2 },
     badge: {
@@ -206,9 +236,18 @@ const getStyles = (colors: any, isDark: boolean) => {
       backgroundColor: colors.textPrimary,
       overflow: 'hidden',
       position: 'relative',
-      ...(Platform.OS === 'web' ? ({ transition: 'all 180ms ease', boxShadow: `0 14px 30px ${colors.accent}22` } as any) : {}),
+      ...(Platform.OS === 'web' ? ({
+        transition: 'all 220ms cubic-bezier(0.22, 1, 0.36, 1)',
+        boxShadow: `0 14px 30px ${colors.accent}22`,
+      } as any) : {}),
     },
-    primaryBtnHover: { backgroundColor: isDark ? '#fff' : '#000', transform: [{ translateY: -2 }] },
+    primaryBtnHover: {
+      backgroundColor: isDark ? '#fff' : '#000',
+      transform: [{ translateY: -3 }, { scale: 1.02 }],
+      ...(Platform.OS === 'web' ? ({
+        boxShadow: `0 20px 40px ${colors.accent}33`,
+      } as any) : {}),
+    },
     primaryText: { color: colors.bg, fontSize: 15, fontWeight: '900', position: 'relative', zIndex: 2, fontFamily: FONT_FAMILY.header },
     shinyOverlay: {
       position: 'absolute',
@@ -226,12 +265,26 @@ const getStyles = (colors: any, isDark: boolean) => {
       backgroundColor: 'transparent',
       borderWidth: 1,
       borderColor: colors.borderBright,
-      ...(Platform.OS === 'web' ? ({ transition: 'all 180ms ease' } as any) : {}),
+      ...(Platform.OS === 'web' ? ({ transition: 'all 220ms cubic-bezier(0.22, 1, 0.36, 1)' } as any) : {}),
     },
-    secondaryBtnHover: { borderColor: colors.accent, transform: [{ translateY: -2 }] },
+    secondaryBtnHover: {
+      borderColor: colors.accent,
+      transform: [{ translateY: -3 }, { scale: 1.02 }],
+      ...(Platform.OS === 'web' ? ({
+        boxShadow: `0 12px 28px ${colors.accent}18`,
+      } as any) : {}),
+    },
     secondaryText: { color: colors.textPrimary, fontSize: 15, fontWeight: '850' as any, fontFamily: FONT_FAMILY.header },
-    textBtn: { paddingVertical: 14, paddingHorizontal: 12, borderRadius: RADIUS.full },
-    textBtnHover: { backgroundColor: isDark ? 'rgba(6,182,212,0.08)' : 'rgba(37,99,235,0.08)' },
+    textBtn: {
+      paddingVertical: 14,
+      paddingHorizontal: 12,
+      borderRadius: RADIUS.full,
+      ...(Platform.OS === 'web' ? ({ transition: 'all 220ms cubic-bezier(0.22, 1, 0.36, 1)' } as any) : {}),
+    },
+    textBtnHover: {
+      backgroundColor: isDark ? 'rgba(6,182,212,0.08)' : 'rgba(37,99,235,0.08)',
+      transform: [{ translateY: -1 }],
+    },
     textBtnText: { color: colors.accent, fontSize: 15, fontWeight: '800', fontFamily: FONT_FAMILY.header },
     socialRow: {
       flexDirection: 'row',
@@ -250,12 +303,15 @@ const getStyles = (colors: any, isDark: boolean) => {
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
-      ...(Platform.OS === 'web' ? ({ transition: 'all 180ms ease', cursor: 'pointer' } as any) : {}),
+      ...(Platform.OS === 'web' ? ({ transition: 'all 220ms cubic-bezier(0.22, 1, 0.36, 1)', cursor: 'pointer' } as any) : {}),
     },
     socialBtnHover: {
       borderColor: colors.borderBright,
       backgroundColor: colors.cardHover,
-      transform: [{ translateY: -2 }],
+      transform: [{ translateY: -3 }, { scale: 1.03 }],
+      ...(Platform.OS === 'web' ? ({
+        boxShadow: isDark ? '0 12px 28px rgba(0,0,0,0.3)' : '0 10px 24px rgba(0,0,0,0.08)',
+      } as any) : {}),
     },
     socialDot: {
       width: 7,
@@ -310,5 +366,11 @@ const getStyles = (colors: any, isDark: boolean) => {
     scrollCue: { position: 'absolute', bottom: 24, alignItems: 'center', gap: 8 },
     scrollText: { color: colors.textDim, fontSize: 10, fontWeight: '800', letterSpacing: 1.6, textTransform: 'uppercase', fontFamily: FONT_FAMILY.accent },
     scrollLine: { width: 1, height: 38, backgroundColor: scrollLineBg },
+    scrollDot: {
+      width: 4,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: colors.accent,
+    },
   });
 };

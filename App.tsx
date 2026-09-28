@@ -11,6 +11,8 @@ import { ScrollAnimProvider } from './context/ScrollAnimContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { FONT_FAMILY } from './constants/theme';
 import CursorGlow from './components/CursorGlow';
+import ParticleField from './components/ParticleField';
+import LoadingScreen from './components/LoadingScreen';
 import Navbar from './components/Navbar';
 import ScrollProgress from './components/ScrollProgress';
 import HeroSection from './components/HeroSection';
@@ -54,6 +56,14 @@ function ScrollBackdrop({ scrollY }: { scrollY: Animated.Value }) {
           backStyles.warmOrb,
           { backgroundColor: isDark ? 'rgba(139,92,246,0.04)' : 'rgba(124,58,237,0.04)' },
           Platform.OS === 'web' && !reduceMotion ? webAnim.ambientDriftAlt('21s', '1.2s') : null,
+        ]}
+      />
+      {/* Extra orb for depth */}
+      <View
+        style={[
+          backStyles.cyanOrb,
+          { backgroundColor: isDark ? 'rgba(34,211,238,0.03)' : 'rgba(14,165,233,0.04)' },
+          Platform.OS === 'web' && !reduceMotion ? webAnim.ambientDrift('24s', '2s') : null,
         ]}
       />
     </View>
@@ -126,6 +136,7 @@ function MainApp() {
   const sectionOffsets = useRef<Record<string, number>>({});
   const [contentHeight, setContentHeight] = useState(0);
   const [activeSection, setActiveSection] = useState('hero');
+  const [isLoading, setIsLoading] = useState(true);
 
   const SECTIONS = [
     { key: 'hero', label: 'Home', color: colors.accent },
@@ -186,7 +197,12 @@ function MainApp() {
     <ScrollAnimProvider windowHeight={windowHeight} scrollY={scrollY}>
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.bg }]}>
         <StatusBar style={isDark ? 'light' : 'dark'} />
+
+        {/* Loading screen */}
+        {isLoading && <LoadingScreen onFinish={() => setIsLoading(false)} />}
+
         <ScrollBackdrop scrollY={scrollY} />
+        <ParticleField />
         <CursorGlow />
         <Navbar scrollY={scrollY} onNavPress={scrollToSection} />
         <ScrollProgress scrollY={scrollY} contentHeight={contentHeight} windowHeight={windowHeight} />
@@ -301,6 +317,15 @@ const backStyles = StyleSheet.create({
     height: 520,
     borderRadius: 260,
     ...(Platform.OS === 'web' ? ({ filter: 'blur(120px)' } as any) : {}),
+  },
+  cyanOrb: {
+    position: 'absolute',
+    top: '55%',
+    right: -100,
+    width: 400,
+    height: 400,
+    borderRadius: 200,
+    ...(Platform.OS === 'web' ? ({ filter: 'blur(100px)' } as any) : {}),
   },
 });
 

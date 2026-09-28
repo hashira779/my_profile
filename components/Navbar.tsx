@@ -1,4 +1,4 @@
-﻿import React, { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Animated, Linking, Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { RADIUS, FONT_FAMILY } from '../constants/theme';
@@ -78,12 +78,17 @@ export default function Navbar({ scrollY, onNavPress }: Props) {
                 style={styles.linkBtn}
               >
                 <Text style={[styles.link, hoveredLink === link.section && styles.linkHover]}>{link.label}</Text>
+                {/* Active indicator dot */}
+                {hoveredLink === link.section && (
+                  <View style={[styles.linkDot, { backgroundColor: colors.accent }]} />
+                )}
               </Pressable>
             ))}
           </View>
         )}
 
         <View style={styles.right}>
+          {/* Theme toggle with sun/moon */}
           <Pressable
             style={({ pressed, hovered }: any) => [styles.themeToggleBtn, (pressed || hovered) && styles.themeToggleHover]}
             onPress={toggleTheme}
@@ -91,7 +96,7 @@ export default function Navbar({ scrollY, onNavPress }: Props) {
             accessibilityLabel="Toggle visual theme"
             hitSlop={8}
           >
-            <Text style={styles.themeToggleText}>{isDark ? 'L' : 'D'}</Text>
+            <Text style={styles.themeToggleText}>{isDark ? '☀' : '☾'}</Text>
           </Pressable>
 
           {isWide && (
@@ -99,7 +104,8 @@ export default function Navbar({ scrollY, onNavPress }: Props) {
               style={({ pressed, hovered }: any) => [styles.contactBtn, (pressed || hovered) && styles.contactBtnHover]}
               onPress={() => Linking.openURL(`mailto:${CONTACT.email}`)}
             >
-              <Text style={styles.contactText}>{'Start a project ->'}</Text>
+              <View style={styles.contactBtnGlow} />
+              <Text style={styles.contactText}>{'Start a project →'}</Text>
             </Pressable>
           )}
 
@@ -123,7 +129,7 @@ export default function Navbar({ scrollY, onNavPress }: Props) {
             >
               <Text style={styles.mobileLinkNum}>0{i + 1}</Text>
               <Text style={styles.mobileLinkTxt}>{link.label}</Text>
-              <Text style={styles.mobileArrow}>{'->'}</Text>
+              <Text style={styles.mobileArrow}>{'→'}</Text>
             </Pressable>
           ))}
           <View style={styles.mobileSocial}>
@@ -163,7 +169,13 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     paddingHorizontal: 20,
     gap: 16,
   },
-  logoBtn: { flexDirection: 'row', alignItems: 'center', gap: 10, minWidth: 120 },
+  logoBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minWidth: 120,
+    ...(Platform.OS === 'web' ? ({ cursor: 'pointer' } as any) : {}),
+  },
   logoMark: {
     width: 30,
     height: 30,
@@ -171,11 +183,19 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.accent,
+    ...(Platform.OS === 'web' ? ({
+      boxShadow: `0 4px 14px ${colors.accent}44`,
+      transition: 'transform 200ms ease, box-shadow 200ms ease',
+    } as any) : {}),
   },
   logoText: { color: colors.bg, fontWeight: '800', fontSize: 12, letterSpacing: 0.4, fontFamily: FONT_FAMILY.header },
   logoName: { color: colors.textPrimary, fontSize: 13, fontWeight: '700', letterSpacing: 0.1, fontFamily: FONT_FAMILY.header },
   links: { flex: 1, flexDirection: 'row', justifyContent: 'center', gap: 28 },
-  linkBtn: { paddingVertical: 10 },
+  linkBtn: {
+    paddingVertical: 10,
+    alignItems: 'center',
+    ...(Platform.OS === 'web' ? ({ cursor: 'pointer' } as any) : {}),
+  },
   link: {
     color: colors.textMuted,
     fontSize: 12,
@@ -185,28 +205,39 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     ...(Platform.OS === 'web' ? ({ transition: 'color 160ms ease' } as any) : {}),
   },
   linkHover: { color: colors.textPrimary },
-  right: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', minWidth: 120 },
+  linkDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 2,
+    marginTop: 4,
+  },
+  right: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', minWidth: 120, gap: 8 },
   themeToggleBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: colors.border,
-    marginRight: 12,
     backgroundColor: colors.surface,
-    ...(Platform.OS === 'web' ? ({ transition: 'all 160ms ease', cursor: 'pointer' } as any) : {}),
+    ...(Platform.OS === 'web' ? ({
+      transition: 'all 220ms cubic-bezier(0.22, 1, 0.36, 1)',
+      cursor: 'pointer',
+    } as any) : {}),
   },
   themeToggleHover: {
     backgroundColor: colors.cardHover,
-    borderColor: colors.borderBright,
+    borderColor: colors.accent,
+    transform: [{ rotate: '180deg' }],
+    ...(Platform.OS === 'web' ? ({
+      boxShadow: `0 4px 16px ${colors.accent}22`,
+    } as any) : {}),
   },
   themeToggleText: {
     color: colors.textPrimary,
-    fontSize: 14,
-    lineHeight: 18,
-    fontWeight: '800',
+    fontSize: 16,
+    lineHeight: 20,
     textAlign: 'center',
   },
   contactBtn: {
@@ -214,10 +245,32 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: RADIUS.full,
     backgroundColor: colors.textPrimary,
-    ...(Platform.OS === 'web' ? ({ transition: 'background-color 160ms ease, transform 160ms ease' } as any) : {}),
+    overflow: 'hidden',
+    position: 'relative',
+    ...(Platform.OS === 'web' ? ({
+      transition: 'all 220ms cubic-bezier(0.22, 1, 0.36, 1)',
+      boxShadow: `0 4px 14px ${colors.accent}22`,
+    } as any) : {}),
   },
-  contactBtnHover: { backgroundColor: isDark ? '#fff' : '#000', transform: [{ translateY: -1 }] },
-  contactText: { color: colors.bg, fontSize: 12, fontWeight: '700', fontFamily: FONT_FAMILY.accent },
+  contactBtnHover: {
+    backgroundColor: isDark ? '#fff' : '#000',
+    transform: [{ translateY: -2 }, { scale: 1.03 }],
+    ...(Platform.OS === 'web' ? ({
+      boxShadow: `0 8px 24px ${colors.accent}33`,
+    } as any) : {}),
+  },
+  contactBtnGlow: {
+    position: 'absolute',
+    top: -50,
+    left: -50,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: colors.accent,
+    opacity: 0.1,
+    ...(Platform.OS === 'web' ? ({ filter: 'blur(20px)' } as any) : {}),
+  },
+  contactText: { color: colors.bg, fontSize: 12, fontWeight: '700', fontFamily: FONT_FAMILY.accent, position: 'relative', zIndex: 1 },
   hamburger: { gap: 5, padding: 6, justifyContent: 'center', alignItems: 'center' },
   bar: { width: 22, height: 2, backgroundColor: colors.textPrimary, borderRadius: 1 },
   mobileMenu: {
@@ -250,4 +303,3 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   socialChip: { paddingVertical: 7, paddingHorizontal: 14, borderRadius: RADIUS.full, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   socialChipText: { color: colors.textSecondary, fontSize: 12, fontWeight: '700', fontFamily: FONT_FAMILY.accent },
 });
-

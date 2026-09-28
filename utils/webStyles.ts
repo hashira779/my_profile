@@ -47,6 +47,8 @@ export function injectGlobalStyles() {
       #scroll-root { scroll-behavior: auto; }
     }
 
+    /* ═══════ KEYFRAME ANIMATIONS ═══════ */
+
     @keyframes ct-gradient-flow {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
@@ -159,6 +161,77 @@ export function injectGlobalStyles() {
     @keyframes ct-hero-right { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: translateX(0); } }
     @keyframes ct-hero-scale { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
 
+    /* ═══════ NEW: Enhanced animations ═══════ */
+
+    @keyframes ct-tilt-card {
+      0%,100% { transform: perspective(1000px) rotateX(0deg) rotateY(0deg); }
+    }
+
+    @keyframes ct-aurora {
+      0% { background-position: 0% 50%; }
+      25% { background-position: 50% 0%; }
+      50% { background-position: 100% 50%; }
+      75% { background-position: 50% 100%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes ct-sparkle {
+      0%, 100% { opacity: 0; transform: scale(0); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes ct-morph-blob {
+      0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+      25% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+      50% { border-radius: 50% 60% 30% 60% / 40% 50% 60% 50%; }
+      75% { border-radius: 40% 60% 50% 40% / 60% 40% 60% 50%; }
+    }
+
+    @keyframes ct-gradient-text {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes ct-fade-in-up {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes ct-slide-in-left {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes ct-slide-in-right {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes ct-scale-bounce {
+      0% { transform: scale(0.8); opacity: 0; }
+      60% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes ct-rotate-glow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes ct-typing-cursor {
+      0%, 100% { border-right-color: transparent; }
+      50% { border-right-color: currentColor; }
+    }
+
+    @keyframes ct-wave {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-5px) rotate(2deg); }
+      75% { transform: translateY(3px) rotate(-1deg); }
+    }
+
+    /* ═══════ UTILITY CLASSES ═══════ */
+
     .ct-outlined-indigo {
       color: transparent !important;
       -webkit-text-fill-color: transparent !important;
@@ -183,6 +256,19 @@ export function injectGlobalStyles() {
       color: transparent !important;
       -webkit-text-fill-color: transparent !important;
       -webkit-text-stroke: 1.5px var(--c-accent) !important;
+    }
+
+    /* Premium focus styles */
+    *:focus-visible {
+      outline: 2px solid var(--c-accent, #06B6D4);
+      outline-offset: 2px;
+    }
+
+    /* Smooth transitions for theme switching */
+    body,
+    body * {
+      transition-property: background-color, border-color, color;
+      transition-duration: 0ms;
     }
   `;
   document.head.appendChild(s);

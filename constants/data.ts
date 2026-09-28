@@ -1,8 +1,8 @@
-﻿export const PROFILE = {
+export const PROFILE = {
   name: 'CHHOY TOO',
   title: 'IT Developer, System Analyst & AI-Assisted Engineer',
   roles: ['System Analyst', 'Web Developer', 'Data Analyst'],
-  tagline: 'I build scalable, user-focused digital systems that streamline complex operations and deliver reliable, high-performance experiences.',
+  tagline: 'I build scalable, user-focused digital systems that streamline complex operations and deliver reliable, high-performance experiences across 20+ station environments.',
   status: 'OPEN TO OPPORTUNITIES',
   initials: 'CT',
   github: 'https://github.com/hashira779',
@@ -274,7 +274,7 @@ export const EDUCATION = [
   {
     institution: 'Royal University of Phnom Penh',
     degree: 'Bachelor of IT Engineering',
-    period: '2020 - 2024',
+    period: '2020 - 2025',
     color: '#2563EB',
     badge: { initials: 'RUPP', bgFrom: '#8B1A1A', bgTo: '#C62828' },
     logoLocal: true,
