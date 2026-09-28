@@ -123,11 +123,35 @@ export const TECH = [
 // Update github / live fields with your real repo / deployed URLs
 export const PROJECTS = [
   {
+    title: 'CamTech E-Commerce & Operations Ecosystem',
+    description:
+      'A comprehensive suite of scalable digital platforms for CamTech. Features a microservices architecture with dedicated systems for Storefront, POS, HRMS, Delivery, Admin Consoles, and API Gateway.',
+    tags: ['E-Commerce', 'Microservices', 'POS', 'HRMS', 'Cloudflare Tunnels'],
+    impact: [
+      'Orchestrates 10+ interconnected internal and public web platforms',
+      'Centralizes Point of Sale (POS), Human Resources (HRMS), and Delivery tracking',
+      'Secures backend infrastructure using Cloudflare Zero Trust Tunnels',
+      'Provides scalable APIs and dedicated admin portals for seamless business operations',
+    ],
+    status: 'Live',
+    year: '2026',
+    color: '#7C3AED',
+    gradient: ['#7C3AED', '#4C1D95'] as [string, string],
+    github: '',
+    live: 'https://store.camtech.cam',
+    private: false,
+    note: 'Infrastructure encompasses api, blog, business, delivery, gateway, hrms, pos, and store modules.',
+  },
+  {
     title: 'PTT Station POS Monitor',
     description:
       'Web-based internal dashboard for real-time monitoring and debugging of POS systems integrated with fuel dispensers across 20+ stations. Includes live alerts, log viewer, and station health status.',
     tags: ['React', 'Node.js', 'MySQL', 'REST API'],
-    impact: ['Monitors 20+ station environments', 'Improves issue visibility for support teams', 'Centralizes alerts, logs and station health'],
+    impact: [
+      'Monitors 20+ live station environments globally',
+      'Improves issue visibility and response time for support teams',
+      'Centralizes alerts, system logs, and hardware health tracking',
+    ],
     status: 'Production',
     year: '2024',
     color: '#2563EB',
@@ -142,7 +166,11 @@ export const PROJECTS = [
     description:
       'Automated Telegram bot that handles sales report requests from team members. Connects to the database backend, generates filtered reports on demand, and delivers formatted messages directly in Telegram.',
     tags: ['Python', 'Telegram API', 'MySQL', 'Automation'],
-    impact: ['Reduces manual report requests', 'Delivers filtered sales data directly in chat', 'Supports faster daily decisions'],
+    impact: [
+      'Eliminates manual reporting overhead by 100%',
+      'Delivers precise, filtered sales data instantly in chat',
+      'Accelerates daily operational decision-making',
+    ],
     status: 'Production',
     year: '2024',
     color: '#0EA5E9',
@@ -155,13 +183,12 @@ export const PROJECTS = [
   {
     title: 'Cost Supply Management System',
     description:
-      'Internal database system for managing cost supply records, supplier information, purchase tracking, expense details, and audit logs. Includes structured data management, reporting workflows, and secure admin access for daily operations.',
+      'Internal database system for managing cost supply records, supplier information, purchase tracking, expense details, and audit logs. Features robust reporting workflows and secure admin access.',
     tags: ['MySQL', 'SQL', 'PHP', 'Database Design'],
     impact: [
-      'Organizes supplier and cost supply records',
-      'Improves tracking of purchases and expenses',
-      'Supports better reporting for operational decisions',
-      'Improves traceability with audit logs',
+      'Digitizes and organizes supplier and cost supply records',
+      'Enhances financial tracking of purchases and operational expenses',
+      'Improves accountability and traceability with immutable audit logs',
     ],
     status: 'Internal Tool',
     year: '2026',
@@ -172,58 +199,59 @@ export const PROJECTS = [
     private: true,
     note: 'Repository is private due to company confidentiality.',
   },
-{
-  title: 'Internal Web Portal',
-  description:
-    'Built a private internal web portal to centralize operational tools, reporting workflows, and staff access to important business information. The portal helps teams manage daily tasks more efficiently through a clean, secure, and user-friendly interface.',
-  tags: ['Web Development', 'Dashboard', 'Database', 'Internal Tools', 'Automation'],
-  impact: [
-    'Centralizes internal tools and business information',
-    'Improves staff access to reports and operational data',
-    'Reduces manual workflow and repeated communication',
-    'Supports faster daily decision-making',
-  ],
-  status: 'Production',
-  year: '2025',
-  color: '#2563EB',
-  gradient: ['#2563EB', '#0EA5E9'] as [string, string],
-  github: '',
-  live: '',
-  private: true,
-  note: 'Repository is private due to company confidentiality.',
-},
+  {
+    title: 'Station Map Web Portal',
+    description:
+      'Built a web-based map portal for viewing and locating station information through an interactive digital map. Integrates rich location data to support field teams and operational logistics.',
+    tags: ['Web Portal', 'Map Integration', 'JavaScript', 'Location Data'],
+    impact: [
+      'Provides instantaneous access to station locations via interactive UI',
+      'Drastically improves visibility of field operational data',
+      'Supports logistics teams with seamless station lookup and routing',
+    ],
+    status: 'Live',
+    year: '2026',
+    color: '#F59E0B',
+    gradient: ['#F59E0B', '#D97706'] as [string, string],
+    github: 'https://github.com/hashira779/PTT_STATION_MAP',
+    live: 'https://map.orsptt.space/',
+  },
+  {
+    title: 'Internal Web Portal',
+    description:
+      'A private internal web portal centralizing operational tools, reporting workflows, and staff access controls. Designed with a clean, secure, and user-friendly interface to maximize team efficiency.',
+    tags: ['Web Development', 'Dashboard', 'Internal Tools', 'Automation'],
+    impact: [
+      'Consolidates fragmented internal tools into one unified platform',
+      'Streamlines staff access to critical reports and operational data',
+      'Reduces manual workflow bottlenecks and communication overhead',
+    ],
+    status: 'Production',
+    year: '2025',
+    color: '#14B8A6',
+    gradient: ['#14B8A6', '#0F766E'] as [string, string],
+    github: '',
+    live: '',
+    private: true,
+    note: 'Repository is private due to company confidentiality.',
+  },
   {
     title: 'Personal Portfolio Website',
     description:
-      'This portfolio - built with React Native Web and Expo SDK 54. Features modular components, scroll-reveal animations, animated gradient avatar, and a Skills bar counter.',
+      'This portfolio - built with React Native Web and Expo SDK 54. Features modular components, scroll-reveal animations, animated gradient avatar, and a dynamic Skills bar counter.',
     tags: ['React Native', 'Expo', 'TypeScript', 'Web'],
-    impact: ['Responsive profile across web and mobile targets', 'Reusable component structure', 'Scroll motion and animated technical storytelling'],
+    impact: [
+      'Delivers a seamless, responsive profile across mobile and web',
+      'Maintains a clean, reusable component architecture',
+      'Showcases advanced scroll motion and animated technical storytelling',
+    ],
     status: 'Live',
     year: '2026',
     color: '#475569',
     gradient: ['#475569', '#334155'] as [string, string],
     github: 'https://github.com/hashira779/my_profile',
-    live: '',
-  },
-{
-  title: 'Station Map Web Portal',
-  description:
-    'Built a web-based map portal for viewing and locating station information through an interactive digital map. The system helps users quickly find station locations and supports easier access to operational location data.',
-  tags: ['Web Portal', 'Map Integration', 'JavaScript', 'Location Data', 'Internal Tools'],
-  impact: [
-    'Provides quick access to station locations through an interactive map',
-    'Improves visibility of station information and location data',
-    'Supports operational teams with easier station lookup',
-    'Makes location-based information easier to navigate and understand',
-  ],
-  status: 'Live',
-  year: '2026',
-  color: '#0EA5E9',
-  gradient: ['#0EA5E9', '#2563EB'] as [string, string],
-  github: 'https://github.com/hashira779/PTT_STATION_MAP',
-  live: 'https://map.orsptt.space/',
-
-}
+    live: 'https://portfolio.camtech.cam',
+  }
 ];
 // ─── SOCIAL ──────────────────────────────────────────────────────────────────
 export const SOCIAL = [
