@@ -230,6 +230,32 @@ export function injectGlobalStyles() {
       75% { transform: translateY(3px) rotate(-1deg); }
     }
 
+    @keyframes ct-modal-backdrop {
+      from { opacity: 0; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px); }
+      to { opacity: 1; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    }
+
+    @keyframes ct-modal-pop {
+      0% { opacity: 0; transform: scale(0.93) translateY(28px); }
+      65% { transform: scale(1.008) translateY(-2px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    @keyframes ct-part-reveal {
+      from { opacity: 0; transform: translateY(22px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes ct-badge-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.06); opacity: 0.85; }
+    }
+
+    @keyframes ct-card-hover-sheen {
+      0% { left: -120%; }
+      100% { left: 220%; }
+    }
+
     /* ═══════ UTILITY CLASSES ═══════ */
 
     .ct-outlined-indigo {

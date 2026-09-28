@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { RADIUS, FONT_FAMILY } from '../constants/theme';
@@ -8,12 +8,44 @@ import { sectionPadH, sectionPadV } from '../utils/responsive';
 
 type Project = typeof PROJECTS[number];
 
-const STATUS_COLOR: Record<string, string> = {
-  Production: '#34D399',
-  Live: '#22D3EE',
-  'Internal Tool': '#FBBF24',
-  'In Progress': '#A78BFA',
+const PAYWAY = {
+  navyDark: '#001424',
+  navyCard: '#001F38',
+  navySurface: '#032B4D',
+  navyBorder: 'rgba(0, 188, 212, 0.28)',
+  cyan: '#00BCD4',
+  cyanLight: '#4DD0E1',
+  cyanGlow: 'rgba(0, 188, 212, 0.45)',
+  cyanSubtle: 'rgba(0, 188, 212, 0.12)',
+  emerald: '#00E676',
+  emeraldSubtle: 'rgba(0, 230, 118, 0.14)',
+  amber: '#FFB300',
+  textLight: '#E0F7FA',
+  textMuted: '#80DEEA',
 };
+
+const STATIONS_20_DATA = [
+  { id: 'ST-01', name: 'PTT Monivong Blvd', city: 'Phnom Penh', status: 'Online', latency: '14ms', liters: '16,420 L', revenue: '$18,883', nozz: 8, qrShare: '72%' },
+  { id: 'ST-02', name: 'PTT Toul Kork', city: 'Phnom Penh', status: 'Online', latency: '16ms', liters: '14,110 L', revenue: '$16,226', nozz: 8, qrShare: '68%' },
+  { id: 'ST-03', name: 'PTT Boeung Keng Kang', city: 'Phnom Penh', status: 'Online', latency: '12ms', liters: '19,850 L', revenue: '$22,827', nozz: 10, qrShare: '79%' },
+  { id: 'ST-04', name: 'PTT Russian Blvd (Airport)', city: 'Phnom Penh', status: 'Online', latency: '15ms', liters: '24,200 L', revenue: '$27,830', nozz: 12, qrShare: '74%' },
+  { id: 'ST-05', name: 'PTT Chbar Ampov', city: 'Phnom Penh', status: 'Online', latency: '18ms', liters: '12,900 L', revenue: '$14,835', nozz: 6, qrShare: '61%' },
+  { id: 'ST-06', name: 'PTT Sen Sok (AEON 2)', city: 'Phnom Penh', status: 'Online', latency: '14ms', liters: '21,300 L', revenue: '$24,495', nozz: 10, qrShare: '81%' },
+  { id: 'ST-07', name: 'PTT Veng Sreng Expressway', city: 'Phnom Penh', status: 'Online', latency: '21ms', liters: '17,800 L', revenue: '$20,470', nozz: 8, qrShare: '59%' },
+  { id: 'ST-08', name: 'PTT Chroy Changvar', city: 'Phnom Penh', status: 'Online', latency: '17ms', liters: '13,400 L', revenue: '$15,410', nozz: 6, qrShare: '65%' },
+  { id: 'ST-09', name: 'PTT Steung Meanchey', city: 'Phnom Penh', status: 'Online', latency: '15ms', liters: '15,600 L', revenue: '$17,940', nozz: 8, qrShare: '64%' },
+  { id: 'ST-10', name: 'PTT Chamkarmon Center', city: 'Phnom Penh', status: 'Online', latency: '13ms', liters: '18,100 L', revenue: '$20,815', nozz: 8, qrShare: '76%' },
+  { id: 'ST-11', name: 'PTT Kampong Cham Central', city: 'Kompong Cham', status: 'Online', latency: '26ms', liters: '11,400 L', revenue: '$13,110', nozz: 6, qrShare: '54%' },
+  { id: 'ST-12', name: 'PTT Battambang HW 5', city: 'Battambang', status: 'Online', latency: '28ms', liters: '15,200 L', revenue: '$17,480', nozz: 8, qrShare: '58%' },
+  { id: 'ST-13', name: 'PTT Siem Reap Airport Rd', city: 'Siem Reap', status: 'Online', latency: '24ms', liters: '18,900 L', revenue: '$21,735', nozz: 8, qrShare: '82%' },
+  { id: 'ST-14', name: 'PTT Siem Reap Ring Rd', city: 'Siem Reap', status: 'Online', latency: '25ms', liters: '13,100 L', revenue: '$15,065', nozz: 6, qrShare: '77%' },
+  { id: 'ST-15', name: 'PTT Sihanoukville Port', city: 'Preah Sihanouk', status: 'Online', latency: '27ms', liters: '22,600 L', revenue: '$25,990', nozz: 10, qrShare: '71%' },
+  { id: 'ST-16', name: 'PTT Kampot Riverfront', city: 'Kampot', status: 'Online', latency: '29ms', liters: '10,800 L', revenue: '$12,420', nozz: 6, qrShare: '63%' },
+  { id: 'ST-17', name: 'PTT Poipet Border Hub', city: 'Banteay Meanchey', status: 'Online', latency: '32ms', liters: '16,700 L', revenue: '$19,205', nozz: 8, qrShare: '56%' },
+  { id: 'ST-18', name: 'PTT Bavet SEZ Tollgate', city: 'Svay Rieng', status: 'Online', latency: '30ms', liters: '14,500 L', revenue: '$16,675', nozz: 8, qrShare: '53%' },
+  { id: 'ST-19', name: 'PTT Takeo Junction Rd 2', city: 'Takeo', status: 'Online', latency: '26ms', liters: '9,800 L', revenue: '$11,270', nozz: 6, qrShare: '51%' },
+  { id: 'ST-20', name: 'PTT Expressway Rest Area #1', city: 'Kandal', status: 'Online', latency: '19ms', liters: '28,400 L', revenue: '$32,660', nozz: 12, qrShare: '78%' },
+];
 
 export default function ProjectsSection() {
   const { colors, isDark } = useTheme();
@@ -40,7 +72,7 @@ export default function ProjectsSection() {
               <Text style={styles.headerIconText}>{'</>'}</Text>
             </View>
             <Text style={styles.title}>Projects <Text style={styles.titleAccent}>Made</Text></Text>
-            <Text style={styles.subtitle}>Selected real work from support, reporting, automation, database, and internal web systems.</Text>
+            <Text style={styles.subtitle}>Enterprise software, automated retail fleets, database sync, and PayWay fintech integrations.</Text>
           </View>
 
           <View style={[styles.projectGrid, cols > 1 && styles.projectGridWrap]}>
@@ -63,7 +95,18 @@ export default function ProjectsSection() {
       <ProjectDetailModal
         project={selectedProject}
         projectIndex={selectedIndex}
+        totalProjects={PROJECTS.length}
         onClose={() => setSelectedProject(null)}
+        onNext={() => {
+          const next = (selectedIndex + 1) % PROJECTS.length;
+          setSelectedIndex(next);
+          setSelectedProject(PROJECTS[next]);
+        }}
+        onPrev={() => {
+          const prev = (selectedIndex - 1 + PROJECTS.length) % PROJECTS.length;
+          setSelectedIndex(prev);
+          setSelectedProject(PROJECTS[prev]);
+        }}
         colors={colors}
         isDark={isDark}
       />
@@ -73,7 +116,7 @@ export default function ProjectsSection() {
 
 function ProjectCard({ project, index, onPress, styles }: { project: Project; index: number; onPress: () => void; styles: any }) {
   const [hovered, setHovered] = useState(false);
-  const accent = project.status === 'Internal Tool' ? '#FBBF24' : project.status === 'Live' ? '#22D3EE' : '#34D399';
+  const accent = project.color || PAYWAY.cyan;
   const initials = project.title
     .split(' ')
     .filter(Boolean)
@@ -81,6 +124,8 @@ function ProjectCard({ project, index, onPress, styles }: { project: Project; in
     .map((word) => word[0])
     .join('')
     .toUpperCase();
+
+  const heroMetric = project.metrics && project.metrics.length > 0 ? project.metrics[0] : null;
 
   return (
     <Pressable
@@ -93,9 +138,10 @@ function ProjectCard({ project, index, onPress, styles }: { project: Project; in
         styles.projectCard,
         Platform.OS === 'web' && {
           transform: [{ translateY: hovered ? -8 : 0 }, { scale: hovered ? 1.012 : 1 }],
-          borderColor: hovered ? `${accent}88` : 'rgba(255,255,255,0.10)',
-          boxShadow: hovered ? `0 26px 70px ${accent}22` : '0 14px 34px rgba(0,0,0,0.24)',
+          borderColor: hovered ? PAYWAY.cyan : 'rgba(0, 188, 212, 0.22)',
+          boxShadow: hovered ? `0 24px 60px rgba(0, 188, 212, 0.32)` : '0 12px 32px rgba(0, 15, 30, 0.45)',
           transition: 'all 230ms cubic-bezier(0.22, 1, 0.36, 1)',
+          cursor: 'pointer',
         } as any,
       ]}
     >
@@ -103,17 +149,28 @@ function ProjectCard({ project, index, onPress, styles }: { project: Project; in
         <View style={styles.previewGrid} />
         <View style={[styles.previewOrbA, { backgroundColor: `${accent}22` }]} />
         <View style={[styles.previewOrbB, { backgroundColor: `${accent}16` }]} />
+
         <View style={styles.previewTopRow}>
           <Text style={styles.projectNumber}>{String(index + 1).padStart(2, '0')}</Text>
-          <View style={[styles.statusPill, { borderColor: `${accent}44`, backgroundColor: `${accent}14` }]}>
+          <View style={[styles.statusPill, { borderColor: `${accent}55`, backgroundColor: `${accent}18` }]}>
             <View style={[styles.statusDot, { backgroundColor: accent }]} />
             <Text style={[styles.statusText, { color: accent }]}>{project.status}</Text>
           </View>
         </View>
+
         <View style={styles.previewCenter}>
           <Text style={[styles.previewInitials, { color: accent }]}>{initials}</Text>
           <Text style={styles.previewMeta}>{project.year}</Text>
+          <Text style={styles.previewHeadline} numberOfLines={2}>{project.headline}</Text>
         </View>
+
+        {heroMetric && (
+          <View style={[styles.cardMetricBadge, { borderColor: `${accent}40`, backgroundColor: `${accent}12` }]}>
+            <Text style={[styles.cardMetricValue, { color: accent }]}>{heroMetric.value}</Text>
+            <Text style={styles.cardMetricLabel}>{heroMetric.label}</Text>
+          </View>
+        )}
+
         <View style={styles.previewTags}>
           {project.tags.slice(0, 3).map((tag) => (
             <View key={tag} style={styles.previewTag}>
@@ -123,9 +180,12 @@ function ProjectCard({ project, index, onPress, styles }: { project: Project; in
         </View>
       </View>
 
-      <View style={[styles.projectStrip, { backgroundColor: accent }]}>
+      <View style={[styles.projectStrip, { backgroundColor: PAYWAY.cyan }]}>
         <Text style={styles.projectTitle} numberOfLines={1}>{project.title}</Text>
-        <Text style={styles.projectArrow}>{'->'}</Text>
+        <View style={styles.exploreBadge}>
+          <Text style={styles.exploreText}>View Spec</Text>
+          <Text style={styles.projectArrow}>{'->'}</Text>
+        </View>
       </View>
     </Pressable>
   );
@@ -134,85 +194,748 @@ function ProjectCard({ project, index, onPress, styles }: { project: Project; in
 function ProjectDetailModal({
   project,
   projectIndex,
+  totalProjects,
   onClose,
+  onNext,
+  onPrev,
   colors,
   isDark,
 }: {
   project: Project | null;
   projectIndex: number;
+  totalProjects: number;
   onClose: () => void;
+  onNext: () => void;
+  onPrev: () => void;
   colors: any;
   isDark: boolean;
 }) {
   const { width, height } = useWindowDimensions();
+  const [viewMode, setViewMode] = useState<'production' | 'developer'>('production');
+  const [activeTab, setActiveTab] = useState<'overview' | 'simulator' | 'features' | 'architecture' | 'impact'>('overview');
+  const [activeCodeLang, setActiveCodeLang] = useState<'curl' | 'js' | 'python' | 'response'>('curl');
+  const [copied, setCopied] = useState(false);
+
+  // Simulator specific states
+  const [selectedStationIndex, setSelectedStationIndex] = useState(0);
+  const [checkoutStep, setCheckoutStep] = useState<'cart' | 'scanning' | 'approved'>('cart');
+  const [botChatMessages, setBotChatMessages] = useState<Array<{ sender: 'user' | 'bot'; text: string; time: string }>>([
+    { sender: 'bot', text: '👋 CamTech 20+ Station Telemetry Online. Tap a command below to test live report dispatch.', time: '10:00:02 AM' },
+  ]);
+
   const styles = getModalStyles(colors, isDark);
+
+  useEffect(() => {
+    setActiveTab('overview');
+    setViewMode('production');
+    setCheckoutStep('cart');
+    setSelectedStationIndex(0);
+  }, [projectIndex]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight') onNext();
+      if (e.key === 'ArrowLeft') onPrev();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose, onNext, onPrev]);
+
   if (!project) return null;
 
-  const accent = STATUS_COLOR[project.status] ?? colors.accent;
+  const isWide = width >= 880;
+  const maxHeight = Math.min(height * 0.94, 900);
+  const accent = project.color || PAYWAY.cyan;
   const isPrivate = Boolean((project as any).private);
   const note = (project as any).note as string | undefined;
-  const isWide = width >= 840;
-  const maxHeight = Math.min(height * 0.88, 760);
+
+  const telegramUrl = 'https://t.me/chhoy_too';
+  const emailUrl = `mailto:chhoytoo@outlook.com?subject=${encodeURIComponent(`Enterprise Project Inquiry: ${project.title}`)}`;
+
+  const copyCode = (code: string) => {
+    if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2200);
+    }
+  };
+
+  const handleBotCommand = (cmd: string) => {
+    const timeStr = new Date().toLocaleTimeString();
+    if (cmd === '/today') {
+      setBotChatMessages((prev) => [
+        ...prev,
+        { sender: 'user', text: '/today', time: timeStr },
+        {
+          sender: 'bot',
+          text: `📊 DAILY FLEET SUMMARY (20/20 Stations)\n• Total Fuel Pumped: 334,130 Liters\n• Total Gross Revenue: $383,988 USD\n• ABA PayWay / KHQR Share: 68.4%\n• Cash Counter Share: 31.6%\n• Binlog Replication Health: 100% OK`,
+          time: timeStr,
+        },
+      ]);
+    } else if (cmd === '/station_report') {
+      setBotChatMessages((prev) => [
+        ...prev,
+        { sender: 'user', text: '/station_report', time: timeStr },
+        {
+          sender: 'bot',
+          text: `⛽ STATION MATRIX STATUS:\n✅ ST-01 Monivong: 16,420 L | Latency: 14ms\n✅ ST-04 Russian Blvd: 24,200 L | Latency: 15ms\n✅ ST-13 Siem Reap: 18,900 L | Latency: 24ms\n✅ ST-20 Expressway: 28,400 L | Latency: 19ms\n[All 20 nodes pinging successfully]`,
+          time: timeStr,
+        },
+      ]);
+    } else if (cmd === '/alerts') {
+      setBotChatMessages((prev) => [
+        ...prev,
+        { sender: 'user', text: '/alerts', time: timeStr },
+        {
+          sender: 'bot',
+          text: `🟢 ZERO CRITICAL ALERTS\n• 0 Dropped transactions\n• Max sync lag: 32ms (ST-17 Poipet)\n• Cloudflare Zero Trust Tunnel: Active\n• Next automated report: 18:00 ICT`,
+          time: timeStr,
+        },
+      ]);
+    }
+  };
+
+  const currentCode = project.codeSnippet ? project.codeSnippet[activeCodeLang] : `// API Reference for ${project.title}\nGET https://api.camtech.cam/v1/health\nStatus: 200 OK`;
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.modalRoot}>
         <Pressable style={StyleSheet.absoluteFillObject} onPress={onClose} />
-        <View style={[styles.modalShell, { maxHeight }, isWide && styles.modalShellWide]}>
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <View style={styles.modalTopRow}>
-                <View style={[styles.modalStatus, { borderColor: `${accent}44`, backgroundColor: `${accent}12` }]}>
-                  <View style={[styles.modalDot, { backgroundColor: accent }]} />
-                  <Text style={[styles.modalStatusText, { color: accent }]}>{project.status} / {project.year}</Text>
-                </View>
-                <Pressable onPress={onClose} style={styles.closeBtn}>
-                  <Text style={styles.closeText}>Close</Text>
-                </Pressable>
+
+        <View
+          style={[
+            styles.modalShell,
+            { maxHeight },
+            isWide && styles.modalShellWide,
+            Platform.OS === 'web' &&
+              ({
+                animation: 'ct-modal-pop 360ms cubic-bezier(0.16, 1, 0.3, 1) both',
+              } as any),
+          ]}
+        >
+          {/* Ambient luminous PayWay cyan orbs */}
+          <View style={styles.modalAmbientOrbA} pointerEvents="none" />
+          <View style={styles.modalAmbientOrbB} pointerEvents="none" />
+
+          {/* PayWay Signature Header Navigation Bar */}
+          <View style={styles.paywayHeader}>
+            <View style={styles.paywayBrandCol}>
+              <View style={styles.paywayLogoBadge}>
+                <View style={styles.paywayLogoDot} />
+                <Text style={styles.paywayLogoText}>ABA PAYWAY ARCHITECTURE</Text>
               </View>
-              <Text style={styles.modalIndex}>Project {String(projectIndex + 1).padStart(2, '0')}</Text>
-              <Text style={styles.modalTitle}>{project.title}</Text>
-              <Text style={styles.modalDesc}>{project.description}</Text>
+              <Text style={styles.paywayProjectCounter}>
+                SYSTEM {String(projectIndex + 1).padStart(2, '0')} / {String(totalProjects).padStart(2, '0')}
+              </Text>
             </View>
 
-            <View style={[styles.modalBody, isWide && styles.modalBodyWide]}>
-              <View style={styles.modalMainCol}>
-                <Text style={styles.modalSectionTitle}>Impact</Text>
-                <View style={styles.impactList}>
-                  {project.impact.map((item) => (
-                    <View key={item} style={styles.impactItem}>
-                      <View style={[styles.impactDot, { backgroundColor: accent }]} />
-                      <Text style={styles.impactText}>{item}</Text>
-                    </View>
-                  ))}
+            {/* Mode Switcher: Production vs Developer Sandbox */}
+            <View style={styles.modeSwitchWrap}>
+              <Pressable
+                onPress={() => setViewMode('production')}
+                style={[
+                  styles.modeSwitchBtn,
+                  viewMode === 'production' && styles.modeSwitchBtnActive,
+                ]}
+              >
+                <Text style={[styles.modeSwitchText, viewMode === 'production' && styles.modeSwitchTextActive]}>
+                  ● Production Spec
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => setViewMode('developer')}
+                style={[
+                  styles.modeSwitchBtn,
+                  viewMode === 'developer' && styles.modeSwitchBtnActive,
+                ]}
+              >
+                <Text style={[styles.modeSwitchText, viewMode === 'developer' && styles.modeSwitchTextActive]}>
+                  🧪 Developer Sandbox
+                </Text>
+              </Pressable>
+            </View>
+
+            {/* Modal Controls */}
+            <View style={styles.headerControls}>
+              <Pressable
+                onPress={onPrev}
+                style={({ pressed, hovered }: any) => [styles.headerNavBtn, (pressed || hovered) && styles.headerNavBtnHover]}
+                accessibilityLabel="Previous Project"
+              >
+                <Text style={styles.headerNavBtnText}>{'< Prev'}</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={onNext}
+                style={({ pressed, hovered }: any) => [styles.headerNavBtn, (pressed || hovered) && styles.headerNavBtnHover]}
+                accessibilityLabel="Next Project"
+              >
+                <Text style={styles.headerNavBtnText}>{'Next >'}</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={onClose}
+                style={({ pressed, hovered }: any) => [styles.headerCloseBtn, (pressed || hovered) && styles.headerCloseBtnHover]}
+                accessibilityLabel="Close Modal"
+              >
+                <Text style={styles.headerCloseBtnText}>✕</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+            {/* HERO SECTION */}
+            <View style={styles.heroSection}>
+              <View style={styles.heroMetaRow}>
+                <View style={styles.heroStatusBadge}>
+                  <View style={styles.heroStatusDot} />
+                  <Text style={styles.heroStatusLabel}>{project.status.toUpperCase()} SYSTEM • {project.year}</Text>
                 </View>
 
-                <Text style={styles.modalSectionTitle}>Technology</Text>
-                <View style={styles.tagList}>
-                  {project.tags.map((tag) => (
-                    <View key={tag} style={styles.tag}>
-                      <Text style={styles.tagText}>{tag}</Text>
+                {project.metrics && project.metrics[0] ? (
+                  <View style={styles.heroMetricPill}>
+                    <Text style={styles.heroMetricPillText}>⚡ {project.metrics[0].value} {project.metrics[0].label}</Text>
+                  </View>
+                ) : null}
+              </View>
+
+              <Text style={styles.heroTitle}>{project.title}</Text>
+              <Text style={styles.heroHeadline}>{project.headline}</Text>
+              <Text style={styles.heroDescription}>{project.description}</Text>
+
+              {/* PayWay Action Bar */}
+              <View style={styles.heroActionRow}>
+                {project.live ? (
+                  <Pressable
+                    style={({ pressed, hovered }: any) => [
+                      styles.btnPaywayPrimary,
+                      (pressed || hovered) && styles.btnPaywayPrimaryHover,
+                    ]}
+                    onPress={() => Linking.openURL(project.live)}
+                  >
+                    <Text style={styles.btnPaywayPrimaryText}>🚀 Launch Live System ↗</Text>
+                  </Pressable>
+                ) : null}
+
+                {!isPrivate && project.github ? (
+                  <Pressable
+                    style={({ pressed, hovered }: any) => [
+                      styles.btnPaywayOutline,
+                      (pressed || hovered) && styles.btnPaywayOutlineHover,
+                    ]}
+                    onPress={() => Linking.openURL(project.github)}
+                  >
+                    <Text style={styles.btnPaywayOutlineText}>📦 GitHub Repository ↗</Text>
+                  </Pressable>
+                ) : null}
+
+                <Pressable
+                  style={({ pressed, hovered }: any) => [
+                    styles.btnPaywayCyanOutline,
+                    (pressed || hovered) && styles.btnPaywayCyanOutlineHover,
+                  ]}
+                  onPress={() => Linking.openURL(telegramUrl)}
+                >
+                  <Text style={styles.btnPaywayCyanOutlineText}>💬 Contact on Telegram ↗</Text>
+                </Pressable>
+
+                <Pressable
+                  style={({ pressed, hovered }: any) => [
+                    styles.btnPaywayOutline,
+                    (pressed || hovered) && styles.btnPaywayOutlineHover,
+                  ]}
+                  onPress={() => Linking.openURL(emailUrl)}
+                >
+                  <Text style={styles.btnPaywayOutlineText}>✉️ Email Inquiry ↗</Text>
+                </Pressable>
+              </View>
+            </View>
+
+            {/* IF IN DEVELOPER SANDBOX MODE */}
+            {viewMode === 'developer' ? (
+              <View style={styles.developerSuiteBox}>
+                <View style={styles.suiteHeader}>
+                  <View>
+                    <Text style={styles.suiteTitle}>PayWay Developer Code Suite</Text>
+                    <Text style={styles.suiteSub}>Production REST API payload specifications, headers, and verified responses</Text>
+                  </View>
+                  <View style={styles.suiteLiveTag}>
+                    <Text style={styles.suiteLiveTagText}>🟢 SANDBOX ACTIVE</Text>
+                  </View>
+                </View>
+
+                {/* Language Switch Tabs */}
+                <View style={styles.langTabBar}>
+                  {(['curl', 'js', 'python', 'response'] as const).map((lang) => (
+                    <Pressable
+                      key={lang}
+                      onPress={() => setActiveCodeLang(lang)}
+                      style={[
+                        styles.langTabBtn,
+                        activeCodeLang === lang && styles.langTabBtnActive,
+                      ]}
+                    >
+                      <Text style={[styles.langTabBtnText, activeCodeLang === lang && styles.langTabBtnTextActive]}>
+                        {lang === 'curl' ? 'cURL' : lang === 'js' ? 'Node.js / JS' : lang === 'python' ? 'Python' : 'JSON Response (200 OK)'}
+                      </Text>
+                    </Pressable>
+                  ))}
+                  <Pressable onPress={() => copyCode(currentCode)} style={styles.copyBtn}>
+                    <Text style={styles.copyBtnText}>{copied ? '✓ Copied' : '📋 Copy Code'}</Text>
+                  </Pressable>
+                </View>
+
+                {/* Code Terminal View */}
+                <View style={styles.codeTerminal}>
+                  <ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={{ padding: 16 }}>
+                    <Text style={styles.codeContent}>{currentCode}</Text>
+                  </ScrollView>
+                </View>
+
+                {/* API Request Fields Reference Table */}
+                <View style={styles.paramTable}>
+                  <Text style={styles.paramTableTitle}>API PARAMETER SPECIFICATIONS</Text>
+                  <View style={styles.paramRowHeader}>
+                    <Text style={[styles.paramCell, { flex: 1.8, fontWeight: '900' }]}>FIELD</Text>
+                    <Text style={[styles.paramCell, { flex: 1.2, fontWeight: '900' }]}>TYPE</Text>
+                    <Text style={[styles.paramCell, { flex: 1.2, fontWeight: '900' }]}>REQUIREMENT</Text>
+                    <Text style={[styles.paramCell, { flex: 3.5, fontWeight: '900' }]}>DESCRIPTION</Text>
+                  </View>
+                  <View style={styles.paramRow}>
+                    <Text style={[styles.paramCell, styles.paramCode, { flex: 1.8 }]}>X-Api-Key</Text>
+                    <Text style={[styles.paramCell, { flex: 1.2 }]}>String</Text>
+                    <Text style={[styles.paramCell, styles.paramReq, { flex: 1.2 }]}>Required</Text>
+                    <Text style={[styles.paramCell, { flex: 3.5 }]}>HMAC authorization token generated via Cloudflare Gateway</Text>
+                  </View>
+                  <View style={styles.paramRow}>
+                    <Text style={[styles.paramCell, styles.paramCode, { flex: 1.8 }]}>order_id / station_id</Text>
+                    <Text style={[styles.paramCell, { flex: 1.2 }]}>String</Text>
+                    <Text style={[styles.paramCell, styles.paramReq, { flex: 1.2 }]}>Required</Text>
+                    <Text style={[styles.paramCell, { flex: 3.5 }]}>Unique alphanumeric transaction or hardware terminal identifier</Text>
+                  </View>
+                  <View style={styles.paramRow}>
+                    <Text style={[styles.paramCell, styles.paramCode, { flex: 1.8 }]}>payment_method</Text>
+                    <Text style={[styles.paramCell, { flex: 1.2 }]}>Enum</Text>
+                    <Text style={[styles.paramCell, styles.paramReq, { flex: 1.2 }]}>Required</Text>
+                    <Text style={[styles.paramCell, { flex: 3.5 }]}>Supported: ABA_KHQR, BAKONG, VISA, MASTERCARD, CASH_POS</Text>
+                  </View>
+                  <View style={styles.paramRow}>
+                    <Text style={[styles.paramCell, styles.paramCode, { flex: 1.8 }]}>replication_lag_ms</Text>
+                    <Text style={[styles.paramCell, { flex: 1.2 }]}>Integer</Text>
+                    <Text style={[styles.paramCell, styles.paramOpt, { flex: 1.2 }]}>Telemetry</Text>
+                    <Text style={[styles.paramCell, { flex: 3.5 }]}>Binlog delta verification timestamp for cross-station sync</Text>
+                  </View>
+                </View>
+              </View>
+            ) : null}
+
+            {/* INTERACTIVE SIMULATOR WIDGET (Always prominent) */}
+            <View style={styles.simulatorWrapper}>
+              <View style={styles.simulatorHeader}>
+                <View style={styles.simBadge}>
+                  <Text style={styles.simBadgeText}>{project.simulator?.badge || 'INTERACTIVE DEMONSTRATION'}</Text>
+                </View>
+                <Text style={styles.simTitle}>{project.simulator?.title || 'Interactive Live Simulator'}</Text>
+                <Text style={styles.simSubtitle}>{project.simulator?.subtitle || 'Experience live execution behavior and real-time outputs'}</Text>
+              </View>
+
+              {/* SIMULATOR TYPE: FLEET TELEMETRY (PTT 20+ STATIONS) */}
+              {project.simulator?.type === 'fleet' ? (
+                <View style={styles.fleetSimulatorBox}>
+                  <View style={styles.fleetTopBar}>
+                    <Text style={styles.fleetBarTitle}>CAMBODIA FLEET RADAR: 20 STATIONS ACTIVE</Text>
+                    <Text style={styles.fleetBarSub}>🟢 All Nodes Online • 0 Offline Events • Binlog Sync &lt; 25ms</Text>
+                  </View>
+
+                  {/* Horizontal station selectors (20 stations) */}
+                  <Text style={styles.fleetSelectorHint}>Select any station node to inspect live pump metrics & replication latency:</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={styles.stationChipsList}>
+                    {STATIONS_20_DATA.map((st, idx) => {
+                      const isSel = idx === selectedStationIndex;
+                      return (
+                        <Pressable
+                          key={st.id}
+                          onPress={() => setSelectedStationIndex(idx)}
+                          style={[styles.stationChip, isSel && styles.stationChipActive]}
+                        >
+                          <Text style={[styles.stationChipId, isSel && styles.stationChipIdActive]}>{st.id}</Text>
+                          <Text style={[styles.stationChipName, isSel && styles.stationChipNameActive]} numberOfLines={1}>
+                            {st.city}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </ScrollView>
+
+                  {/* Selected Station Telemetry Cockpit */}
+                  {(() => {
+                    const activeSt = STATIONS_20_DATA[selectedStationIndex] || STATIONS_20_DATA[0];
+                    return (
+                      <View style={styles.telemetryCard}>
+                        <View style={styles.telemetryCardHeader}>
+                          <View>
+                            <Text style={styles.telemetryStationTitle}>{activeSt.id}: {activeSt.name}</Text>
+                            <Text style={styles.telemetryStationMeta}>{activeSt.city}, Cambodia • {activeSt.nozz} Fuel Dispenser Nozzles</Text>
+                          </View>
+                          <View style={styles.telemetryLiveBadge}>
+                            <View style={styles.telemetryLiveDot} />
+                            <Text style={styles.telemetryLiveText}>{activeSt.status} • {activeSt.latency}</Text>
+                          </View>
+                        </View>
+
+                        <View style={styles.telemetryMetricsRow}>
+                          <View style={styles.telemetryMetricItem}>
+                            <Text style={styles.telemetryMetricVal}>{activeSt.liters}</Text>
+                            <Text style={styles.telemetryMetricLbl}>Today's Fuel Flow</Text>
+                          </View>
+                          <View style={styles.telemetryMetricItem}>
+                            <Text style={[styles.telemetryMetricVal, { color: PAYWAY.cyan }]}>{activeSt.revenue}</Text>
+                            <Text style={styles.telemetryMetricLbl}>Gross Station Revenue</Text>
+                          </View>
+                          <View style={styles.telemetryMetricItem}>
+                            <Text style={[styles.telemetryMetricVal, { color: PAYWAY.emerald }]}>{activeSt.qrShare}</Text>
+                            <Text style={styles.telemetryMetricLbl}>ABA KHQR Penetration</Text>
+                          </View>
+                          <View style={styles.telemetryMetricItem}>
+                            <Text style={styles.telemetryMetricVal}>{activeSt.latency}</Text>
+                            <Text style={styles.telemetryMetricLbl}>MySQL Sync Latency</Text>
+                          </View>
+                        </View>
+
+                        <View style={styles.telemetryFooter}>
+                          <Text style={styles.telemetryFooterText}>
+                            🛡️ Hardware Protocol: RS-485 / Modbus Gateway • Edge Failover Buffer: 0 Dropped Packets • Auto-reconnect on 4G recovery
+                          </Text>
+                        </View>
+                      </View>
+                    );
+                  })()}
+                </View>
+              ) : null}
+
+              {/* SIMULATOR TYPE: CHECKOUT (ABA PAYWAY KHQR) */}
+              {project.simulator?.type === 'checkout' ? (
+                <View style={styles.checkoutSimulatorBox}>
+                  <View style={styles.checkoutOrderSummary}>
+                    <View style={styles.checkoutSummaryCol}>
+                      <Text style={styles.checkoutBrandTag}>CAMTECH OFFICIAL STORE & POS</Text>
+                      <Text style={styles.checkoutOrderTitle}>Order #CT-2026-9810</Text>
+                      <Text style={styles.checkoutOrderItems}>• Pro Workstation License & Hardware Adapter</Text>
+                    </View>
+                    <View style={styles.checkoutPriceCol}>
+                      <Text style={styles.checkoutPriceTotal}>$149.00</Text>
+                      <Text style={styles.checkoutPriceSub}>USD (ABA PayWay)</Text>
+                    </View>
+                  </View>
+
+                  {/* Payment Stage */}
+                  {checkoutStep === 'cart' && (
+                    <View style={styles.checkoutCardBody}>
+                      <View style={styles.khqrFrame}>
+                        <View style={styles.khqrInnerBox}>
+                          <Text style={styles.khqrMockQr}>[ KHQR CODE MATRIX ]</Text>
+                          <View style={styles.khqrPaywayLogoRow}>
+                            <Text style={styles.khqrPaywayLogo}>ABA PAYWAY</Text>
+                          </View>
+                        </View>
+                        <Text style={styles.khqrScanText}>Scan with ABA Mobile or any Bakong App</Text>
+                      </View>
+
+                      <View style={styles.checkoutCtaWrap}>
+                        <Pressable
+                          onPress={() => {
+                            setCheckoutStep('scanning');
+                            setTimeout(() => setCheckoutStep('approved'), 1200);
+                          }}
+                          style={({ pressed, hovered }: any) => [
+                            styles.btnPaywayPrimary,
+                            (pressed || hovered) && styles.btnPaywayPrimaryHover,
+                          ]}
+                        >
+                          <Text style={styles.btnPaywayPrimaryText}>📲 Simulate ABA Mobile Scan & Pay ($149.00)</Text>
+                        </Pressable>
+                        <Text style={styles.checkoutSimNote}>Simulates instant webhook dispatch and inventory deduction in POS</Text>
+                      </View>
+                    </View>
+                  )}
+
+                  {checkoutStep === 'scanning' && (
+                    <View style={styles.checkoutProcessingBox}>
+                      <Text style={styles.processingSpinner}>⚡</Text>
+                      <Text style={styles.processingTitle}>Authorizing with ABA PayWay API...</Text>
+                      <Text style={styles.processingSub}>Validating cryptographic signature & reserving inventory</Text>
+                    </View>
+                  )}
+
+                  {checkoutStep === 'approved' && (
+                    <View style={styles.checkoutApprovedBox}>
+                      <View style={styles.approvedIconWrap}>
+                        <Text style={styles.approvedIcon}>✓</Text>
+                      </View>
+                      <Text style={styles.approvedTitle}>Payment Approved via ABA PayWay!</Text>
+                      <Text style={styles.approvedSub}>Transaction Ref: ABA-PW-20260928-847291 • Status: COMPLETED</Text>
+                      <View style={styles.approvedLogBox}>
+                        <Text style={styles.approvedLogLine}>[Webhook] Received payment verification from api.payway.com.kh</Text>
+                        <Text style={styles.approvedLogLine}>[POS Hub] Deducted stock in warehouse #1 • Receipt printed in 42ms</Text>
+                      </View>
+                      <Pressable onPress={() => setCheckoutStep('cart')} style={styles.resetSimBtn}>
+                        <Text style={styles.resetSimBtnText}>↺ Test Again</Text>
+                      </Pressable>
+                    </View>
+                  )}
+                </View>
+              ) : null}
+
+              {/* SIMULATOR TYPE: TELEGRAM BOT */}
+              {project.simulator?.type === 'bot' ? (
+                <View style={styles.telegramSimulatorBox}>
+                  <View style={styles.tgHeader}>
+                    <View style={styles.tgAvatar}>
+                      <Text style={styles.tgAvatarText}>🤖</Text>
+                    </View>
+                    <View>
+                      <Text style={styles.tgBotName}>CamTech Fleet Telemetry Bot</Text>
+                      <Text style={styles.tgBotStatus}>bot • 20+ Stations Connected</Text>
+                    </View>
+                  </View>
+
+                  <ScrollView style={styles.tgChatArea} contentContainerStyle={{ padding: 14, gap: 10 }}>
+                    {botChatMessages.map((msg, i) => (
+                      <View
+                        key={i}
+                        style={[
+                          styles.tgBubble,
+                          msg.sender === 'user' ? styles.tgBubbleUser : styles.tgBubbleBot,
+                        ]}
+                      >
+                        <Text style={styles.tgMsgText}>{msg.text}</Text>
+                        <Text style={styles.tgMsgTime}>{msg.time}</Text>
+                      </View>
+                    ))}
+                  </ScrollView>
+
+                  {/* Quick Telegram Command Action Bar */}
+                  <View style={styles.tgCommandsRow}>
+                    <Pressable onPress={() => handleBotCommand('/today')} style={styles.tgCmdChip}>
+                      <Text style={styles.tgCmdChipText}>📊 /today (Revenue)</Text>
+                    </Pressable>
+                    <Pressable onPress={() => handleBotCommand('/station_report')} style={styles.tgCmdChip}>
+                      <Text style={styles.tgCmdChipText}>⛽ /station_report (20 Stations)</Text>
+                    </Pressable>
+                    <Pressable onPress={() => handleBotCommand('/alerts')} style={styles.tgCmdChip}>
+                      <Text style={styles.tgCmdChipText}>⚠️ /alerts (Health Check)</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ) : null}
+
+              {/* SIMULATOR TYPE: CONSOLE / AUDIT / MAP */}
+              {project.simulator?.type !== 'fleet' && project.simulator?.type !== 'checkout' && project.simulator?.type !== 'bot' ? (
+                <View style={styles.consoleSimulatorBox}>
+                  <View style={styles.consoleHeader}>
+                    <Text style={styles.consoleHeaderTitle}>LIVE API PIPELINE TESTER</Text>
+                    <Text style={styles.consoleHeaderStatus}>200 OK • LATENCY: 18ms</Text>
+                  </View>
+                  <View style={styles.consoleBody}>
+                    <Text style={styles.consoleCodeLine}>&gt; POST /v1/telemetry/event HTTP/1.1</Text>
+                    <Text style={styles.consoleCodeLine}>&gt; Host: api.camtech.cam</Text>
+                    <Text style={styles.consoleCodeLine}>&gt; Authorization: Bearer ct_live_token</Text>
+                    <Text style={[styles.consoleCodeLine, { color: PAYWAY.emerald }]}>&lt; HTTP/1.1 200 OK</Text>
+                    <Text style={[styles.consoleCodeLine, { color: PAYWAY.textMuted }]}>
+                      &lt; {`{"status": "ACK", "station_nodes_synced": 20, "binlog_delta": 0, "hash": "sha256:8f4a2"}`}
+                    </Text>
+                  </View>
+                </View>
+              ) : null}
+            </View>
+
+            {/* KEY PERFORMANCE METRICS STRIP */}
+            {project.metrics && project.metrics.length > 0 && (
+              <View style={styles.metricsSection}>
+                <View style={styles.sectionHeaderRow}>
+                  <Text style={styles.sectionHeaderLabel}>KEY PERFORMANCE METRICS</Text>
+                  <View style={styles.sectionHeaderLine} />
+                </View>
+
+                <View style={styles.metricsGrid}>
+                  {project.metrics.map((metric) => (
+                    <View key={metric.label} style={styles.metricCard}>
+                      <Text style={[styles.metricValue, { color: PAYWAY.cyan }]}>{metric.value}</Text>
+                      <Text style={styles.metricLabel}>{metric.label}</Text>
+                      {metric.sub && <Text style={styles.metricSub}>{metric.sub}</Text>}
                     </View>
                   ))}
                 </View>
               </View>
+            )}
 
-              <View style={styles.modalSideCol}>
-                <InfoRow label="Status" value={project.status} styles={styles} />
-                <InfoRow label="Year" value={project.year} styles={styles} />
-                <InfoRow label="Access" value={isPrivate ? 'Private / internal' : 'Public'} styles={styles} />
-                {note ? <Text style={styles.noteText}>{note}</Text> : null}
+            {/* TAB SELECTOR: The Solution / Capabilities / Architecture / Impact */}
+            <View style={styles.detailTabsBar}>
+              {[
+                { key: 'overview', label: '🎯 The Solution', sub: 'Problem vs Fix' },
+                { key: 'features', label: '⚡ Capabilities', sub: 'Feature Modules' },
+                { key: 'architecture', label: '🏗️ Architecture', sub: 'Stack & Security' },
+                { key: 'impact', label: '📈 Proven ROI', sub: 'Business Impact' },
+              ].map((tab: any) => {
+                const isSelected = activeTab === tab.key;
+                return (
+                  <Pressable
+                    key={tab.key}
+                    onPress={() => setActiveTab(tab.key)}
+                    style={[styles.detailTabBtn, isSelected && styles.detailTabBtnActive]}
+                  >
+                    <Text style={[styles.detailTabBtnLabel, isSelected && styles.detailTabBtnLabelActive]}>
+                      {tab.label}
+                    </Text>
+                    <Text style={[styles.detailTabBtnSub, isSelected && styles.detailTabBtnSubActive]}>
+                      {tab.sub}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
 
-                {project.live ? (
-                  <Pressable style={[styles.primaryAction, { backgroundColor: accent }]} onPress={() => Linking.openURL(project.live)}>
-                    <Text style={styles.primaryActionText}>Open live project</Text>
-                  </Pressable>
-                ) : null}
-                {!isPrivate && project.github ? (
-                  <Pressable style={styles.secondaryAction} onPress={() => Linking.openURL(project.github)}>
-                    <Text style={[styles.secondaryActionText, { color: accent }]}>View repository</Text>
-                  </Pressable>
-                ) : null}
+            {/* DYNAMIC TAB CONTENT */}
+            {activeTab === 'overview' && (
+              <View style={styles.comparativeContainer}>
+                {/* The Problem / Challenge */}
+                <View style={styles.challengeBox}>
+                  <View style={styles.boxTitleRow}>
+                    <View style={styles.boxIconDanger}>
+                      <Text style={styles.boxIconDangerText}>🛑</Text>
+                    </View>
+                    <View>
+                      <Text style={styles.boxTitleDanger}>The Business Challenge</Text>
+                      <Text style={styles.boxSubDanger}>Operational Friction & Bottlenecks</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.boxDesc}>{project.challenge}</Text>
+                </View>
+
+                {/* The Engineering Solution */}
+                <View style={styles.solutionBox}>
+                  <View style={styles.boxTitleRow}>
+                    <View style={styles.boxIconSuccess}>
+                      <Text style={styles.boxIconSuccessText}>💡</Text>
+                    </View>
+                    <View>
+                      <Text style={styles.boxTitleSuccess}>The Engineering Breakthrough</Text>
+                      <Text style={styles.boxSubSuccess}>Engineered by Chhoy Too • PayWay-Grade Standards</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.boxDesc}>{project.solution}</Text>
+                </View>
+              </View>
+            )}
+
+            {activeTab === 'features' && (
+              <View style={styles.featuresGrid}>
+                {project.features.map((feat) => (
+                  <View key={feat.title} style={styles.featureCard}>
+                    <View style={styles.featureCardTop}>
+                      <View style={styles.featureIconBadge}>
+                        <Text style={styles.featureIconText}>{feat.icon}</Text>
+                      </View>
+                      {feat.badge && (
+                        <View style={styles.featurePill}>
+                          <Text style={styles.featurePillText}>{feat.badge}</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={styles.featureTitle}>{feat.title}</Text>
+                    <Text style={styles.featureDesc}>{feat.desc}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {activeTab === 'architecture' && (
+              <View style={styles.architectureContainer}>
+                <View style={styles.archGrid}>
+                  {project.architecture.map((arch) => (
+                    <View key={arch.category} style={styles.archCard}>
+                      <Text style={styles.archCategoryTitle}>{arch.category}</Text>
+                      <View style={styles.archItemsList}>
+                        {arch.items.map((item) => (
+                          <View key={item} style={styles.archItemBadge}>
+                            <View style={styles.archDot} />
+                            <Text style={styles.archItemText}>{item}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  ))}
+                </View>
+
+                <View style={styles.archTagsBlock}>
+                  <Text style={styles.archTagsLabel}>TECHNOLOGIES & PROTOCOLS</Text>
+                  <View style={styles.techPillWrap}>
+                    {project.tags.map((tag) => (
+                      <View key={tag} style={styles.techPill}>
+                        <Text style={styles.techPillText}>{tag}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {activeTab === 'impact' && (
+              <View style={styles.impactContainer}>
+                <View style={styles.impactCardList}>
+                  {project.impact.map((point) => (
+                    <View key={point} style={styles.impactCard}>
+                      <View style={styles.impactCheckBadge}>
+                        <Text style={styles.impactCheckText}>✓</Text>
+                      </View>
+                      <Text style={styles.impactPointText}>{point}</Text>
+                    </View>
+                  ))}
+                </View>
+
+                {isPrivate && (
+                  <View style={styles.complianceNoticeBox}>
+                    <Text style={styles.complianceTitle}>🔒 Enterprise Security & Compliance Notice</Text>
+                    <Text style={styles.complianceDesc}>
+                      {note || 'This codebase is protected by enterprise Non-Disclosure Agreements (NDA) and commercial compliance standards. Demonstrates production-grade experience with confidential corporate databases and mission-critical live hardware.'}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* PAYWAY ENTERPRISE INTEGRATION BANNER */}
+            <View style={styles.ctaBanner}>
+              <View style={styles.ctaGlowOrb} pointerEvents="none" />
+              <View style={styles.ctaTextCol}>
+                <Text style={styles.ctaHeading}>Deploy PayWay-Grade Architecture for Your Business</Text>
+                <Text style={styles.ctaSub}>
+                  From 20+ station POS hardware telemetry and automated database replication to omnichannel e-commerce microservices, I design and build mission-critical systems that never go down.
+                </Text>
+              </View>
+
+              <View style={styles.ctaButtonsCol}>
+                <Pressable
+                  style={({ pressed, hovered }: any) => [
+                    styles.btnPaywayPrimary,
+                    (pressed || hovered) && styles.btnPaywayPrimaryHover,
+                  ]}
+                  onPress={() => Linking.openURL(telegramUrl)}
+                >
+                  <Text style={styles.btnPaywayPrimaryText}>💬 Inquire on Telegram ↗</Text>
+                </Pressable>
+
+                <Pressable
+                  style={({ pressed, hovered }: any) => [
+                    styles.btnPaywayOutline,
+                    (pressed || hovered) && styles.btnPaywayOutlineHover,
+                  ]}
+                  onPress={() => Linking.openURL(emailUrl)}
+                >
+                  <Text style={styles.btnPaywayOutlineText}>✉️ Email Project Brief ↗</Text>
+                </Pressable>
               </View>
             </View>
           </ScrollView>
@@ -222,20 +945,7 @@ function ProjectDetailModal({
   );
 }
 
-function InfoRow({ label, value, styles }: { label: string; value: string; styles: any }) {
-  return (
-    <View style={styles.infoRow}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value}</Text>
-    </View>
-  );
-}
-
 const getStyles = (colors: any, isDark: boolean) => {
-  const sectionShadow = Platform.OS === 'web'
-    ? ({ boxShadow: isDark ? '0 26px 90px rgba(0,0,0,0.42)' : '0 26px 90px rgba(15,23,42,0.14)' } as any)
-    : {};
-
   return StyleSheet.create({
     wrapper: {
       width: '100%',
@@ -246,13 +956,14 @@ const getStyles = (colors: any, isDark: boolean) => {
       padding: 24,
       borderRadius: 32,
       borderWidth: 1,
-      borderColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(15,23,42,0.16)',
-      backgroundColor: '#030425',
+      borderColor: 'rgba(0, 188, 212, 0.22)',
+      backgroundColor: '#001424',
       overflow: 'hidden',
-      ...sectionShadow,
       ...(Platform.OS === 'web'
         ? ({
-            backgroundImage: 'radial-gradient(circle at 16% 4%, rgba(37,99,235,0.34), transparent 34%), radial-gradient(circle at 88% 12%, rgba(251,191,36,0.16), transparent 26%), linear-gradient(135deg, #060735 0%, #02031F 58%, #01020F 100%)',
+            backgroundImage:
+              'radial-gradient(circle at 18% 4%, rgba(0, 188, 212, 0.24), transparent 36%), radial-gradient(circle at 88% 12%, rgba(5, 91, 131, 0.28), transparent 32%), linear-gradient(135deg, #00172B 0%, #001220 58%, #000B14 100%)',
+            boxShadow: '0 28px 90px rgba(0, 10, 20, 0.65)',
           } as any)
         : {}),
     },
@@ -262,102 +973,99 @@ const getStyles = (colors: any, isDark: boolean) => {
       marginBottom: 24,
     },
     headerIcon: {
-      width: 38,
-      height: 34,
+      width: 40,
+      height: 36,
       borderRadius: 10,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: 'rgba(255,255,255,0.08)',
+      backgroundColor: 'rgba(0, 188, 212, 0.16)',
       borderWidth: 1,
-      borderColor: 'rgba(255,255,255,0.14)',
+      borderColor: 'rgba(0, 188, 212, 0.35)',
     },
     headerIconText: {
-      color: '#FFFFFF',
-      fontSize: 14,
+      color: PAYWAY.cyan,
+      fontSize: 16,
       fontWeight: '900',
       fontFamily: FONT_FAMILY.accent,
     },
     title: {
       color: '#FFFFFF',
       fontSize: 32,
-      lineHeight: 38,
       fontWeight: '900',
       letterSpacing: -0.8,
       textAlign: 'center',
       fontFamily: FONT_FAMILY.header,
     },
     titleAccent: {
-      color: '#FACC15',
+      color: PAYWAY.cyan,
     },
     subtitle: {
-      color: 'rgba(255,255,255,0.66)',
+      color: 'rgba(255,255,255,0.72)',
       fontSize: 15,
-      lineHeight: 23,
-      fontWeight: '600',
+      lineHeight: 22,
       textAlign: 'center',
-      maxWidth: 720,
+      maxWidth: 620,
       fontFamily: FONT_FAMILY.body,
     },
     projectGrid: {
-      gap: 14,
-      flexDirection: 'column',
+      gap: 16,
     },
     projectGridWrap: {
       flexDirection: 'row',
       flexWrap: 'wrap',
+      justifyContent: 'space-between',
     },
     projectCard: {
-      minHeight: 276,
-      borderRadius: 12,
-      overflow: 'hidden',
-      backgroundColor: 'rgba(2,6,23,0.92)',
+      borderRadius: 22,
       borderWidth: 1,
-      borderColor: 'rgba(255,255,255,0.10)',
+      borderColor: 'rgba(0, 188, 212, 0.20)',
+      backgroundColor: '#001A30',
+      overflow: 'hidden',
     },
     preview: {
-      flex: 1,
-      minHeight: 222,
-      padding: 16,
+      minHeight: 250,
+      padding: 18,
+      justifyContent: 'space-between',
       position: 'relative',
       overflow: 'hidden',
-      justifyContent: 'space-between',
+      backgroundColor: '#001E38',
     },
     previewGrid: {
       ...StyleSheet.absoluteFillObject,
-      opacity: 0.12,
+      opacity: 0.15,
       ...(Platform.OS === 'web'
         ? ({
-            backgroundImage: 'linear-gradient(rgba(255,255,255,0.20) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.16) 1px, transparent 1px)',
+            backgroundImage:
+              'linear-gradient(rgba(0,188,212,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(0,188,212,0.3) 1px, transparent 1px)',
             backgroundSize: '24px 24px',
           } as any)
         : {}),
     },
     previewOrbA: {
       position: 'absolute',
-      top: -54,
-      right: -42,
-      width: 160,
-      height: 160,
-      borderRadius: 80,
-    },
-    previewOrbB: {
-      position: 'absolute',
-      bottom: -70,
-      left: -52,
       width: 180,
       height: 180,
       borderRadius: 90,
+      top: -30,
+      right: -30,
+    },
+    previewOrbB: {
+      position: 'absolute',
+      width: 140,
+      height: 140,
+      borderRadius: 70,
+      bottom: -20,
+      left: -20,
     },
     previewTopRow: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      gap: 10,
       zIndex: 2,
     },
     projectNumber: {
-      color: 'rgba(255,255,255,0.38)',
-      fontSize: 12,
+      color: 'rgba(255,255,255,0.45)',
+      fontSize: 13,
       fontWeight: '900',
       letterSpacing: 1.2,
       fontFamily: FONT_FAMILY.accent,
@@ -386,62 +1094,110 @@ const getStyles = (colors: any, isDark: boolean) => {
     previewCenter: {
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 8,
+      gap: 6,
       zIndex: 2,
+      paddingVertical: 8,
     },
     previewInitials: {
-      fontSize: 58,
-      lineHeight: 64,
+      fontSize: 48,
+      lineHeight: 52,
       fontWeight: '900',
-      letterSpacing: -2,
+      letterSpacing: -1.5,
       fontFamily: FONT_FAMILY.header,
     },
     previewMeta: {
-      color: 'rgba(255,255,255,0.56)',
-      fontSize: 12,
+      color: PAYWAY.cyan,
+      fontSize: 11,
       fontWeight: '900',
       letterSpacing: 1.4,
       fontFamily: FONT_FAMILY.accent,
+    },
+    previewHeadline: {
+      color: 'rgba(255,255,255,0.85)',
+      fontSize: 12,
+      lineHeight: 17,
+      fontWeight: '700',
+      textAlign: 'center',
+      marginTop: 2,
+      maxWidth: 280,
+      fontFamily: FONT_FAMILY.body,
+    },
+    cardMetricBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      paddingVertical: 5,
+      paddingHorizontal: 10,
+      borderRadius: RADIUS.full,
+      borderWidth: 1,
+      alignSelf: 'center',
+      zIndex: 2,
+      marginTop: 4,
+    },
+    cardMetricValue: {
+      fontSize: 12,
+      fontWeight: '900',
+      fontFamily: FONT_FAMILY.accent,
+    },
+    cardMetricLabel: {
+      color: 'rgba(255,255,255,0.72)',
+      fontSize: 11,
+      fontWeight: '700',
+      fontFamily: FONT_FAMILY.body,
     },
     previewTags: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: 7,
       zIndex: 2,
+      marginTop: 8,
     },
     previewTag: {
       paddingVertical: 5,
       paddingHorizontal: 8,
       borderRadius: RADIUS.full,
-      backgroundColor: 'rgba(255,255,255,0.08)',
+      backgroundColor: 'rgba(0, 188, 212, 0.10)',
       borderWidth: 1,
-      borderColor: 'rgba(255,255,255,0.10)',
+      borderColor: 'rgba(0, 188, 212, 0.24)',
     },
     previewTagText: {
-      color: 'rgba(255,255,255,0.78)',
+      color: PAYWAY.textLight,
       fontSize: 10,
       fontWeight: '800',
       fontFamily: FONT_FAMILY.accent,
     },
     projectStrip: {
-      minHeight: 54,
-      paddingHorizontal: 14,
+      minHeight: 52,
+      paddingHorizontal: 16,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       gap: 10,
     },
     projectTitle: {
-      color: '#030712',
-      fontSize: 15,
+      color: '#001424',
+      fontSize: 14,
       fontWeight: '900',
       letterSpacing: -0.3,
       flex: 1,
       fontFamily: FONT_FAMILY.header,
     },
+    exploreBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    exploreText: {
+      color: '#001424',
+      fontSize: 11,
+      fontWeight: '900',
+      letterSpacing: 0.5,
+      fontFamily: FONT_FAMILY.accent,
+    },
     projectArrow: {
-      color: '#030712',
-      fontSize: 18,
+      color: '#001424',
+      fontSize: 16,
       fontWeight: '900',
       fontFamily: FONT_FAMILY.accent,
     },
@@ -452,16 +1208,16 @@ const getStyles = (colors: any, isDark: boolean) => {
       paddingHorizontal: 24,
       borderRadius: 10,
       borderWidth: 1,
-      borderColor: 'rgba(255,255,255,0.42)',
-      backgroundColor: 'rgba(255,255,255,0.04)',
+      borderColor: PAYWAY.cyan,
+      backgroundColor: 'rgba(0, 188, 212, 0.08)',
       ...(Platform.OS === 'web' ? ({ transition: 'all 180ms ease' } as any) : {}),
     },
     viewAllBtnHover: {
-      backgroundColor: 'rgba(255,255,255,0.10)',
+      backgroundColor: 'rgba(0, 188, 212, 0.20)',
       transform: [{ translateY: -2 }],
     },
     viewAllText: {
-      color: '#FFFFFF',
+      color: PAYWAY.cyan,
       fontSize: 14,
       fontWeight: '900',
       fontFamily: FONT_FAMILY.accent,
@@ -472,227 +1228,1418 @@ const getStyles = (colors: any, isDark: boolean) => {
 const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   modalRoot: {
     flex: 1,
-    backgroundColor: isDark ? 'rgba(0,0,0,0.72)' : 'rgba(0,0,0,0.46)',
+    backgroundColor: 'rgba(0, 12, 22, 0.85)',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 18,
+    padding: 16,
   },
   modalShell: {
     width: '100%',
-    maxWidth: 980,
-    borderRadius: 30,
+    maxWidth: 1120,
+    borderRadius: 24,
     overflow: 'hidden',
-    backgroundColor: colors.cardSolid,
+    backgroundColor: '#00162B',
     borderWidth: 1,
-    borderColor: colors.border,
-    ...(Platform.OS === 'web' ? ({ boxShadow: isDark ? '0 44px 120px rgba(0,0,0,0.62)' : '0 44px 120px rgba(0,0,0,0.16)' } as any) : {}),
+    borderColor: PAYWAY.navyBorder,
+    position: 'relative',
+    ...(Platform.OS === 'web'
+      ? ({
+          boxShadow: '0 32px 100px -10px rgba(0, 0, 0, 0.85), 0 0 40px rgba(0, 188, 212, 0.22)',
+        } as any)
+      : {}),
   },
   modalShellWide: {
-    width: '92%',
+    width: '94%',
   },
-  modalContent: {
-    paddingBottom: 0,
-  },
-  modalHeader: {
-    padding: 28,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  modalTopRow: {
+  modalAmbientOrbA: {
+    position: 'absolute',
+    top: -120,
+    right: -120,
+    width: 360,
+    height: 360,
+    borderRadius: 180,
+    backgroundColor: 'rgba(0, 188, 212, 0.16)',
+    filter: 'blur(80px)',
+  } as any,
+  modalAmbientOrbB: {
+    position: 'absolute',
+    bottom: -100,
+    left: -100,
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    backgroundColor: 'rgba(5, 91, 131, 0.24)',
+    filter: 'blur(70px)',
+  } as any,
+  paywayHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: 22,
+    paddingVertical: 14,
+    backgroundColor: '#001A33',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 188, 212, 0.22)',
+    flexWrap: 'wrap',
     gap: 12,
+    zIndex: 10,
   },
-  modalStatus: {
+  paywayBrandCol: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 7,
-    paddingHorizontal: 11,
-    borderRadius: RADIUS.full,
-    borderWidth: 1,
+    gap: 10,
   },
-  modalDot: {
+  paywayLogoBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 188, 212, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.40)',
+  },
+  paywayLogoDot: {
     width: 7,
     height: 7,
-    borderRadius: 4,
+    borderRadius: 3.5,
+    backgroundColor: PAYWAY.cyan,
   },
-  modalStatusText: {
+  paywayLogoText: {
+    color: PAYWAY.cyan,
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 1.1,
-    textTransform: 'uppercase',
     fontFamily: FONT_FAMILY.accent,
   },
-  closeBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+  paywayProjectCounter: {
+    color: 'rgba(255, 255, 255, 0.55)',
+    fontSize: 11,
+    fontWeight: '800',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  modeSwitchWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#001020',
     borderRadius: RADIUS.full,
-    backgroundColor: colors.surface,
+    padding: 3,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: 'rgba(0, 188, 212, 0.30)',
   },
-  closeText: {
-    color: colors.textPrimary,
-    fontSize: 12,
-    fontWeight: '900',
+  modeSwitchBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: RADIUS.full,
+    ...(Platform.OS === 'web' ? ({ transition: 'all 160ms ease', cursor: 'pointer' } as any) : {}),
+  },
+  modeSwitchBtnActive: {
+    backgroundColor: PAYWAY.cyan,
+  },
+  modeSwitchText: {
+    color: 'rgba(255, 255, 255, 0.65)',
+    fontSize: 11,
+    fontWeight: '800',
     fontFamily: FONT_FAMILY.accent,
   },
-  modalIndex: {
-    color: colors.textDim,
-    fontSize: 12,
+  modeSwitchTextActive: {
+    color: '#001424',
     fontWeight: '900',
-    letterSpacing: 1.2,
-    marginTop: 26,
-    textTransform: 'uppercase',
+  },
+  headerControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  headerNavBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    ...(Platform.OS === 'web' ? ({ transition: 'all 160ms ease', cursor: 'pointer' } as any) : {}),
+  },
+  headerNavBtnHover: {
+    backgroundColor: 'rgba(0, 188, 212, 0.20)',
+    borderColor: PAYWAY.cyan,
+  },
+  headerNavBtnText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '800',
     fontFamily: FONT_FAMILY.accent,
   },
-  modalTitle: {
-    color: colors.textPrimary,
-    fontSize: 38,
-    lineHeight: 44,
+  headerCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    ...(Platform.OS === 'web' ? ({ transition: 'all 160ms ease', cursor: 'pointer' } as any) : {}),
+  },
+  headerCloseBtnHover: {
+    backgroundColor: 'rgba(239, 68, 68, 0.25)',
+    borderColor: '#EF4444',
+  },
+  headerCloseBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13,
     fontWeight: '900',
-    letterSpacing: -1.3,
-    marginTop: 8,
-    fontFamily: FONT_FAMILY.header,
   },
-  modalDesc: {
-    color: colors.textSecondary,
-    fontSize: 15,
-    lineHeight: 24,
-    fontWeight: '600',
-    marginTop: 12,
-    maxWidth: 760,
-    fontFamily: FONT_FAMILY.body,
-  },
-  modalBody: {
+  scrollContent: {
     padding: 24,
-    gap: 18,
+    gap: 24,
   },
-  modalBodyWide: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  modalMainCol: {
-    flex: 1.45,
-    padding: 20,
-    borderRadius: 22,
-    backgroundColor: colors.surfaceSoft,
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: 14,
-  },
-  modalSideCol: {
-    flex: 0.8,
-    padding: 18,
-    borderRadius: 22,
-    backgroundColor: colors.surfaceSoft,
-    borderWidth: 1,
-    borderColor: colors.border,
+  heroSection: {
+    width: '100%',
     gap: 12,
-    minWidth: 250,
   },
-  modalSectionTitle: {
-    color: colors.textPrimary,
-    fontSize: 16,
-    fontWeight: '900',
-    letterSpacing: -0.3,
-    fontFamily: FONT_FAMILY.header,
-  },
-  impactList: {
-    gap: 10,
-    marginBottom: 8,
-  },
-  impactItem: {
+  heroMetaRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    flexWrap: 'wrap',
     gap: 10,
   },
-  impactDot: {
+  heroStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 230, 118, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 230, 118, 0.35)',
+  },
+  heroStatusDot: {
     width: 7,
     height: 7,
-    borderRadius: 4,
-    marginTop: 7,
+    borderRadius: 3.5,
+    backgroundColor: PAYWAY.emerald,
   },
-  impactText: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    lineHeight: 22,
-    fontWeight: '700',
-    flex: 1,
+  heroStatusLabel: {
+    color: PAYWAY.emerald,
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+    fontFamily: FONT_FAMILY.accent,
+  },
+  heroMetricPill: {
+    paddingVertical: 5,
+    paddingHorizontal: 11,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 188, 212, 0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.35)',
+  },
+  heroMetricPillText: {
+    color: PAYWAY.cyan,
+    fontSize: 11,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  heroTitle: {
+    color: '#FFFFFF',
+    fontSize: 32,
+    lineHeight: 38,
+    fontWeight: '900',
+    letterSpacing: -1,
+    fontFamily: FONT_FAMILY.header,
+  },
+  heroHeadline: {
+    color: PAYWAY.cyan,
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: '800',
+    fontFamily: FONT_FAMILY.header,
+  },
+  heroDescription: {
+    color: 'rgba(255, 255, 255, 0.78)',
+    fontSize: 15,
+    lineHeight: 24,
+    fontWeight: '500',
     fontFamily: FONT_FAMILY.body,
   },
-  tagList: {
+  heroActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 8,
+  },
+  btnPaywayPrimary: {
+    paddingVertical: 11,
+    paddingHorizontal: 20,
+    borderRadius: RADIUS.full,
+    backgroundColor: PAYWAY.cyan,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...(Platform.OS === 'web'
+      ? ({
+          boxShadow: '0 4px 18px rgba(0, 188, 212, 0.40)',
+          transition: 'all 180ms ease',
+          cursor: 'pointer',
+        } as any)
+      : {}),
+  },
+  btnPaywayPrimaryHover: {
+    backgroundColor: PAYWAY.cyanLight,
+    transform: [{ translateY: -2 }],
+  },
+  btnPaywayPrimaryText: {
+    color: '#001424',
+    fontSize: 13,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  btnPaywayOutline: {
+    paddingVertical: 11,
+    paddingHorizontal: 18,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...(Platform.OS === 'web' ? ({ transition: 'all 180ms ease', cursor: 'pointer' } as any) : {}),
+  },
+  btnPaywayOutlineHover: {
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: 'rgba(255, 255, 255, 0.35)',
+    transform: [{ translateY: -1 }],
+  },
+  btnPaywayOutlineText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '800',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  btnPaywayCyanOutline: {
+    paddingVertical: 11,
+    paddingHorizontal: 18,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 188, 212, 0.10)',
+    borderWidth: 1,
+    borderColor: PAYWAY.cyan,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...(Platform.OS === 'web' ? ({ transition: 'all 180ms ease', cursor: 'pointer' } as any) : {}),
+  },
+  btnPaywayCyanOutlineHover: {
+    backgroundColor: 'rgba(0, 188, 212, 0.22)',
+    transform: [{ translateY: -1 }],
+  },
+  btnPaywayCyanOutlineText: {
+    color: PAYWAY.cyan,
+    fontSize: 13,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  developerSuiteBox: {
+    borderRadius: 20,
+    backgroundColor: '#001020',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.35)',
+    padding: 20,
+    gap: 16,
+    ...(Platform.OS === 'web' ? ({ boxShadow: '0 12px 40px rgba(0, 188, 212, 0.15)' } as any) : {}),
+  },
+  suiteHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  suiteTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.header,
+  },
+  suiteSub: {
+    color: PAYWAY.textMuted,
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: FONT_FAMILY.body,
+  },
+  suiteLiveTag: {
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 230, 118, 0.15)',
+    borderWidth: 1,
+    borderColor: PAYWAY.emerald,
+  },
+  suiteLiveTagText: {
+    color: PAYWAY.emerald,
+    fontSize: 11,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  langTabBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.10)',
+  },
+  langTabBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'transparent',
+    ...(Platform.OS === 'web' ? ({ transition: 'all 150ms ease', cursor: 'pointer' } as any) : {}),
+  },
+  langTabBtnActive: {
+    backgroundColor: 'rgba(0, 188, 212, 0.18)',
+    borderColor: PAYWAY.cyan,
+  },
+  langTabBtnText: {
+    color: 'rgba(255, 255, 255, 0.60)',
+    fontSize: 12,
+    fontWeight: '800',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  langTabBtnTextActive: {
+    color: PAYWAY.cyan,
+    fontWeight: '900',
+  },
+  copyBtn: {
+    marginLeft: 'auto',
+    paddingVertical: 5,
+    paddingHorizontal: 11,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 188, 212, 0.15)',
+    borderWidth: 1,
+    borderColor: PAYWAY.cyan,
+    ...(Platform.OS === 'web' ? ({ cursor: 'pointer' } as any) : {}),
+  },
+  copyBtnText: {
+    color: PAYWAY.cyan,
+    fontSize: 11,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  codeTerminal: {
+    backgroundColor: '#000A14',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.20)',
+    maxHeight: 280,
+  },
+  codeContent: {
+    color: '#B2EBF2',
+    fontFamily: Platform.OS === 'web' ? 'Consolas, Monaco, "Courier New", monospace' : FONT_FAMILY.accent,
+    fontSize: 12.5,
+    lineHeight: 20,
+  },
+  paramTable: {
+    gap: 8,
+    marginTop: 6,
+  },
+  paramTableTitle: {
+    color: PAYWAY.cyan,
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1.1,
+    fontFamily: FONT_FAMILY.accent,
+  },
+  paramRowHeader: {
+    flexDirection: 'row',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  paramRow: {
+    flexDirection: 'row',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  paramCell: {
+    color: 'rgba(255, 255, 255, 0.75)',
+    fontSize: 12,
+    fontFamily: FONT_FAMILY.body,
+  },
+  paramCode: {
+    color: PAYWAY.cyan,
+    fontFamily: Platform.OS === 'web' ? 'monospace' : FONT_FAMILY.accent,
+    fontWeight: '800',
+  },
+  paramReq: {
+    color: PAYWAY.emerald,
+    fontWeight: '900',
+  },
+  paramOpt: {
+    color: PAYWAY.amber,
+    fontWeight: '800',
+  },
+  simulatorWrapper: {
+    borderRadius: 22,
+    backgroundColor: '#001B33',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.32)',
+    padding: 20,
+    gap: 16,
+    ...(Platform.OS === 'web' ? ({ boxShadow: '0 16px 50px rgba(0, 188, 212, 0.12)' } as any) : {}),
+  },
+  simulatorHeader: {
+    gap: 6,
+  },
+  simBadge: {
+    alignSelf: 'flex-start',
+    paddingVertical: 4,
+    paddingHorizontal: 9,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 188, 212, 0.15)',
+    borderWidth: 1,
+    borderColor: PAYWAY.cyan,
+  },
+  simBadgeText: {
+    color: PAYWAY.cyan,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1.1,
+    fontFamily: FONT_FAMILY.accent,
+  },
+  simTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '900',
+    letterSpacing: -0.4,
+    fontFamily: FONT_FAMILY.header,
+  },
+  simSubtitle: {
+    color: 'rgba(255, 255, 255, 0.70)',
+    fontSize: 13,
+    lineHeight: 19,
+    fontFamily: FONT_FAMILY.body,
+  },
+  fleetSimulatorBox: {
+    gap: 12,
+  },
+  fleetTopBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    backgroundColor: '#001020',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.20)',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  fleetBarTitle: {
+    color: PAYWAY.cyan,
+    fontSize: 12,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  fleetBarSub: {
+    color: PAYWAY.emerald,
+    fontSize: 11,
+    fontWeight: '800',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  fleetSelectorHint: {
+    color: 'rgba(255, 255, 255, 0.65)',
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: FONT_FAMILY.body,
+  },
+  stationChipsList: {
+    gap: 8,
+    paddingVertical: 4,
+  },
+  stationChip: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    alignItems: 'center',
+    gap: 2,
+    minWidth: 70,
+    ...(Platform.OS === 'web' ? ({ transition: 'all 150ms ease', cursor: 'pointer' } as any) : {}),
+  },
+  stationChipActive: {
+    backgroundColor: 'rgba(0, 188, 212, 0.20)',
+    borderColor: PAYWAY.cyan,
+    transform: [{ translateY: -2 }],
+  },
+  stationChipId: {
+    color: 'rgba(255, 255, 255, 0.60)',
+    fontSize: 11,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  stationChipIdActive: {
+    color: PAYWAY.cyan,
+  },
+  stationChipName: {
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontSize: 11,
+    fontWeight: '700',
+    fontFamily: FONT_FAMILY.body,
+  },
+  stationChipNameActive: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+  },
+  telemetryCard: {
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: '#001224',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.25)',
+    gap: 14,
+  },
+  telemetryCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  telemetryStationTitle: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.header,
+  },
+  telemetryStationMeta: {
+    color: PAYWAY.textMuted,
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: FONT_FAMILY.body,
+  },
+  telemetryLiveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 230, 118, 0.15)',
+    borderWidth: 1,
+    borderColor: PAYWAY.emerald,
+  },
+  telemetryLiveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: PAYWAY.emerald,
+  },
+  telemetryLiveText: {
+    color: PAYWAY.emerald,
+    fontSize: 11,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  telemetryMetricsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  telemetryMetricItem: {
+    flex: 1,
+    minWidth: 120,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#001A33',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    gap: 4,
+  },
+  telemetryMetricVal: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+    fontFamily: FONT_FAMILY.header,
+  },
+  telemetryMetricLbl: {
+    color: 'rgba(255, 255, 255, 0.60)',
+    fontSize: 11,
+    fontWeight: '600',
+    fontFamily: FONT_FAMILY.body,
+  },
+  telemetryFooter: {
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  telemetryFooterText: {
+    color: 'rgba(255, 255, 255, 0.55)',
+    fontSize: 11,
+    lineHeight: 16,
+    fontFamily: FONT_FAMILY.body,
+  },
+  checkoutSimulatorBox: {
+    borderRadius: 18,
+    backgroundColor: '#001224',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.25)',
+    overflow: 'hidden',
+  },
+  checkoutOrderSummary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    backgroundColor: '#001A33',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 188, 212, 0.18)',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  checkoutSummaryCol: {
+    gap: 3,
+  },
+  checkoutBrandTag: {
+    color: PAYWAY.cyan,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1,
+    fontFamily: FONT_FAMILY.accent,
+  },
+  checkoutOrderTitle: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.header,
+  },
+  checkoutOrderItems: {
+    color: 'rgba(255, 255, 255, 0.65)',
+    fontSize: 12,
+    fontFamily: FONT_FAMILY.body,
+  },
+  checkoutPriceCol: {
+    alignItems: 'flex-end',
+  },
+  checkoutPriceTotal: {
+    color: PAYWAY.cyan,
+    fontSize: 24,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+    fontFamily: FONT_FAMILY.header,
+  },
+  checkoutPriceSub: {
+    color: 'rgba(255, 255, 255, 0.55)',
+    fontSize: 11,
+    fontFamily: FONT_FAMILY.accent,
+  },
+  checkoutCardBody: {
+    padding: 20,
+    alignItems: 'center',
+    gap: 16,
+  },
+  khqrFrame: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  khqrInnerBox: {
+    width: 170,
+    height: 170,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderWidth: 3,
+    borderColor: '#E11D48',
+    ...(Platform.OS === 'web' ? ({ boxShadow: '0 8px 30px rgba(0,0,0,0.4)' } as any) : {}),
+  },
+  khqrMockQr: {
+    color: '#000000',
+    fontSize: 11,
+    fontWeight: '900',
+    textAlign: 'center',
+    fontFamily: Platform.OS === 'web' ? 'monospace' : FONT_FAMILY.accent,
+  },
+  khqrPaywayLogoRow: {
+    position: 'absolute',
+    bottom: 8,
+    backgroundColor: '#002744',
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+  },
+  khqrPaywayLogo: {
+    color: PAYWAY.cyan,
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+    fontFamily: FONT_FAMILY.accent,
+  },
+  khqrScanText: {
+    color: 'rgba(255, 255, 255, 0.70)',
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: FONT_FAMILY.body,
+  },
+  checkoutCtaWrap: {
+    width: '100%',
+    maxWidth: 380,
+    gap: 6,
+    alignItems: 'center',
+  },
+  checkoutSimNote: {
+    color: 'rgba(255, 255, 255, 0.45)',
+    fontSize: 11,
+    textAlign: 'center',
+    fontFamily: FONT_FAMILY.body,
+  },
+  checkoutProcessingBox: {
+    padding: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  processingSpinner: {
+    fontSize: 32,
+  },
+  processingTitle: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.header,
+  },
+  processingSub: {
+    color: PAYWAY.cyan,
+    fontSize: 12,
+    fontFamily: FONT_FAMILY.body,
+  },
+  checkoutApprovedBox: {
+    padding: 24,
+    alignItems: 'center',
+    gap: 10,
+  },
+  approvedIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(0, 230, 118, 0.20)',
+    borderWidth: 1,
+    borderColor: PAYWAY.emerald,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  approvedIcon: {
+    color: PAYWAY.emerald,
+    fontSize: 24,
+    fontWeight: '900',
+  },
+  approvedTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.header,
+  },
+  approvedSub: {
+    color: PAYWAY.emerald,
+    fontSize: 12,
+    fontWeight: '700',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  approvedLogBox: {
+    width: '100%',
+    padding: 12,
+    borderRadius: 10,
+    backgroundColor: '#000A14',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.20)',
+    gap: 4,
+    marginTop: 6,
+  },
+  approvedLogLine: {
+    color: '#80DEEA',
+    fontSize: 11,
+    fontFamily: Platform.OS === 'web' ? 'monospace' : FONT_FAMILY.accent,
+  },
+  resetSimBtn: {
+    marginTop: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.20)',
+    ...(Platform.OS === 'web' ? ({ cursor: 'pointer' } as any) : {}),
+  },
+  resetSimBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  telegramSimulatorBox: {
+    borderRadius: 16,
+    backgroundColor: '#001224',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.25)',
+    overflow: 'hidden',
+  },
+  tgHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 12,
+    backgroundColor: '#001A33',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 188, 212, 0.20)',
+  },
+  tgAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0, 188, 212, 0.20)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tgAvatarText: {
+    fontSize: 18,
+  },
+  tgBotName: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.header,
+  },
+  tgBotStatus: {
+    color: PAYWAY.cyan,
+    fontSize: 11,
+    fontWeight: '600',
+    fontFamily: FONT_FAMILY.body,
+  },
+  tgChatArea: {
+    height: 190,
+  },
+  tgBubble: {
+    maxWidth: '85%',
+    padding: 10,
+    borderRadius: 12,
+    gap: 4,
+  },
+  tgBubbleBot: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#002244',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.20)',
+  },
+  tgBubbleUser: {
+    alignSelf: 'flex-end',
+    backgroundColor: PAYWAY.cyan,
+  },
+  tgMsgText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    lineHeight: 18,
+    fontFamily: FONT_FAMILY.body,
+  },
+  tgMsgTime: {
+    color: 'rgba(255, 255, 255, 0.45)',
+    fontSize: 9,
+    alignSelf: 'flex-end',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  tgCommandsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    padding: 10,
+    backgroundColor: '#001A33',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0, 188, 212, 0.15)',
+  },
+  tgCmdChip: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 188, 212, 0.12)',
+    borderWidth: 1,
+    borderColor: PAYWAY.cyan,
+    ...(Platform.OS === 'web' ? ({ cursor: 'pointer' } as any) : {}),
+  },
+  tgCmdChipText: {
+    color: PAYWAY.cyan,
+    fontSize: 11,
+    fontWeight: '800',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  consoleSimulatorBox: {
+    borderRadius: 14,
+    backgroundColor: '#000D1A',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.22)',
+    overflow: 'hidden',
+  },
+  consoleHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 10,
+    backgroundColor: '#00162B',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 188, 212, 0.15)',
+  },
+  consoleHeaderTitle: {
+    color: PAYWAY.cyan,
+    fontSize: 11,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  consoleHeaderStatus: {
+    color: PAYWAY.emerald,
+    fontSize: 11,
+    fontWeight: '800',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  consoleBody: {
+    padding: 14,
+    gap: 6,
+  },
+  consoleCodeLine: {
+    color: '#80DEEA',
+    fontSize: 12,
+    lineHeight: 18,
+    fontFamily: Platform.OS === 'web' ? 'Consolas, monospace' : FONT_FAMILY.accent,
+  },
+  metricsSection: {
+    gap: 12,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  sectionHeaderLabel: {
+    color: PAYWAY.cyan,
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1.2,
+    fontFamily: FONT_FAMILY.accent,
+  },
+  sectionHeaderLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(0, 188, 212, 0.25)',
+  },
+  metricsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  metricCard: {
+    flex: 1,
+    minWidth: 160,
+    padding: 16,
+    borderRadius: 18,
+    backgroundColor: '#001A33',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.22)',
+    gap: 4,
+  },
+  metricValue: {
+    fontSize: 30,
+    lineHeight: 34,
+    fontWeight: '900',
+    letterSpacing: -1,
+    fontFamily: FONT_FAMILY.header,
+  },
+  metricLabel: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '800',
+    fontFamily: FONT_FAMILY.header,
+  },
+  metricSub: {
+    color: 'rgba(255, 255, 255, 0.60)',
+    fontSize: 11,
+    fontWeight: '600',
+    fontFamily: FONT_FAMILY.body,
+  },
+  detailTabsBar: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    padding: 6,
+    borderRadius: 18,
+    backgroundColor: '#001224',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.25)',
+  },
+  detailTabBtn: {
+    flex: 1,
+    minWidth: 130,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    ...(Platform.OS === 'web' ? ({ transition: 'all 160ms ease', cursor: 'pointer' } as any) : {}),
+  },
+  detailTabBtnActive: {
+    backgroundColor: 'rgba(0, 188, 212, 0.16)',
+    borderColor: PAYWAY.cyan,
+  },
+  detailTabBtnLabel: {
+    color: 'rgba(255, 255, 255, 0.65)',
+    fontSize: 13,
+    fontWeight: '800',
+    fontFamily: FONT_FAMILY.header,
+  },
+  detailTabBtnLabelActive: {
+    color: PAYWAY.cyan,
+    fontWeight: '900',
+  },
+  detailTabBtnSub: {
+    color: 'rgba(255, 255, 255, 0.40)',
+    fontSize: 10,
+    fontWeight: '600',
+    fontFamily: FONT_FAMILY.body,
+  },
+  detailTabBtnSubActive: {
+    color: '#FFFFFF',
+  },
+  comparativeContainer: {
+    gap: 14,
+  },
+  challengeBox: {
+    padding: 20,
+    borderRadius: 18,
+    backgroundColor: 'rgba(239, 68, 68, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.25)',
+    gap: 10,
+  },
+  solutionBox: {
+    padding: 20,
+    borderRadius: 18,
+    backgroundColor: '#001C38',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.40)',
+    gap: 10,
+  },
+  boxTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  boxIconDanger: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.16)',
+  },
+  boxIconDangerText: {
+    fontSize: 18,
+  },
+  boxTitleDanger: {
+    color: '#EF4444',
+    fontSize: 16,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.header,
+  },
+  boxSubDanger: {
+    color: 'rgba(255, 255, 255, 0.50)',
+    fontSize: 11,
+    fontWeight: '700',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  boxIconSuccess: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 188, 212, 0.18)',
+  },
+  boxIconSuccessText: {
+    fontSize: 18,
+  },
+  boxTitleSuccess: {
+    color: PAYWAY.cyan,
+    fontSize: 16,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.header,
+  },
+  boxSubSuccess: {
+    color: 'rgba(255, 255, 255, 0.55)',
+    fontSize: 11,
+    fontWeight: '700',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  boxDesc: {
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontSize: 14,
+    lineHeight: 23,
+    fontWeight: '500',
+    fontFamily: FONT_FAMILY.body,
+  },
+  featuresGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 14,
+  },
+  featureCard: {
+    flex: 1,
+    minWidth: 260,
+    padding: 18,
+    borderRadius: 18,
+    backgroundColor: '#001A33',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.20)',
+    gap: 8,
+  },
+  featureCardTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  featureIconBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 188, 212, 0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.30)',
+  },
+  featureIconText: {
+    fontSize: 20,
+  },
+  featurePill: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 188, 212, 0.12)',
+    borderWidth: 1,
+    borderColor: PAYWAY.cyan,
+  },
+  featurePillText: {
+    color: PAYWAY.cyan,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+    fontFamily: FONT_FAMILY.accent,
+  },
+  featureTitle: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.header,
+  },
+  featureDesc: {
+    color: 'rgba(255, 255, 255, 0.70)',
+    fontSize: 13,
+    lineHeight: 20,
+    fontWeight: '500',
+    fontFamily: FONT_FAMILY.body,
+  },
+  architectureContainer: {
+    gap: 16,
+  },
+  archGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  archCard: {
+    flex: 1,
+    minWidth: 220,
+    padding: 16,
+    borderRadius: 18,
+    backgroundColor: '#001A33',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.20)',
+    gap: 10,
+  },
+  archCategoryTitle: {
+    color: PAYWAY.cyan,
+    fontSize: 14,
+    fontWeight: '900',
+    letterSpacing: -0.2,
+    fontFamily: FONT_FAMILY.header,
+  },
+  archItemsList: {
+    gap: 7,
+  },
+  archItemBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  archDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: PAYWAY.cyan,
+  },
+  archItemText: {
+    color: 'rgba(255, 255, 255, 0.75)',
+    fontSize: 12,
+    fontWeight: '700',
+    fontFamily: FONT_FAMILY.body,
+  },
+  archTagsBlock: {
+    padding: 16,
+    borderRadius: 18,
+    backgroundColor: '#001A33',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.20)',
+    gap: 10,
+  },
+  archTagsLabel: {
+    color: PAYWAY.cyan,
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1.1,
+    fontFamily: FONT_FAMILY.accent,
+  },
+  techPillWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
-  tag: {
-    paddingVertical: 7,
-    paddingHorizontal: 11,
+  techPill: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 188, 212, 0.10)',
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
+    borderColor: 'rgba(0, 188, 212, 0.28)',
   },
-  tagText: {
-    color: colors.textSecondary,
+  techPillText: {
+    color: PAYWAY.textLight,
     fontSize: 12,
-    fontWeight: '900',
-    fontFamily: FONT_FAMILY.accent,
-  },
-  infoRow: {
-    gap: 3,
-    paddingBottom: 11,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  infoLabel: {
-    color: colors.textDim,
-    fontSize: 11,
-    fontWeight: '900',
-    letterSpacing: 1.1,
-    textTransform: 'uppercase',
-    fontFamily: FONT_FAMILY.accent,
-  },
-  infoValue: {
-    color: colors.textPrimary,
-    fontSize: 14,
     fontWeight: '800',
-    fontFamily: FONT_FAMILY.body,
-  },
-  noteText: {
-    color: colors.textMuted,
-    fontSize: 13,
-    lineHeight: 20,
-    fontWeight: '600',
-    fontFamily: FONT_FAMILY.body,
-  },
-  primaryAction: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: RADIUS.full,
-    alignItems: 'center',
-    marginTop: 6,
-  },
-  primaryActionText: {
-    color: '#020617',
-    fontSize: 14,
-    fontWeight: '900',
     fontFamily: FONT_FAMILY.accent,
   },
-  secondaryAction: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: RADIUS.full,
-    alignItems: 'center',
+  impactContainer: {
+    gap: 14,
+  },
+  impactCardList: {
+    gap: 10,
+  },
+  impactCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    padding: 14,
+    borderRadius: 16,
+    backgroundColor: '#001A33',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: 'rgba(0, 188, 212, 0.20)',
   },
-  secondaryActionText: {
+  impactCheckBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 230, 118, 0.18)',
+    marginTop: 2,
+  },
+  impactCheckText: {
+    color: PAYWAY.emerald,
     fontSize: 14,
     fontWeight: '900',
-    fontFamily: FONT_FAMILY.accent,
+  },
+  impactPointText: {
+    color: 'rgba(255, 255, 255, 0.88)',
+    fontSize: 14,
+    lineHeight: 22,
+    fontWeight: '600',
+    flex: 1,
+    fontFamily: FONT_FAMILY.body,
+  },
+  complianceNoticeBox: {
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    gap: 6,
+  },
+  complianceTitle: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.header,
+  },
+  complianceDesc: {
+    color: 'rgba(255, 255, 255, 0.60)',
+    fontSize: 12,
+    lineHeight: 18,
+    fontWeight: '500',
+    fontFamily: FONT_FAMILY.body,
+  },
+  ctaBanner: {
+    padding: 24,
+    borderRadius: 22,
+    backgroundColor: '#001830',
+    borderWidth: 1,
+    borderColor: PAYWAY.cyan,
+    position: 'relative',
+    overflow: 'hidden',
+    gap: 16,
+    ...(Platform.OS === 'web' ? ({ boxShadow: '0 16px 60px rgba(0, 188, 212, 0.20)' } as any) : {}),
+  },
+  ctaGlowOrb: {
+    position: 'absolute',
+    bottom: -60,
+    right: -60,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: 'rgba(0, 188, 212, 0.18)',
+  },
+  ctaTextCol: {
+    gap: 8,
+    zIndex: 2,
+  },
+  ctaHeading: {
+    color: '#FFFFFF',
+    fontSize: 22,
+    lineHeight: 28,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+    fontFamily: FONT_FAMILY.header,
+  },
+  ctaSub: {
+    color: 'rgba(255, 255, 255, 0.75)',
+    fontSize: 14,
+    lineHeight: 22,
+    fontWeight: '500',
+    maxWidth: 720,
+    fontFamily: FONT_FAMILY.body,
+  },
+  ctaButtonsCol: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 10,
+    zIndex: 2,
   },
 });
