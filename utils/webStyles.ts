@@ -282,6 +282,27 @@ export function injectGlobalStyles() {
       100% { transform: translateX(250%) skewX(-20deg); }
     }
 
+    @keyframes ct-dash-flow {
+      from { stroke-dashoffset: 28; }
+      to { stroke-dashoffset: 0; }
+    }
+
+    @keyframes ct-beacon-ring {
+      0% { transform: scale(0.5); opacity: 0.95; }
+      60% { opacity: 0.45; }
+      100% { transform: scale(2.8); opacity: 0; }
+    }
+
+    @keyframes ct-pulse-dot {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 4px #00BCD4); }
+      50% { transform: scale(1.45); filter: drop-shadow(0 0 14px #00E676); }
+    }
+
+    @keyframes ct-radar-sweep {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     /* ═══════ UTILITY CLASSES ═══════ */
 
     .ct-outlined-indigo {

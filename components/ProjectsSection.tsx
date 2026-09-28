@@ -245,6 +245,39 @@ function ProjectDetailModal({
   const isFleet = project?.simulator?.type === 'fleet';
   const nodeOptions = isFleet ? ECOSYSTEM_NODES_FLEET : ECOSYSTEM_NODES_GENERAL;
   const [selectedNode, setSelectedNode] = useState(nodeOptions[0]);
+  const [isHighTraffic, setIsHighTraffic] = useState(false);
+
+  const generalHotspots = [
+    { id: 'hub', label: 'PW HUB', top: '46%', left: '50%', icon: '🏢' },
+    { id: 'delivery', label: 'DISPATCH', top: '38%', left: '31%', icon: '🛵' },
+    { id: 'pos', label: 'POS TERMINAL', top: '28%', left: '75%', icon: '💳' },
+    { id: 'store', label: 'WEB STORE', top: '74%', left: '68%', icon: '💻' },
+    { id: 'bot', label: 'TG BOT', top: '22%', left: '46%', icon: '🤖' },
+  ];
+
+  const generalLines = [
+    { x1: '50%', y1: '46%', x2: '31%', y2: '38%' },
+    { x1: '50%', y1: '46%', x2: '75%', y2: '28%' },
+    { x1: '50%', y1: '46%', x2: '68%', y2: '74%' },
+    { x1: '50%', y1: '46%', x2: '30%', y2: '68%' },
+    { x1: '50%', y1: '46%', x2: '46%', y2: '22%' },
+  ];
+
+  const fleetHotspots = [
+    { id: 'counter', label: 'CASHIER DESK', top: '38%', left: '50%', icon: '🏪' },
+    { id: 'pumps', label: 'CARD PUMP', top: '60%', left: '24%', icon: '⛽' },
+    { id: 'khqr', label: 'KHQR SCANNER', top: '72%', left: '54%', icon: '📱' },
+    { id: 'replication', label: 'BINLOG SYNC', top: '52%', left: '74%', icon: '🔄' },
+  ];
+
+  const fleetLines = [
+    { x1: '50%', y1: '38%', x2: '24%', y2: '60%' },
+    { x1: '50%', y1: '38%', x2: '54%', y2: '72%' },
+    { x1: '50%', y1: '38%', x2: '74%', y2: '52%' },
+  ];
+
+  const activeHotspots = isFleet ? fleetHotspots : generalHotspots;
+  const activeLines = isFleet ? fleetLines : generalLines;
 
   const styles = getModalStyles(colors, isDark);
 
@@ -498,16 +531,104 @@ function ProjectDetailModal({
                 </Text>
               </View>
 
-              {/* Floating Animated Graphic Canvas */}
+              {/* Floating Animated Graphic Canvas with Real-Time Flowing Circuit Lines */}
               <View style={styles.isometricStageCanvas}>
                 <View style={styles.isometricGlowAura} pointerEvents="none" />
 
-                <View style={styles.isometricGraphicFloatWrap}>
-                  <Image
-                    source={isFleet ? PAYWAY_POS_IMG : PAYWAY_HUB_IMG}
-                    style={styles.isometricGraphicImg}
-                    resizeMode="contain"
-                  />
+                {/* Interactive Circuit Canvas with Overlaid SVG Lines and Hotspot Pins */}
+                <View style={styles.isometricCanvasFrame}>
+                  <View style={styles.isometricGraphicFloatWrap}>
+                    <Image
+                      source={isFleet ? PAYWAY_POS_IMG : PAYWAY_HUB_IMG}
+                      style={styles.isometricGraphicImg}
+                      resizeMode="contain"
+                    />
+                  </View>
+
+                  {/* SVG Circuit Lines with Flowing Animated Dashes & Pulsing Photons */}
+                  {Platform.OS === 'web' &&
+                    React.createElement(
+                      'svg',
+                      {
+                        style: {
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          pointerEvents: 'none',
+                          zIndex: 3,
+                        },
+                      },
+                      activeLines.map((line, i) =>
+                        React.createElement(
+                          'g',
+                          { key: i },
+                          React.createElement('line', {
+                            x1: line.x1,
+                            y1: line.y1,
+                            x2: line.x2,
+                            y2: line.y2,
+                            stroke: '#00BCD4',
+                            strokeWidth: isHighTraffic ? '2.5' : '1.8',
+                            strokeDasharray: '6,6',
+                            style: {
+                              animation: `ct-dash-flow ${isHighTraffic ? '0.45s' : '1.1s'} linear infinite`,
+                              filter: 'drop-shadow(0 0 4px #00BCD4)',
+                            },
+                          }),
+                          React.createElement('circle', {
+                            cx: line.x2,
+                            cy: line.y2,
+                            r: isHighTraffic ? '4' : '3',
+                            fill: '#00E676',
+                            style: {
+                              animation: `ct-pulse-dot ${isHighTraffic ? '0.6s' : '1.4s'} ease-in-out infinite`,
+                            },
+                          })
+                        )
+                      )
+                    )}
+
+                  {/* Interactive Glowing Hotspot Beacon Pins Overlaid directly on Nodes */}
+                  {activeHotspots.map((spot) => {
+                    const isSpotSel = selectedNode.id === spot.id;
+                    return (
+                      <Pressable
+                        key={spot.id}
+                        onPress={() => setSelectedNode(nodeOptions.find((n) => n.id === spot.id) || nodeOptions[0])}
+                        style={[
+                          styles.beaconPin,
+                          { top: spot.top as any, left: spot.left as any },
+                          isSpotSel && styles.beaconPinSelected,
+                        ]}
+                      >
+                        <View style={styles.beaconRing} />
+                        <View style={[styles.beaconCoreDot, isSpotSel && styles.beaconCoreDotActive]} />
+                        <View style={[styles.beaconPill, isSpotSel && styles.beaconPillActive]}>
+                          <Text style={[styles.beaconPillText, isSpotSel && styles.beaconPillTextActive]}>
+                            {spot.icon} {spot.label}
+                          </Text>
+                        </View>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+
+                {/* Simulation Control Bar */}
+                <View style={styles.simControlRow}>
+                  <Pressable
+                    onPress={() => setIsHighTraffic(!isHighTraffic)}
+                    style={[styles.trafficToggleBtn, isHighTraffic && styles.trafficToggleBtnActive]}
+                  >
+                    <Text style={styles.trafficToggleIcon}>{isHighTraffic ? '⚡' : '🚀'}</Text>
+                    <Text style={[styles.trafficToggleText, isHighTraffic && styles.trafficToggleTextActive]}>
+                      {isHighTraffic ? 'Live Stress Test: 500 req/s Active' : 'Simulate High-Load Event Traffic (Click)'}
+                    </Text>
+                  </Pressable>
+                  <Text style={styles.trafficHint}>
+                    {isHighTraffic ? 'Dashes & beacons pulsing at 2.5x speed' : 'Tap any hotspot node to inspect real-time bus telemetry'}
+                  </Text>
                 </View>
 
                 {/* Hotspot Chips / Architectural Modules */}
@@ -1748,6 +1869,132 @@ const getModalStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     width: '100%',
     maxWidth: 520,
     height: 250,
+  },
+  isometricCanvasFrame: {
+    width: '100%',
+    maxWidth: 580,
+    height: 270,
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
+  },
+  beaconPin: {
+    position: 'absolute',
+    transform: [{ translateX: -12 }, { translateY: -12 }],
+    zIndex: 10,
+    alignItems: 'center',
+    ...(Platform.OS === 'web' ? ({ cursor: 'pointer' } as any) : {}),
+  },
+  beaconPinSelected: {
+    zIndex: 20,
+    transform: [{ translateX: -12 }, { translateY: -15 }, { scale: 1.1 }],
+  },
+  beaconRing: {
+    position: 'absolute',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#00BCD4',
+    ...(Platform.OS === 'web'
+      ? ({
+          animation: 'ct-beacon-ring 2.2s cubic-bezier(0, 0.2, 0.8, 1) infinite',
+        } as any)
+      : {}),
+  },
+  beaconCoreDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#00BCD4',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+    ...(Platform.OS === 'web'
+      ? ({
+          boxShadow: '0 0 10px #00BCD4',
+        } as any)
+      : {}),
+  },
+  beaconCoreDotActive: {
+    backgroundColor: PAYWAY.emerald,
+    borderColor: '#FFFFFF',
+  },
+  beaconPill: {
+    marginTop: 4,
+    paddingVertical: 2,
+    paddingHorizontal: 7,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 20, 36, 0.92)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 188, 212, 0.45)',
+    ...(Platform.OS === 'web'
+      ? ({
+          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.6)',
+        } as any)
+      : {}),
+  },
+  beaconPillActive: {
+    backgroundColor: 'rgba(0, 188, 212, 0.30)',
+    borderColor: PAYWAY.cyan,
+  },
+  beaconPillText: {
+    color: '#E0F7FA',
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+    fontFamily: FONT_FAMILY.accent,
+  },
+  beaconPillTextActive: {
+    color: '#FFFFFF',
+  },
+  simControlRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingHorizontal: 4,
+    zIndex: 5,
+  },
+  trafficToggleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(0, 188, 212, 0.12)',
+    borderWidth: 1,
+    borderColor: PAYWAY.cyan,
+    ...(Platform.OS === 'web'
+      ? ({
+          transition: 'all 160ms ease',
+          cursor: 'pointer',
+        } as any)
+      : {}),
+  },
+  trafficToggleBtnActive: {
+    backgroundColor: 'rgba(0, 230, 118, 0.20)',
+    borderColor: PAYWAY.emerald,
+  },
+  trafficToggleIcon: {
+    fontSize: 12,
+  },
+  trafficToggleText: {
+    color: PAYWAY.cyan,
+    fontSize: 11,
+    fontWeight: '900',
+    fontFamily: FONT_FAMILY.accent,
+  },
+  trafficToggleTextActive: {
+    color: PAYWAY.emerald,
+  },
+  trafficHint: {
+    color: 'rgba(255, 255, 255, 0.55)',
+    fontSize: 11,
+    fontFamily: FONT_FAMILY.body,
   },
   hotspotsWrap: {
     flexDirection: 'row',
